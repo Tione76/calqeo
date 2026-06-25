@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ConsentProvider } from "@/components/consent/ConsentProvider";
 import { DeferredCookieBanner } from "@/components/consent/DeferredCookieBanner";
 import { SITE } from "@/lib/site/config";
-import { createHomeMetadata, jsonLdWebsite } from "@/lib/utils/seo";
+import { createHomeMetadata } from "@/lib/utils/seo";
 import "./globals.css";
 
 const inter = Inter({
@@ -28,14 +28,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(jsonLdWebsite()),
-          }}
-        />
-      </head>
       <body className={`${inter.variable} font-sans`}>
         <ConsentProvider>
           <div className="flex min-h-screen flex-col">

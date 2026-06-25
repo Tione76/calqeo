@@ -6,7 +6,10 @@ import { SimulatorSearch } from "./SimulatorSearch";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
+    <header
+      id="site-header"
+      className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md"
+    >
       <div className="container-app">
         <div className="flex h-16 items-center gap-3 sm:gap-4">
           <HeaderLogo />

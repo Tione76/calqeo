@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import { Hero } from "@/components/home/Hero";
+import { HomeStructuredData } from "@/components/seo/HomeStructuredData";
 
 const SimulatorGrid = dynamic(
   () =>
@@ -25,6 +26,7 @@ function SimulatorGridFallback() {
 export default function HomePage() {
   return (
     <>
+      <HomeStructuredData />
       <Hero />
       <div className="container-app py-16 sm:py-20">
         <SimulatorGrid />
