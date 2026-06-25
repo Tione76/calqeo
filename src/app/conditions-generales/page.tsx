@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalLayout } from "@/components/legal/LegalLayout";
-import { LEGAL_LINKS, SITE } from "@/lib/site/config";
+import { createLegalMetadata } from "@/lib/utils/seo";
+import { LEGAL_LINKS } from "@/lib/site/config";
 
-export const metadata: Metadata = {
-  title: "Conditions générales d'utilisation",
-  description: `Conditions générales d'utilisation du site ${SITE.name}.`,
-};
+export const metadata: Metadata = createLegalMetadata(
+  "Conditions générales d'utilisation",
+  "Conditions générales d'utilisation du site Calqeo : simulateurs et calculateurs en ligne gratuits.",
+  LEGAL_LINKS.cgu
+);
 
 export default function CguPage() {
   return (
@@ -14,8 +16,9 @@ export default function CguPage() {
       <section>
         <h2 className="text-lg font-semibold text-brand-900">1. Objet</h2>
         <p className="mt-2">
-          Les présentes CGU régissent l&apos;accès et l&apos;utilisation du site {SITE.name},
-          éditeur de simulateurs et calculateurs en ligne gratuits.
+          Les présentes CGU régissent l&apos;accès et l&apos;utilisation du site{" "}
+          <strong>Calqeo</strong>, plateforme de simulateurs et calculateurs en ligne
+          gratuits.
         </p>
       </section>
       <section>

@@ -20,7 +20,7 @@ export const fiscaliteContent: ContentRegistry = {
         p("Impôt total = Impôt par part × Nombre de parts"),
         p("Taux effectif = Impôt total ÷ Revenu net imposable × 100"),
         hl(
-          "Barème 2024 (revenus 2023)",
+          "Barème 2026 (revenus 2025)",
           "0 % jusqu'à 11 294 €, 11 % de 11 295 € à 28 797 €, 30 % de 28 798 € à 82 341 €, 41 % de 82 342 € à 177 106 €, 45 % au-delà — par part fiscale."
         ),
       ],
@@ -36,7 +36,7 @@ export const fiscaliteContent: ContentRegistry = {
         "Décote pour les revenus modestes non incluse",
         "Plafonnement du quotient familial non modélisé",
         "Réductions et crédits d'impôt (PER, emploi à domicile, etc.) non pris en compte",
-        "Barème 2024 appliqué aux revenus 2023",
+        "Barème 2026 appliqué aux revenus 2025",
       ],
       example: {
         title: "Couple avec 45 000 € nets et 2 parts",
@@ -120,7 +120,7 @@ export const fiscaliteContent: ContentRegistry = {
       {
         question: "Ce simulateur utilise-t-il le barème 2024 ?",
         answer:
-          "Oui, le barème 2024 s'applique aux revenus 2023 déclarés au printemps 2024. Les seuils de tranches sont indexés chaque année.",
+          "Oui, le barème 2024 s'applique aux revenus 2025 déclarés au printemps 2024. Les seuils de tranches sont indexés chaque année.",
       },
     ]),
   },
@@ -885,7 +885,7 @@ export const fiscaliteContent: ContentRegistry = {
         "Prélèvements sociaux (CSG, etc.) non inclus dans le TMI",
         "Décote et plafonnement QF non appliqués",
         "Revenus exceptionnels (quotient) non traités",
-        "Barème 2024 sur revenus 2023",
+        "Barème 2026 sur revenus 2025",
       ],
       example: {
         title: "60 000 € nets, 2 parts",

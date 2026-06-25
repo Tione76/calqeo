@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { LegalLayout } from "@/components/legal/LegalLayout";
+import { createLegalMetadata } from "@/lib/utils/seo";
+import { LEGAL_LINKS } from "@/lib/site/config";
 
-export const metadata: Metadata = {
-  title: "Politique de confidentialité",
-  description:
-    "Politique de confidentialité de Calqeo : données collectées, cookies, Google Analytics, AdSense et vos droits RGPD.",
-};
+export const metadata: Metadata = createLegalMetadata(
+  "Politique de confidentialité",
+  "Politique de confidentialité de Calqeo : données collectées, cookies, Google Analytics, AdSense et vos droits RGPD.",
+  LEGAL_LINKS.confidentialite
+);
 
 export default function ConfidentialitePage() {
   return (

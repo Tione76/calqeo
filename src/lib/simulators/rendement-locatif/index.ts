@@ -29,6 +29,11 @@ export const rendementLocatif: SimulatorDefinition<RendementLocatifInput> = {
   ],
   category: "investissement",
   icon: "chart",
+  relatedSlugs: [
+    "rendement-locatif-net",
+    "cash-flow-immobilier",
+    "rentabilite-lmnp",
+  ],
   content: rendementLocatifContent,
   faq: rendementLocatifFaq,
   calculate(input) {

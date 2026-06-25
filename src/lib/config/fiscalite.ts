@@ -12,7 +12,7 @@ import type { MicroActivite } from "./urssaf";
 
 /**
  * Tranche du barème progressif IR (revenu par part, €).
- * @source CGI, art. 197 — barème 2024 sur revenus 2023
+ * @source CGI, art. 197 — barème 2026 sur revenus 2025
  * @maj 1×/an (printemps, revenus de l'année précédente)
  */
 export const IR_TRANCHES = [

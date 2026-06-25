@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalLayout } from "@/components/legal/LegalLayout";
-import { LEGAL_LINKS, SITE } from "@/lib/site/config";
+import { createLegalMetadata } from "@/lib/utils/seo";
+import { LEGAL_LINKS } from "@/lib/site/config";
 
-export const metadata: Metadata = {
-  title: "Politique de cookies",
-  description: `Types de cookies utilisés sur ${SITE.name}, consentement et gestion des cookies publicitaires AdSense.`,
-};
+export const metadata: Metadata = createLegalMetadata(
+  "Politique de cookies",
+  "Types de cookies utilisés sur Calqeo, consentement et gestion des cookies publicitaires AdSense.",
+  LEGAL_LINKS.cookies
+);
 
 export default function CookiesPage() {
   return (

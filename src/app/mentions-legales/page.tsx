@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalLayout } from "@/components/legal/LegalLayout";
+import { createLegalMetadata } from "@/lib/utils/seo";
 import { LEGAL_LINKS } from "@/lib/site/config";
 
-export const metadata: Metadata = {
-  title: "Mentions légales",
-  description:
-    "Mentions légales du site Calqeo : éditeur, hébergeur, responsabilité et propriété intellectuelle.",
-};
+export const metadata: Metadata = createLegalMetadata(
+  "Mentions légales",
+  "Mentions légales du site Calqeo : éditeur, hébergeur, responsabilité et propriété intellectuelle.",
+  LEGAL_LINKS.mentionsLegales
+);
 
 export default function MentionsLegalesPage() {
   return (

@@ -101,7 +101,7 @@ const enrichQuotientFamilial: Enricher = (input, result) => {
     callouts: oneCallout({
       variant: "info",
       title: "Plafonnement",
-      text: "L'avantage lié aux demi-parts est plafonné (~1 678 €/demi-part en 2024) — non modélisé ici.",
+      text: "L'avantage lié aux demi-parts est plafonné (~1 791 €/demi-part en 2026) — non modélisé ici.",
     }),
   });
 };

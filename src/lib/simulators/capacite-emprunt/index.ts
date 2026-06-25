@@ -38,6 +38,11 @@ export const capaciteEmprunt: SimulatorDefinition<CapaciteEmpruntInput> = {
   ],
   category: "financement",
   icon: "wallet",
+  relatedSlugs: [
+    "mensualite-pret-immobilier",
+    "taux-endettement",
+    "frais-de-notaire",
+  ],
   content: capaciteEmpruntContent,
   faq: capaciteEmpruntFaq,
   calculate(input) {

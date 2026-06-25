@@ -26,7 +26,7 @@ export const impotSurLeRevenu: SimulatorDefinition = {
   title: "Impôt sur le revenu",
   shortDescription:
     "Estimez votre impôt sur le revenu selon le barème progressif et le quotient familial.",
-  metaTitle: "Simulateur impôt sur le revenu — Barème 2024",
+  metaTitle: "Simulateur impôt sur le revenu — Barème 2026",
   metaDescription:
     "Calculez une estimation de votre impôt sur le revenu : revenu net imposable, parts et barème progressif.",
   keywords: ["impôt sur le revenu", "barème IR", "simulation impôt"],
@@ -52,7 +52,7 @@ export const impotSurLeRevenu: SimulatorDefinition = {
     ],
     example: { title: "45 000 € nets, 2 parts", blocks: [p("Impôt estimé : environ 3 500 €.")] },
     conseils: ["Déclarez tous vos revenus et charges déductibles.", "Vérifiez les réductions et crédits d'impôt.", "Anticipez avec le simulateur officiel impots.gouv.fr."],
-    limites: ["Estimation sans décote, plafonnement du QF ni crédits d'impôt.", "Barème 2024 sur revenus 2023."],
+    limites: ["Estimation sans décote, plafonnement du QF ni crédits d'impôt.", "Barème 2026 sur revenus 2025."],
   }),
   faq: buildFaq([
     { question: "Revenu net imposable ?", answer: "Revenus bruts moins abattements et charges déductibles (pensions, PER, etc.)." },
@@ -566,7 +566,7 @@ export const tauxMarginalImposition: SimulatorDefinition = {
     ],
     example: { title: "60 000 €, 2 parts", blocks: [p("Revenu par part : 30 000 € — TMI : 30 %.")] },
     conseils: ["Réduisez le TMI avec le PER (déduction immédiate).", "Le TMI guide le choix PFU vs barème.", "Anticipez les hausses de revenus."],
-    limites: ["Barème 2024 sur revenus 2023.", "Prélèvements sociaux non inclus dans le TMI."],
+    limites: ["Barème 2026 sur revenus 2025.", "Prélèvements sociaux non inclus dans le TMI."],
   }),
   faq: buildFaq([
     { question: "TMI ou taux effectif ?", answer: "Le TMI est la tranche du dernier euro ; le taux effectif est l'impôt total / revenu." },

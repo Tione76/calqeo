@@ -32,6 +32,11 @@ export const mensualitePret: SimulatorDefinition<MensualitePretInput> = {
   ],
   category: "financement",
   icon: "home",
+  relatedSlugs: [
+    "capacite-emprunt",
+    "tableau-amortissement",
+    "cout-total-credit-immobilier",
+  ],
   content: mensualitePretContent,
   faq: mensualitePretFaq,
   calculate(input) {

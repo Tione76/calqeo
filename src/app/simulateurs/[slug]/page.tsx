@@ -53,7 +53,7 @@ export default async function SimulatorPage({ params }: PageProps) {
   ]);
 
   const faqJsonLd = jsonLdFAQ(simulator.faq);
-  const appJsonLd = jsonLdSoftwareApplication(simulator);
+  const appJsonLd = jsonLdSoftwareApplication(simulator, domain);
 
   return (
     <>

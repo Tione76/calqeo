@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ConsentProvider } from "@/components/consent/ConsentProvider";
 import { CookieBanner } from "@/components/consent/CookieBanner";
+import { SITE } from "@/lib/site/config";
 import { createHomeMetadata, jsonLdWebsite } from "@/lib/utils/seo";
 import "./globals.css";
 
@@ -13,7 +14,10 @@ const inter = Inter({
   display: "swap",
 });
 
-export const metadata: Metadata = createHomeMetadata();
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE.url),
+  ...createHomeMetadata(),
+};
 
 export default function RootLayout({
   children,

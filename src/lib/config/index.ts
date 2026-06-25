@@ -1,5 +1,5 @@
 /**
- * Paramètres réglementaires centralisés — Simulateurs et Calculateurs
+ * Paramètres réglementaires centralisés — Calqeo
  *
  * Mettez à jour les fichiers thématiques ci-dessous lors des révisions légales
  * (généralement 1 à 2 fois par an : SMIC au 1er janvier, barème IR au printemps, etc.).

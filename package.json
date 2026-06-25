@@ -1,9 +1,10 @@
 {
-  "name": "simulateurs-et-calculateurs",
+  "name": "calqeo",
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npx tsx scripts/generate-search-index.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

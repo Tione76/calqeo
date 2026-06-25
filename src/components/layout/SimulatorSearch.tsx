@@ -14,8 +14,7 @@ import {
 import {
   searchSimulators,
   type RegisteredSimulator,
-} from "@/lib/simulators";
-import { DOMAIN_LABELS, getSimulatorDomain } from "@/lib/simulators/types";
+} from "@/lib/simulators/search-client";
 
 interface SimulatorSearchProps {
   placeholder?: string;
@@ -216,7 +215,6 @@ export function SimulatorSearch({
           {results.length > 0 ? (
             <ul className="max-h-[min(70vh,22rem)] overflow-y-auto py-1">
               {results.map((sim, index) => {
-                const domain = getSimulatorDomain(sim);
                 const isActive = index === activeIndex;
                 return (
                   <li key={sim.slug} role="presentation">
@@ -238,7 +236,7 @@ export function SimulatorSearch({
                         {sim.title}
                       </span>
                       <span className="mt-0.5 block text-xs font-medium text-brand-600">
-                        {DOMAIN_LABELS[domain]}
+                        {sim.domainLabel}
                       </span>
                       <span className="mt-1 line-clamp-2 text-sm text-slate-500">
                         {sim.shortDescription}
