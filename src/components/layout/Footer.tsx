@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { simulators } from "@/lib/simulators";
-import { getDomainNavGroups } from "@/lib/simulators/navigation";
+import {
+  getDomainNavGroups,
+  SIMULATOR_COUNT,
+} from "@/lib/simulators/navigation";
 import { LEGAL_LINKS, SITE } from "@/lib/site/config";
-import { CookieSettingsButton } from "@/components/consent/CookieBanner";
+import { CookieSettingsButton } from "@/components/consent/CookieSettingsButton";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -17,7 +19,7 @@ export function Footer() {
               {SITE.name}
             </h3>
             <p className="mt-3 text-sm leading-relaxed text-slate-600">
-              {simulators.length} simulateurs et calculateurs gratuits : immobilier,
+              {SIMULATOR_COUNT} simulateurs et calculateurs gratuits : immobilier,
               finance, emploi, entreprises, fiscalité, travaux, santé et quotidien.
               Résultats instantanés, sans inscription.
             </p>
@@ -93,7 +95,7 @@ export function Footer() {
         <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-6 text-sm text-slate-500">
           <p>© {currentYear} Calqeo. Tous droits réservés.</p>
           <Link href="/simulateurs" className="font-semibold text-brand-600 hover:text-brand-700">
-            Tous les outils ({simulators.length})
+            Tous les outils ({SIMULATOR_COUNT})
           </Link>
         </div>
       </div>

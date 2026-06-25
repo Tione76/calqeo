@@ -1,11 +1,11 @@
 import Link from "next/link";
-import type { RegisteredSimulator } from "@/lib/simulators";
+import type { SimulatorCardRef } from "@/lib/simulators/navigation";
 import { CATEGORY_LABELS } from "@/lib/simulators/types";
 import { Card } from "@/components/ui/Card";
 import { SimulatorIconComponent } from "@/components/ui/SimulatorIcon";
 
 interface RelatedSimulatorsProps {
-  simulators: RegisteredSimulator[];
+  simulators: SimulatorCardRef[];
 }
 
 export function RelatedSimulators({ simulators }: RelatedSimulatorsProps) {

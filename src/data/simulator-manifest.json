@@ -1,0 +1,1750 @@
+{
+  "count": 109,
+  "groups": [
+    {
+      "domain": "immobilier",
+      "label": "Immobilier",
+      "anchor": "immobilier",
+      "count": 39,
+      "featured": [
+        {
+          "slug": "capacite-emprunt",
+          "title": "Simulateur de capacité d'emprunt immobilier"
+        },
+        {
+          "slug": "mensualite-pret-immobilier",
+          "title": "Simulateur de mensualité de prêt immobilier"
+        },
+        {
+          "slug": "rendement-locatif",
+          "title": "Simulateur de rendement locatif"
+        },
+        {
+          "slug": "impot-revenus-fonciers",
+          "title": "Simulateur d'impôt sur les revenus fonciers"
+        }
+      ],
+      "preview": [
+        {
+          "slug": "capacite-emprunt",
+          "title": "Simulateur de capacité d'emprunt immobilier",
+          "shortDescription": "Estimez le montant maximum que vous pouvez emprunter et votre budget d'achat selon vos revenus, votre apport et votre taux d'endettement.",
+          "icon": "wallet",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "rendement-locatif",
+          "title": "Simulateur de rendement locatif",
+          "shortDescription": "Calculez le rendement brut et net de votre investissement locatif en quelques secondes.",
+          "icon": "chart",
+          "category": "investissement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "mensualite-pret-immobilier",
+          "title": "Simulateur de mensualité de prêt immobilier",
+          "shortDescription": "Calculez la mensualité de votre crédit immobilier selon le montant, la durée et le taux d'intérêt.",
+          "icon": "home",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "frais-de-notaire",
+          "title": "Calculateur de frais de notaire",
+          "shortDescription": "Estimez les frais de notaire lors de l'achat d'un bien immobilier (ancien ou neuf).",
+          "icon": "calculator",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "taux-endettement",
+          "title": "Simulateur de taux d'endettement",
+          "shortDescription": "Calculez votre taux d'endettement actuel ou projeté par rapport au plafond bancaire de 35 %.",
+          "icon": "percent",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "cout-total-credit-immobilier",
+          "title": "Simulateur de coût total du crédit immobilier",
+          "shortDescription": "Estimez le coût global de votre crédit : intérêts, assurance et montant total remboursé.",
+          "icon": "wallet",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        }
+      ],
+      "all": [
+        {
+          "slug": "capacite-emprunt",
+          "title": "Simulateur de capacité d'emprunt immobilier",
+          "shortDescription": "Estimez le montant maximum que vous pouvez emprunter et votre budget d'achat selon vos revenus, votre apport et votre taux d'endettement.",
+          "icon": "wallet",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "rendement-locatif",
+          "title": "Simulateur de rendement locatif",
+          "shortDescription": "Calculez le rendement brut et net de votre investissement locatif en quelques secondes.",
+          "icon": "chart",
+          "category": "investissement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "mensualite-pret-immobilier",
+          "title": "Simulateur de mensualité de prêt immobilier",
+          "shortDescription": "Calculez la mensualité de votre crédit immobilier selon le montant, la durée et le taux d'intérêt.",
+          "icon": "home",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "frais-de-notaire",
+          "title": "Calculateur de frais de notaire",
+          "shortDescription": "Estimez les frais de notaire lors de l'achat d'un bien immobilier (ancien ou neuf).",
+          "icon": "calculator",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "taux-endettement",
+          "title": "Simulateur de taux d'endettement",
+          "shortDescription": "Calculez votre taux d'endettement actuel ou projeté par rapport au plafond bancaire de 35 %.",
+          "icon": "percent",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "cout-total-credit-immobilier",
+          "title": "Simulateur de coût total du crédit immobilier",
+          "shortDescription": "Estimez le coût global de votre crédit : intérêts, assurance et montant total remboursé.",
+          "icon": "wallet",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "tableau-amortissement",
+          "title": "Simulateur de tableau d'amortissement",
+          "shortDescription": "Générez un aperçu du tableau d'amortissement de votre crédit immobilier.",
+          "icon": "calculator",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "remboursement-anticipe",
+          "title": "Simulateur de remboursement anticipé",
+          "shortDescription": "Estimez les économies d'intérêts et les indemnités (IRA) d'un remboursement anticipé.",
+          "icon": "calculator",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "pret-taux-zero-ptz",
+          "title": "Simulateur de prêt à taux zéro (PTZ)",
+          "shortDescription": "Estimez le montant de PTZ éventuel selon la zone, les revenus et le prix du logement.",
+          "icon": "home",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "pret-relais",
+          "title": "Simulateur de prêt relais",
+          "shortDescription": "Estimez le montant d'un prêt relais pour financer un achat avant la vente de votre bien actuel.",
+          "icon": "home",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "rachat-credit-immobilier",
+          "title": "Simulateur de rachat de crédit immobilier",
+          "shortDescription": "Comparez votre crédit actuel et un rachat : mensualité et coût total.",
+          "icon": "wallet",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "assurance-emprunteur",
+          "title": "Simulateur d'assurance emprunteur",
+          "shortDescription": "Estimez le coût mensuel et total de votre assurance emprunteur.",
+          "icon": "wallet",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "frais-agence-immobiliere",
+          "title": "Simulateur de frais d'agence immobilière",
+          "shortDescription": "Calculez les honoraires d'agence immobilière à la charge de l'acquéreur ou du vendeur.",
+          "icon": "building",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "frais-garantie-emprunt",
+          "title": "Simulateur de frais de garantie emprunt",
+          "shortDescription": "Comparez le coût d'une hypothèque et d'une caution (Crédit Logement) pour garantir votre prêt.",
+          "icon": "wallet",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "effort-epargne-immobilier",
+          "title": "Simulateur d'effort d'épargne immobilier",
+          "shortDescription": "Calculez combien de temps épargner pour constituer votre apport personnel.",
+          "icon": "wallet",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "impact-hausse-taux",
+          "title": "Simulateur d'impact d'une hausse de taux",
+          "shortDescription": "Mesurez l'effet d'une hausse de taux sur votre mensualité et votre taux d'endettement.",
+          "icon": "percent",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "credit-travaux",
+          "title": "Simulateur de crédit travaux",
+          "shortDescription": "Simulez la mensualité d'un prêt travaux ou rénovation immobilière.",
+          "icon": "building",
+          "category": "financement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "plus-value-immobiliere",
+          "title": "Simulateur de plus-value immobilière",
+          "shortDescription": "Estimez la plus-value brute et l'impôt lors de la revente d'un bien immobilier.",
+          "icon": "chart",
+          "category": "fiscalite",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "rendement-locatif-brut",
+          "title": "Calculateur de rendement locatif brut",
+          "shortDescription": "Calculez rapidement le rendement locatif brut (loyers / investissement).",
+          "icon": "chart",
+          "category": "investissement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "rendement-locatif-net",
+          "title": "Calculateur de rendement locatif net",
+          "shortDescription": "Calculez le rendement locatif net après charges et vacance locative.",
+          "icon": "chart",
+          "category": "investissement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "cash-flow-immobilier",
+          "title": "Simulateur de cash-flow immobilier",
+          "shortDescription": "Calculez le cash-flow mensuel de votre investissement locatif.",
+          "icon": "wallet",
+          "category": "investissement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "rentabilite-lmnp",
+          "title": "Simulateur de rentabilité LMNP",
+          "shortDescription": "Estimez la rentabilité d'un investissement en location meublée (LMNP).",
+          "icon": "chart",
+          "category": "fiscalite",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "budget-travaux",
+          "title": "Simulateur de budget travaux",
+          "shortDescription": "Estimez le budget de rénovation selon la surface et le niveau de travaux.",
+          "icon": "building",
+          "category": "investissement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "rentabilite-apres-travaux",
+          "title": "Simulateur de rentabilité après travaux",
+          "shortDescription": "Calculez le rendement locatif en intégrant le coût des travaux.",
+          "icon": "chart",
+          "category": "investissement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "rentabilite-scpi",
+          "title": "Simulateur de rentabilité SCPI",
+          "shortDescription": "Calculez le rendement d'une SCPI : taux de distribution et valeur de retrait.",
+          "icon": "chart",
+          "category": "investissement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "rentabilite-location-courte-duree",
+          "title": "Simulateur de rentabilité location courte durée",
+          "shortDescription": "Estimez la rentabilité d'une location meublée de courte durée (Airbnb, saisonnière).",
+          "icon": "chart",
+          "category": "investissement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "colocation-rentabilite",
+          "title": "Simulateur de colocation — rentabilité par chambre",
+          "shortDescription": "Calculez la rentabilité d'un bien en colocation (loyer par chambre).",
+          "icon": "chart",
+          "category": "investissement",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "impot-revenus-fonciers",
+          "title": "Simulateur d'impôt sur les revenus fonciers",
+          "shortDescription": "Comparez le micro-foncier (abattement 30 %) et le régime réel pour estimer votre impôt locatif.",
+          "icon": "percent",
+          "category": "fiscalite",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "taxe-fonciere",
+          "title": "Simulateur de taxe foncière",
+          "shortDescription": "Estimez le montant annuel de votre taxe foncière à partir de la valeur locative cadastrale.",
+          "icon": "building",
+          "category": "fiscalite",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "deficit-foncier",
+          "title": "Simulateur de déficit foncier",
+          "shortDescription": "Estimez votre déficit foncier et l'économie d'impôt sur le revenu global (plafond 10 700 €).",
+          "icon": "percent",
+          "category": "fiscalite",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "donation-succession-immobiliere",
+          "title": "Simulateur de donation / succession immobilière",
+          "shortDescription": "Estimez les droits de mutation à titre gratuit sur la transmission d'un bien immobilier.",
+          "icon": "building",
+          "category": "fiscalite",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "location-meublee-vs-nue",
+          "title": "Simulateur de location meublée vs location nue",
+          "shortDescription": "Comparez la fiscalité et la rentabilité d'une location meublée (LMNP) et d'une location nue.",
+          "icon": "chart",
+          "category": "fiscalite",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "ifi-impot-fortune-immobiliere",
+          "title": "Simulateur d'iFI — Impôt Fortune Immobilière",
+          "shortDescription": "Estimez l'IFI sur votre patrimoine immobilier net taxable.",
+          "icon": "percent",
+          "category": "fiscalite",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "revision-loyer-irl",
+          "title": "Simulateur de révision de loyer (IRL)",
+          "shortDescription": "Calculez le nouveau loyer après révision annuelle basée sur l'IRL.",
+          "icon": "percent",
+          "category": "gestion",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "encadrement-loyers",
+          "title": "Simulateur d'encadrement des loyers",
+          "shortDescription": "Vérifiez si votre loyer respecte le plafond légal en zone tendue.",
+          "icon": "building",
+          "category": "gestion",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "depot-garantie-locatif",
+          "title": "Simulateur de dépôt de garantie locatif",
+          "shortDescription": "Calculez le montant maximum légal du dépôt de garantie.",
+          "icon": "wallet",
+          "category": "gestion",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "charges-recuperables-locataire",
+          "title": "Simulateur de charges récupérables locataire",
+          "shortDescription": "Estimez la part de charges locatives récupérables sur le locataire.",
+          "icon": "calculator",
+          "category": "gestion",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "revision-loyer-commercial",
+          "title": "Simulateur de révision loyer commercial",
+          "shortDescription": "Calculez la révision annuelle d'un loyer commercial (ILAT ou ILC).",
+          "icon": "percent",
+          "category": "gestion",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        },
+        {
+          "slug": "loyer-charges-comprises",
+          "title": "Simulateur de loyer CC vs hors charges",
+          "shortDescription": "Convertissez un loyer charges comprises en loyer hors charges et inversement.",
+          "icon": "calculator",
+          "category": "gestion",
+          "domain": "immobilier",
+          "domainLabel": "Immobilier"
+        }
+      ]
+    },
+    {
+      "domain": "finance",
+      "label": "Finance personnelle",
+      "anchor": "finance",
+      "count": 10,
+      "featured": [
+        {
+          "slug": "mensualite-credit-consommation",
+          "title": "Simulateur de mensualité crédit consommation"
+        },
+        {
+          "slug": "interets-composes",
+          "title": "Simulateur d'intérêts composés"
+        },
+        {
+          "slug": "simulateur-retraite",
+          "title": "Simulateur de retraite"
+        },
+        {
+          "slug": "budget-reste-a-vivre",
+          "title": "Simulateur de reste à vivre"
+        }
+      ],
+      "preview": [
+        {
+          "slug": "mensualite-credit-consommation",
+          "title": "Simulateur de mensualité crédit consommation",
+          "shortDescription": "Calculez la mensualité d'un crédit à la consommation selon le montant, le taux et la durée.",
+          "icon": "wallet",
+          "category": "credit",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        },
+        {
+          "slug": "interets-composes",
+          "title": "Simulateur d'intérêts composés",
+          "shortDescription": "Simulez la croissance de votre capital avec les intérêts composés et des versements réguliers.",
+          "icon": "chart",
+          "category": "epargne",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        },
+        {
+          "slug": "simulateur-inflation",
+          "title": "Simulateur inflation",
+          "shortDescription": "Estimez l'érosion du pouvoir d'achat de votre capital face à l'inflation.",
+          "icon": "chart",
+          "category": "epargne",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        },
+        {
+          "slug": "budget-reste-a-vivre",
+          "title": "Simulateur de reste à vivre",
+          "shortDescription": "Calculez votre reste à vivre mensuel après charges fixes et crédits.",
+          "icon": "calculator",
+          "category": "epargne",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        },
+        {
+          "slug": "simulateur-retraite",
+          "title": "Simulateur de retraite",
+          "shortDescription": "Estimez le capital retraite accumulé avec versements réguliers jusqu'à la retraite.",
+          "icon": "chart",
+          "category": "epargne",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        },
+        {
+          "slug": "rendement-livret-a",
+          "title": "Simulateur de rendement Livret A",
+          "shortDescription": "Calculez les intérêts générés par votre Livret A sur une période donnée.",
+          "icon": "percent",
+          "category": "epargne",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        }
+      ],
+      "all": [
+        {
+          "slug": "mensualite-credit-consommation",
+          "title": "Simulateur de mensualité crédit consommation",
+          "shortDescription": "Calculez la mensualité d'un crédit à la consommation selon le montant, le taux et la durée.",
+          "icon": "wallet",
+          "category": "credit",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        },
+        {
+          "slug": "interets-composes",
+          "title": "Simulateur d'intérêts composés",
+          "shortDescription": "Simulez la croissance de votre capital avec les intérêts composés et des versements réguliers.",
+          "icon": "chart",
+          "category": "epargne",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        },
+        {
+          "slug": "simulateur-inflation",
+          "title": "Simulateur inflation",
+          "shortDescription": "Estimez l'érosion du pouvoir d'achat de votre capital face à l'inflation.",
+          "icon": "chart",
+          "category": "epargne",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        },
+        {
+          "slug": "budget-reste-a-vivre",
+          "title": "Simulateur de reste à vivre",
+          "shortDescription": "Calculez votre reste à vivre mensuel après charges fixes et crédits.",
+          "icon": "calculator",
+          "category": "epargne",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        },
+        {
+          "slug": "simulateur-retraite",
+          "title": "Simulateur de retraite",
+          "shortDescription": "Estimez le capital retraite accumulé avec versements réguliers jusqu'à la retraite.",
+          "icon": "chart",
+          "category": "epargne",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        },
+        {
+          "slug": "rendement-livret-a",
+          "title": "Simulateur de rendement Livret A",
+          "shortDescription": "Calculez les intérêts générés par votre Livret A sur une période donnée.",
+          "icon": "percent",
+          "category": "epargne",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        },
+        {
+          "slug": "rendement-pea",
+          "title": "Simulateur de rendement PEA",
+          "shortDescription": "Estimez la performance de votre PEA avec fiscalité avant et après 5 ans.",
+          "icon": "chart",
+          "category": "epargne",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        },
+        {
+          "slug": "cout-total-credit-consommation",
+          "title": "Simulateur de coût total crédit consommation",
+          "shortDescription": "Calculez le coût total d'un crédit consommation : intérêts, TAEG et mensualités.",
+          "icon": "calculator",
+          "category": "credit",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        },
+        {
+          "slug": "loa-vs-credit-auto",
+          "title": "Simulateur LOA vs crédit auto",
+          "shortDescription": "Comparez le coût total d'une LOA (leasing) et d'un crédit auto classique.",
+          "icon": "wallet",
+          "category": "credit",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        },
+        {
+          "slug": "frais-kilometriques",
+          "title": "Calculateur de frais kilométriques",
+          "shortDescription": "Estimez vos frais kilométriques professionnels selon le barème fiscal.",
+          "icon": "calculator",
+          "category": "credit",
+          "domain": "finance",
+          "domainLabel": "Finance personnelle"
+        }
+      ]
+    },
+    {
+      "domain": "emploi",
+      "label": "Emploi & salaire",
+      "anchor": "emploi",
+      "count": 10,
+      "featured": [
+        {
+          "slug": "salaire-brut-net",
+          "title": "Simulateur salaire brut net"
+        },
+        {
+          "slug": "salaire-net-brut",
+          "title": "Simulateur de salaire net brut"
+        },
+        {
+          "slug": "cout-total-embauche-salarie",
+          "title": "Simulateur de coût total d'embauche"
+        },
+        {
+          "slug": "indemnites-licenciement",
+          "title": "Simulateur d'indemnités de licenciement"
+        }
+      ],
+      "preview": [
+        {
+          "slug": "salaire-brut-net",
+          "title": "Simulateur salaire brut net",
+          "shortDescription": "Convertissez un salaire brut mensuel en net avant impôt selon les cotisations sociales salariales.",
+          "icon": "briefcase",
+          "category": "salaire",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        },
+        {
+          "slug": "salaire-net-brut",
+          "title": "Simulateur de salaire net brut",
+          "shortDescription": "Calculez le salaire brut à partir du net souhaité pour négocier une augmentation ou une embauche.",
+          "icon": "briefcase",
+          "category": "salaire",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        },
+        {
+          "slug": "cout-total-embauche-salarie",
+          "title": "Simulateur de coût total d'embauche",
+          "shortDescription": "Estimez le coût mensuel et annuel total d'un salarié incluant les charges patronales.",
+          "icon": "building",
+          "category": "salaire",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        },
+        {
+          "slug": "indemnites-licenciement",
+          "title": "Simulateur d'indemnités de licenciement",
+          "shortDescription": "Estimez l'indemnité légale minimale de licenciement selon l'ancienneté et le salaire brut.",
+          "icon": "scale",
+          "category": "social",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        },
+        {
+          "slug": "conges-payes-acquis",
+          "title": "Simulateur de congés payés acquis",
+          "shortDescription": "Calculez le nombre de jours ouvrables de congés payés acquis selon la durée travaillée.",
+          "icon": "calculator",
+          "category": "social",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        },
+        {
+          "slug": "ijss-arret-maladie",
+          "title": "Simulateur d'iJSS arrêt maladie",
+          "shortDescription": "Estimez vos indemnités journalières Sécurité sociale en cas d'arrêt maladie.",
+          "icon": "heart",
+          "category": "social",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        }
+      ],
+      "all": [
+        {
+          "slug": "salaire-brut-net",
+          "title": "Simulateur salaire brut net",
+          "shortDescription": "Convertissez un salaire brut mensuel en net avant impôt selon les cotisations sociales salariales.",
+          "icon": "briefcase",
+          "category": "salaire",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        },
+        {
+          "slug": "salaire-net-brut",
+          "title": "Simulateur de salaire net brut",
+          "shortDescription": "Calculez le salaire brut à partir du net souhaité pour négocier une augmentation ou une embauche.",
+          "icon": "briefcase",
+          "category": "salaire",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        },
+        {
+          "slug": "cout-total-embauche-salarie",
+          "title": "Simulateur de coût total d'embauche",
+          "shortDescription": "Estimez le coût mensuel et annuel total d'un salarié incluant les charges patronales.",
+          "icon": "building",
+          "category": "salaire",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        },
+        {
+          "slug": "indemnites-licenciement",
+          "title": "Simulateur d'indemnités de licenciement",
+          "shortDescription": "Estimez l'indemnité légale minimale de licenciement selon l'ancienneté et le salaire brut.",
+          "icon": "scale",
+          "category": "social",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        },
+        {
+          "slug": "conges-payes-acquis",
+          "title": "Simulateur de congés payés acquis",
+          "shortDescription": "Calculez le nombre de jours ouvrables de congés payés acquis selon la durée travaillée.",
+          "icon": "calculator",
+          "category": "social",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        },
+        {
+          "slug": "ijss-arret-maladie",
+          "title": "Simulateur d'iJSS arrêt maladie",
+          "shortDescription": "Estimez vos indemnités journalières Sécurité sociale en cas d'arrêt maladie.",
+          "icon": "heart",
+          "category": "social",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        },
+        {
+          "slug": "allocation-chomage-are",
+          "title": "Simulateur d'allocation chômage ARE",
+          "shortDescription": "Estimez votre allocation chômage journalière (ARE) à partir de votre salaire de référence.",
+          "icon": "wallet",
+          "category": "social",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        },
+        {
+          "slug": "heures-supplementaires",
+          "title": "Simulateur d'heures supplémentaires",
+          "shortDescription": "Calculez la rémunération des heures supplémentaires avec majorations 25 % et 50 %.",
+          "icon": "percent",
+          "category": "salaire",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        },
+        {
+          "slug": "salaire-temps-partiel",
+          "title": "Simulateur de salaire temps partiel",
+          "shortDescription": "Estimez le salaire brut et net en temps partiel selon le nombre d'heures travaillées.",
+          "icon": "calculator",
+          "category": "salaire",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        },
+        {
+          "slug": "smic-net",
+          "title": "Simulateur de sMIC net",
+          "shortDescription": "Calculez le salaire net mensuel correspondant au SMIC horaire en vigueur (35 h).",
+          "icon": "percent",
+          "category": "salaire",
+          "domain": "emploi",
+          "domainLabel": "Emploi & salaire"
+        }
+      ]
+    },
+    {
+      "domain": "entreprise",
+      "label": "Entreprises & indépendants",
+      "anchor": "entreprise",
+      "count": 10,
+      "featured": [
+        {
+          "slug": "calculateur-tjm-freelance",
+          "title": "Calculateur TJM freelance"
+        },
+        {
+          "slug": "revenu-net-independant",
+          "title": "Calculateur de revenu net indépendant"
+        },
+        {
+          "slug": "sasu-remuneration-dividendes",
+          "title": "Calculateur de sASU salaire vs dividendes"
+        },
+        {
+          "slug": "break-even-entreprise",
+          "title": "Calculateur de seuil de rentabilité"
+        }
+      ],
+      "preview": [
+        {
+          "slug": "calculateur-tjm-freelance",
+          "title": "Calculateur TJM freelance",
+          "shortDescription": "Déterminez votre TJM (taux journalier moyen) pour atteindre un revenu net annuel cible.",
+          "icon": "briefcase",
+          "category": "independant",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        },
+        {
+          "slug": "revenu-net-independant",
+          "title": "Calculateur de revenu net indépendant",
+          "shortDescription": "Estimez le revenu net après charges sociales à partir de votre chiffre d'affaires annuel.",
+          "icon": "wallet",
+          "category": "independant",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        },
+        {
+          "slug": "sasu-remuneration-dividendes",
+          "title": "Calculateur de sASU salaire vs dividendes",
+          "shortDescription": "Comparez le net perçu via salaire (assimilé salarié) ou dividendes (flat tax) en SASU.",
+          "icon": "chart",
+          "category": "independant",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        },
+        {
+          "slug": "portage-salarial-vs-freelance",
+          "title": "Calculateur de portage salarial vs freelance",
+          "shortDescription": "Comparez le revenu net en portage salarial (~50 % du CA) et en micro-entreprise freelance.",
+          "icon": "scale",
+          "category": "independant",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        },
+        {
+          "slug": "seuil-franchise-tva",
+          "title": "Calculateur de seuil franchise TVA",
+          "shortDescription": "Vérifiez si votre CA annuel reste sous les seuils de franchise en base de TVA.",
+          "icon": "percent",
+          "category": "entreprise-gestion",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        },
+        {
+          "slug": "break-even-entreprise",
+          "title": "Calculateur de seuil de rentabilité",
+          "shortDescription": "Calculez le chiffre d'affaires minimum pour couvrir vos charges fixes et variables.",
+          "icon": "chart",
+          "category": "entreprise-gestion",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        }
+      ],
+      "all": [
+        {
+          "slug": "calculateur-tjm-freelance",
+          "title": "Calculateur TJM freelance",
+          "shortDescription": "Déterminez votre TJM (taux journalier moyen) pour atteindre un revenu net annuel cible.",
+          "icon": "briefcase",
+          "category": "independant",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        },
+        {
+          "slug": "revenu-net-independant",
+          "title": "Calculateur de revenu net indépendant",
+          "shortDescription": "Estimez le revenu net après charges sociales à partir de votre chiffre d'affaires annuel.",
+          "icon": "wallet",
+          "category": "independant",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        },
+        {
+          "slug": "sasu-remuneration-dividendes",
+          "title": "Calculateur de sASU salaire vs dividendes",
+          "shortDescription": "Comparez le net perçu via salaire (assimilé salarié) ou dividendes (flat tax) en SASU.",
+          "icon": "chart",
+          "category": "independant",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        },
+        {
+          "slug": "portage-salarial-vs-freelance",
+          "title": "Calculateur de portage salarial vs freelance",
+          "shortDescription": "Comparez le revenu net en portage salarial (~50 % du CA) et en micro-entreprise freelance.",
+          "icon": "scale",
+          "category": "independant",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        },
+        {
+          "slug": "seuil-franchise-tva",
+          "title": "Calculateur de seuil franchise TVA",
+          "shortDescription": "Vérifiez si votre CA annuel reste sous les seuils de franchise en base de TVA.",
+          "icon": "percent",
+          "category": "entreprise-gestion",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        },
+        {
+          "slug": "break-even-entreprise",
+          "title": "Calculateur de seuil de rentabilité",
+          "shortDescription": "Calculez le chiffre d'affaires minimum pour couvrir vos charges fixes et variables.",
+          "icon": "chart",
+          "category": "entreprise-gestion",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        },
+        {
+          "slug": "marge-commerciale-taux",
+          "title": "Calculateur de marge commerciale",
+          "shortDescription": "Calculez le prix de vente HT à partir du coût d'achat et du taux de marge souhaité.",
+          "icon": "calculator",
+          "category": "entreprise-gestion",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        },
+        {
+          "slug": "cout-horaire-charge-tns",
+          "title": "Calculateur de coût horaire chargé TNS",
+          "shortDescription": "Estimez le taux horaire facturable pour couvrir charges TNS, frais et rémunération nette.",
+          "icon": "tools",
+          "category": "independant",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        },
+        {
+          "slug": "exoneration-acre",
+          "title": "Calculateur d'exonération ACRE",
+          "shortDescription": "Estimez l'économie de charges sociales grâce à l'ACRE la première année d'activité.",
+          "icon": "percent",
+          "category": "independant",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        },
+        {
+          "slug": "facturation-objectif-revenu-net",
+          "title": "Calculateur de facturation objectif revenu net",
+          "shortDescription": "Calculez le CA mensuel à facturer pour atteindre un revenu net mensuel cible.",
+          "icon": "chart",
+          "category": "independant",
+          "domain": "entreprise",
+          "domainLabel": "Entreprises & indépendants"
+        }
+      ]
+    },
+    {
+      "domain": "fiscalite",
+      "label": "Fiscalité",
+      "anchor": "fiscalite",
+      "count": 10,
+      "featured": [
+        {
+          "slug": "impot-sur-le-revenu",
+          "title": "Simulateur d'impôt sur le revenu"
+        },
+        {
+          "slug": "micro-entrepreneur-charges",
+          "title": "Simulateur charges micro-entrepreneur"
+        },
+        {
+          "slug": "flat-tax-30-pourcent",
+          "title": "Simulateur de flat tax 30 %"
+        },
+        {
+          "slug": "quotient-familial",
+          "title": "Simulateur de quotient familial"
+        }
+      ],
+      "preview": [
+        {
+          "slug": "impot-sur-le-revenu",
+          "title": "Simulateur d'impôt sur le revenu",
+          "shortDescription": "Estimez votre impôt sur le revenu selon le barème progressif et le quotient familial.",
+          "icon": "percent",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        },
+        {
+          "slug": "quotient-familial",
+          "title": "Simulateur de quotient familial",
+          "shortDescription": "Calculez votre quotient familial et son impact sur l'impôt sur le revenu.",
+          "icon": "calculator",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        },
+        {
+          "slug": "prelevement-a-la-source",
+          "title": "Simulateur de prélèvement à la source",
+          "shortDescription": "Estimez votre taux de prélèvement à la source mensuel sur vos revenus.",
+          "icon": "percent",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        },
+        {
+          "slug": "flat-tax-30-pourcent",
+          "title": "Simulateur de flat tax 30 %",
+          "shortDescription": "Calculez la fiscalité au PFU (flat tax 30 %) sur vos revenus de capitaux mobiliers.",
+          "icon": "percent",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        },
+        {
+          "slug": "micro-entrepreneur-charges",
+          "title": "Simulateur charges micro-entrepreneur",
+          "shortDescription": "Estimez les charges sociales et l'impôt d'un auto-entrepreneur selon l'activité.",
+          "icon": "calculator",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        },
+        {
+          "slug": "credit-impot-emploi-domicile",
+          "title": "Simulateur de crédit d'impôt emploi à domicile",
+          "shortDescription": "Estimez le crédit d'impôt pour l'emploi d'un salarié à domicile (ménage, garde…).",
+          "icon": "percent",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        }
+      ],
+      "all": [
+        {
+          "slug": "impot-sur-le-revenu",
+          "title": "Simulateur d'impôt sur le revenu",
+          "shortDescription": "Estimez votre impôt sur le revenu selon le barème progressif et le quotient familial.",
+          "icon": "percent",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        },
+        {
+          "slug": "quotient-familial",
+          "title": "Simulateur de quotient familial",
+          "shortDescription": "Calculez votre quotient familial et son impact sur l'impôt sur le revenu.",
+          "icon": "calculator",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        },
+        {
+          "slug": "prelevement-a-la-source",
+          "title": "Simulateur de prélèvement à la source",
+          "shortDescription": "Estimez votre taux de prélèvement à la source mensuel sur vos revenus.",
+          "icon": "percent",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        },
+        {
+          "slug": "flat-tax-30-pourcent",
+          "title": "Simulateur de flat tax 30 %",
+          "shortDescription": "Calculez la fiscalité au PFU (flat tax 30 %) sur vos revenus de capitaux mobiliers.",
+          "icon": "percent",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        },
+        {
+          "slug": "micro-entrepreneur-charges",
+          "title": "Simulateur charges micro-entrepreneur",
+          "shortDescription": "Estimez les charges sociales et l'impôt d'un auto-entrepreneur selon l'activité.",
+          "icon": "calculator",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        },
+        {
+          "slug": "credit-impot-emploi-domicile",
+          "title": "Simulateur de crédit d'impôt emploi à domicile",
+          "shortDescription": "Estimez le crédit d'impôt pour l'emploi d'un salarié à domicile (ménage, garde…).",
+          "icon": "percent",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        },
+        {
+          "slug": "impot-dividendes",
+          "title": "Simulateur d'impôt sur les dividendes",
+          "shortDescription": "Calculez la fiscalité sur vos dividendes : PFU 30 % ou option barème.",
+          "icon": "percent",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        },
+        {
+          "slug": "taux-marginal-imposition",
+          "title": "Simulateur de taux marginal d'imposition",
+          "shortDescription": "Déterminez votre tranche marginale d'imposition (TMI) selon votre revenu par part.",
+          "icon": "calculator",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        },
+        {
+          "slug": "donation-numeraire",
+          "title": "Simulateur de donation en numéraire",
+          "shortDescription": "Estimez les droits de donation pour une transmission en numéraire à un enfant ou petit-enfant.",
+          "icon": "calculator",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        },
+        {
+          "slug": "cesu-credit-impot",
+          "title": "Simulateur de cESU crédit d'impôt",
+          "shortDescription": "Calculez le crédit d'impôt lié à l'utilisation de CESU pour des services à la personne.",
+          "icon": "percent",
+          "category": "impots",
+          "domain": "fiscalite",
+          "domainLabel": "Fiscalité"
+        }
+      ]
+    },
+    {
+      "domain": "travaux",
+      "label": "Travaux & habitat",
+      "anchor": "travaux",
+      "count": 10,
+      "featured": [
+        {
+          "slug": "quantite-peinture",
+          "title": "Calculateur de quantité de peinture"
+        },
+        {
+          "slug": "calcul-carrelage",
+          "title": "Calculateur de calcul carrelage"
+        },
+        {
+          "slug": "maprimerenov",
+          "title": "Simulateur MaPrimeRénov'"
+        },
+        {
+          "slug": "volume-surface-piece",
+          "title": "Calculateur de volume et surface pièce"
+        }
+      ],
+      "preview": [
+        {
+          "slug": "quantite-peinture",
+          "title": "Calculateur de quantité de peinture",
+          "shortDescription": "Estimez la quantité de peinture nécessaire pour vos murs et plafonds.",
+          "icon": "tools",
+          "category": "materiaux",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        },
+        {
+          "slug": "calcul-carrelage",
+          "title": "Calculateur de calcul carrelage",
+          "shortDescription": "Calculez le nombre de carreaux et le mortier nécessaires pour votre sol ou mur.",
+          "icon": "tools",
+          "category": "materiaux",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        },
+        {
+          "slug": "volume-beton",
+          "title": "Calculateur de volume béton",
+          "shortDescription": "Calculez le volume de béton pour dalle, fondation ou poteau.",
+          "icon": "building",
+          "category": "materiaux",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        },
+        {
+          "slug": "surface-parquet",
+          "title": "Calculateur de surface parquet",
+          "shortDescription": "Calculez la surface de parquet ou stratifié nécessaire pour votre pièce.",
+          "icon": "tools",
+          "category": "materiaux",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        },
+        {
+          "slug": "maprimerenov",
+          "title": "Simulateur MaPrimeRénov'",
+          "shortDescription": "Estimez le montant de l'aide MaPrimeRénov' pour vos travaux de rénovation énergétique.",
+          "icon": "building",
+          "category": "energie",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        },
+        {
+          "slug": "estimation-consommation-energie",
+          "title": "Simulateur d'estimation consommation énergie",
+          "shortDescription": "Estimez la consommation énergétique annuelle et le coût de votre logement.",
+          "icon": "building",
+          "category": "energie",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        }
+      ],
+      "all": [
+        {
+          "slug": "quantite-peinture",
+          "title": "Calculateur de quantité de peinture",
+          "shortDescription": "Estimez la quantité de peinture nécessaire pour vos murs et plafonds.",
+          "icon": "tools",
+          "category": "materiaux",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        },
+        {
+          "slug": "calcul-carrelage",
+          "title": "Calculateur de calcul carrelage",
+          "shortDescription": "Calculez le nombre de carreaux et le mortier nécessaires pour votre sol ou mur.",
+          "icon": "tools",
+          "category": "materiaux",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        },
+        {
+          "slug": "volume-beton",
+          "title": "Calculateur de volume béton",
+          "shortDescription": "Calculez le volume de béton pour dalle, fondation ou poteau.",
+          "icon": "building",
+          "category": "materiaux",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        },
+        {
+          "slug": "surface-parquet",
+          "title": "Calculateur de surface parquet",
+          "shortDescription": "Calculez la surface de parquet ou stratifié nécessaire pour votre pièce.",
+          "icon": "tools",
+          "category": "materiaux",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        },
+        {
+          "slug": "maprimerenov",
+          "title": "Simulateur MaPrimeRénov'",
+          "shortDescription": "Estimez le montant de l'aide MaPrimeRénov' pour vos travaux de rénovation énergétique.",
+          "icon": "building",
+          "category": "energie",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        },
+        {
+          "slug": "estimation-consommation-energie",
+          "title": "Simulateur d'estimation consommation énergie",
+          "shortDescription": "Estimez la consommation énergétique annuelle et le coût de votre logement.",
+          "icon": "building",
+          "category": "energie",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        },
+        {
+          "slug": "pompe-a-chaleur-economies",
+          "title": "Simulateur de pompe à chaleur économies",
+          "shortDescription": "Estimez les économies annuelles en remplaçant votre chauffage par une pompe à chaleur.",
+          "icon": "building",
+          "category": "energie",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        },
+        {
+          "slug": "volume-surface-piece",
+          "title": "Calculateur de volume et surface pièce",
+          "shortDescription": "Calculez la surface au sol et le volume d'une pièce pour vos travaux.",
+          "icon": "tools",
+          "category": "materiaux",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        },
+        {
+          "slug": "quantite-mortier",
+          "title": "Calculateur de quantité mortier",
+          "shortDescription": "Estimez la quantité de mortier ou mortier-colle pour carrelage ou enduit.",
+          "icon": "tools",
+          "category": "materiaux",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        },
+        {
+          "slug": "economies-isolation",
+          "title": "Simulateur d'économies isolation",
+          "shortDescription": "Estimez les économies d'énergie après une isolation des combles ou murs.",
+          "icon": "building",
+          "category": "energie",
+          "domain": "travaux",
+          "domainLabel": "Travaux & habitat"
+        }
+      ]
+    },
+    {
+      "domain": "sante",
+      "label": "Santé",
+      "anchor": "sante",
+      "count": 10,
+      "featured": [
+        {
+          "slug": "calculateur-imc",
+          "title": "Calculateur d'IMC"
+        },
+        {
+          "slug": "calories-journalieres",
+          "title": "Calculateur de calories journalières"
+        },
+        {
+          "slug": "date-accouchement",
+          "title": "Calculateur de date d'accouchement"
+        },
+        {
+          "slug": "poids-ideal",
+          "title": "Calculateur de poids idéal"
+        }
+      ],
+      "preview": [
+        {
+          "slug": "calculateur-imc",
+          "title": "Calculateur d'IMC",
+          "shortDescription": "Calculez votre indice de masse corporelle (IMC) et interprétez le résultat.",
+          "icon": "scale",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        },
+        {
+          "slug": "poids-ideal",
+          "title": "Calculateur de poids idéal",
+          "shortDescription": "Estimez votre poids idéal selon différentes formules (Creff, Lorentz, IMC cible).",
+          "icon": "scale",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        },
+        {
+          "slug": "calories-journalieres",
+          "title": "Calculateur de calories journalières",
+          "shortDescription": "Estimez vos besoins caloriques quotidiens selon l'activité physique.",
+          "icon": "heart",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        },
+        {
+          "slug": "date-accouchement",
+          "title": "Calculateur de date d'accouchement",
+          "shortDescription": "Estimez la date probable d'accouchement selon la règle de Naegele.",
+          "icon": "heart",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        },
+        {
+          "slug": "calculateur-ovulation",
+          "title": "Calculateur ovulation",
+          "shortDescription": "Estimez votre date d'ovulation et la période fertile du cycle menstruel.",
+          "icon": "heart",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        },
+        {
+          "slug": "hydratation-quotidienne",
+          "title": "Calculateur d'hydratation quotidienne",
+          "shortDescription": "Estimez la quantité d'eau à consommer chaque jour selon votre poids et activité.",
+          "icon": "heart",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        }
+      ],
+      "all": [
+        {
+          "slug": "calculateur-imc",
+          "title": "Calculateur d'IMC",
+          "shortDescription": "Calculez votre indice de masse corporelle (IMC) et interprétez le résultat.",
+          "icon": "scale",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        },
+        {
+          "slug": "poids-ideal",
+          "title": "Calculateur de poids idéal",
+          "shortDescription": "Estimez votre poids idéal selon différentes formules (Creff, Lorentz, IMC cible).",
+          "icon": "scale",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        },
+        {
+          "slug": "calories-journalieres",
+          "title": "Calculateur de calories journalières",
+          "shortDescription": "Estimez vos besoins caloriques quotidiens selon l'activité physique.",
+          "icon": "heart",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        },
+        {
+          "slug": "date-accouchement",
+          "title": "Calculateur de date d'accouchement",
+          "shortDescription": "Estimez la date probable d'accouchement selon la règle de Naegele.",
+          "icon": "heart",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        },
+        {
+          "slug": "calculateur-ovulation",
+          "title": "Calculateur ovulation",
+          "shortDescription": "Estimez votre date d'ovulation et la période fertile du cycle menstruel.",
+          "icon": "heart",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        },
+        {
+          "slug": "hydratation-quotidienne",
+          "title": "Calculateur d'hydratation quotidienne",
+          "shortDescription": "Estimez la quantité d'eau à consommer chaque jour selon votre poids et activité.",
+          "icon": "heart",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        },
+        {
+          "slug": "proteines-journalieres",
+          "title": "Calculateur de protéines journalières",
+          "shortDescription": "Calculez vos besoins quotidiens en protéines selon poids et objectif.",
+          "icon": "scale",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        },
+        {
+          "slug": "economies-arret-tabac",
+          "title": "Calculateur d'économies arrêt tabac",
+          "shortDescription": "Calculez les économies réalisées en arrêtant le tabac sur une période donnée.",
+          "icon": "heart",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        },
+        {
+          "slug": "unites-alcool",
+          "title": "Calculateur d'unités d'alcool",
+          "shortDescription": "Convertissez vos consommations en unités d'alcool et comparez aux recommandations.",
+          "icon": "scale",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        },
+        {
+          "slug": "cycles-sommeil",
+          "title": "Calculateur de cycles de sommeil",
+          "shortDescription": "Calculez les heures idéales de réveil ou de coucher selon les cycles de 90 minutes.",
+          "icon": "heart",
+          "category": "sante",
+          "domain": "sante",
+          "domainLabel": "Santé"
+        }
+      ]
+    },
+    {
+      "domain": "quotidien",
+      "label": "Calculs du quotidien",
+      "anchor": "quotidien",
+      "count": 10,
+      "featured": [
+        {
+          "slug": "calculateur-tva",
+          "title": "Calculateur de TVA"
+        },
+        {
+          "slug": "calculateur-pourcentage",
+          "title": "Calculateur pourcentage"
+        },
+        {
+          "slug": "regle-de-trois",
+          "title": "Calculateur de règle de trois"
+        },
+        {
+          "slug": "calculateur-age",
+          "title": "Calculateur d'âge"
+        }
+      ],
+      "preview": [
+        {
+          "slug": "calculateur-tva",
+          "title": "Calculateur de TVA",
+          "shortDescription": "Calculez le montant HT, TTC ou la TVA selon le taux applicable.",
+          "icon": "calculator",
+          "category": "conversion",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        },
+        {
+          "slug": "calculateur-pourcentage",
+          "title": "Calculateur pourcentage",
+          "shortDescription": "Calculez un pourcentage, une augmentation ou une réduction en pourcentage.",
+          "icon": "percent",
+          "category": "pratique",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        },
+        {
+          "slug": "regle-de-trois",
+          "title": "Calculateur de règle de trois",
+          "shortDescription": "Résolvez une proportion : si A correspond à B, que vaut C ?",
+          "icon": "calculator",
+          "category": "pratique",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        },
+        {
+          "slug": "calculateur-age",
+          "title": "Calculateur d'âge",
+          "shortDescription": "Calculez votre âge exact en années, mois et jours à partir de votre date de naissance.",
+          "icon": "calculator",
+          "category": "pratique",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        },
+        {
+          "slug": "calculateur-pourboire",
+          "title": "Calculateur pourboire",
+          "shortDescription": "Calculez le pourboire et le total à payer au restaurant.",
+          "icon": "calculator",
+          "category": "pratique",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        },
+        {
+          "slug": "partage-facture",
+          "title": "Calculateur de partage de facture",
+          "shortDescription": "Divisez une facture entre plusieurs personnes, avec ou sans pourboire.",
+          "icon": "calculator",
+          "category": "pratique",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        }
+      ],
+      "all": [
+        {
+          "slug": "calculateur-tva",
+          "title": "Calculateur de TVA",
+          "shortDescription": "Calculez le montant HT, TTC ou la TVA selon le taux applicable.",
+          "icon": "calculator",
+          "category": "conversion",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        },
+        {
+          "slug": "calculateur-pourcentage",
+          "title": "Calculateur pourcentage",
+          "shortDescription": "Calculez un pourcentage, une augmentation ou une réduction en pourcentage.",
+          "icon": "percent",
+          "category": "pratique",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        },
+        {
+          "slug": "regle-de-trois",
+          "title": "Calculateur de règle de trois",
+          "shortDescription": "Résolvez une proportion : si A correspond à B, que vaut C ?",
+          "icon": "calculator",
+          "category": "pratique",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        },
+        {
+          "slug": "calculateur-age",
+          "title": "Calculateur d'âge",
+          "shortDescription": "Calculez votre âge exact en années, mois et jours à partir de votre date de naissance.",
+          "icon": "calculator",
+          "category": "pratique",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        },
+        {
+          "slug": "calculateur-pourboire",
+          "title": "Calculateur pourboire",
+          "shortDescription": "Calculez le pourboire et le total à payer au restaurant.",
+          "icon": "calculator",
+          "category": "pratique",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        },
+        {
+          "slug": "partage-facture",
+          "title": "Calculateur de partage de facture",
+          "shortDescription": "Divisez une facture entre plusieurs personnes, avec ou sans pourboire.",
+          "icon": "calculator",
+          "category": "pratique",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        },
+        {
+          "slug": "convertisseur-devises",
+          "title": "Calculateur de convertisseur devises",
+          "shortDescription": "Convertissez un montant entre euros et autres devises selon le taux de change.",
+          "icon": "scale",
+          "category": "conversion",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        },
+        {
+          "slug": "convertisseur-heures-minutes",
+          "title": "Calculateur de convertisseur heures minutes",
+          "shortDescription": "Convertissez des heures en minutes, minutes en heures ou calculez une durée.",
+          "icon": "scale",
+          "category": "conversion",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        },
+        {
+          "slug": "vitesse-distance-temps",
+          "title": "Calculateur de vitesse distance temps",
+          "shortDescription": "Calculez la vitesse, la distance ou le temps selon la formule V = D / T.",
+          "icon": "scale",
+          "category": "conversion",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        },
+        {
+          "slug": "evolution-pourcentage",
+          "title": "Calculateur d'évolution en pourcentage",
+          "shortDescription": "Calculez la variation en pourcentage entre une valeur initiale et une valeur finale.",
+          "icon": "percent",
+          "category": "pratique",
+          "domain": "quotidien",
+          "domainLabel": "Calculs du quotidien"
+        }
+      ]
+    }
+  ],
+  "genericFormSlugs": [
+    "frais-de-notaire",
+    "taux-endettement",
+    "cout-total-credit-immobilier",
+    "tableau-amortissement",
+    "remboursement-anticipe",
+    "pret-taux-zero-ptz",
+    "pret-relais",
+    "rachat-credit-immobilier",
+    "assurance-emprunteur",
+    "frais-agence-immobiliere",
+    "frais-garantie-emprunt",
+    "effort-epargne-immobilier",
+    "impact-hausse-taux",
+    "credit-travaux",
+    "plus-value-immobiliere",
+    "rendement-locatif-brut",
+    "rendement-locatif-net",
+    "cash-flow-immobilier",
+    "rentabilite-lmnp",
+    "budget-travaux",
+    "rentabilite-apres-travaux",
+    "rentabilite-scpi",
+    "rentabilite-location-courte-duree",
+    "colocation-rentabilite",
+    "impot-revenus-fonciers",
+    "taxe-fonciere",
+    "deficit-foncier",
+    "donation-succession-immobiliere",
+    "location-meublee-vs-nue",
+    "ifi-impot-fortune-immobiliere",
+    "revision-loyer-irl",
+    "encadrement-loyers",
+    "depot-garantie-locatif",
+    "charges-recuperables-locataire",
+    "revision-loyer-commercial",
+    "loyer-charges-comprises",
+    "mensualite-credit-consommation",
+    "interets-composes",
+    "simulateur-inflation",
+    "budget-reste-a-vivre",
+    "simulateur-retraite",
+    "rendement-livret-a",
+    "rendement-pea",
+    "cout-total-credit-consommation",
+    "loa-vs-credit-auto",
+    "frais-kilometriques",
+    "salaire-brut-net",
+    "salaire-net-brut",
+    "cout-total-embauche-salarie",
+    "indemnites-licenciement",
+    "conges-payes-acquis",
+    "ijss-arret-maladie",
+    "allocation-chomage-are",
+    "heures-supplementaires",
+    "salaire-temps-partiel",
+    "smic-net",
+    "calculateur-tjm-freelance",
+    "revenu-net-independant",
+    "sasu-remuneration-dividendes",
+    "portage-salarial-vs-freelance",
+    "seuil-franchise-tva",
+    "break-even-entreprise",
+    "marge-commerciale-taux",
+    "cout-horaire-charge-tns",
+    "exoneration-acre",
+    "facturation-objectif-revenu-net",
+    "impot-sur-le-revenu",
+    "quotient-familial",
+    "prelevement-a-la-source",
+    "flat-tax-30-pourcent",
+    "micro-entrepreneur-charges",
+    "credit-impot-emploi-domicile",
+    "impot-dividendes",
+    "taux-marginal-imposition",
+    "donation-numeraire",
+    "cesu-credit-impot",
+    "quantite-peinture",
+    "calcul-carrelage",
+    "volume-beton",
+    "surface-parquet",
+    "maprimerenov",
+    "estimation-consommation-energie",
+    "pompe-a-chaleur-economies",
+    "volume-surface-piece",
+    "quantite-mortier",
+    "economies-isolation",
+    "calculateur-imc",
+    "poids-ideal",
+    "calories-journalieres",
+    "date-accouchement",
+    "calculateur-ovulation",
+    "hydratation-quotidienne",
+    "proteines-journalieres",
+    "economies-arret-tabac",
+    "unites-alcool",
+    "cycles-sommeil",
+    "calculateur-tva",
+    "calculateur-pourcentage",
+    "regle-de-trois",
+    "calculateur-age",
+    "calculateur-pourboire",
+    "partage-facture",
+    "convertisseur-devises",
+    "convertisseur-heures-minutes",
+    "vitesse-distance-temps",
+    "evolution-pourcentage"
+  ]
+}

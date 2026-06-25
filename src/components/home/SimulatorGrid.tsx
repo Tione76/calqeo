@@ -2,9 +2,15 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { simulators, searchSimulators } from "@/lib/simulators";
-import { getSimulatorsGroupedByDomain } from "@/lib/simulators/navigation";
-import { DOMAIN_LABELS, getSimulatorDomain } from "@/lib/simulators/types";
+import {
+  getSimulatorsGroupedByDomain,
+  SIMULATOR_COUNT,
+  type SimulatorCardRef,
+} from "@/lib/simulators/navigation";
+import {
+  searchSimulators,
+  type SearchableSimulator,
+} from "@/lib/simulators/search-client";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { Card } from "@/components/ui/Card";
 import { SimulatorIconComponent } from "@/components/ui/SimulatorIcon";
@@ -14,7 +20,7 @@ export function SimulatorGrid() {
   const groups = getSimulatorsGroupedByDomain();
 
   const filtered = useMemo(
-    () => (query ? searchSimulators(query) : simulators),
+    () => (query ? searchSimulators(query) : []),
     [query]
   );
 
@@ -23,7 +29,7 @@ export function SimulatorGrid() {
       <div className="text-center">
         <h2 className="section-title">Tous nos outils</h2>
         <p className="section-subtitle mx-auto max-w-2xl">
-          {simulators.length} simulateurs et calculateurs gratuits, classés par
+          {SIMULATOR_COUNT} simulateurs et calculateurs gratuits, classés par
           thématique pour répondre à vos questions du quotidien.
         </p>
       </div>
@@ -59,7 +65,7 @@ export function SimulatorGrid() {
                 {group.count} outil{group.count > 1 ? "s" : ""}
               </p>
               <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {group.all.slice(0, 6).map((sim) => (
+                {group.preview.map((sim) => (
                   <SimulatorCard key={sim.slug} sim={sim} />
                 ))}
               </div>
@@ -82,14 +88,14 @@ export function SimulatorGrid() {
 function SimulatorCard({
   sim,
 }: {
-  sim: (typeof simulators)[number];
+  sim: SimulatorCardRef | SearchableSimulator;
 }) {
   return (
     <Link href={`/simulateurs/${sim.slug}`} className="group block">
       <Card hover className="flex h-full flex-col">
         <SimulatorIconComponent icon={sim.icon} />
         <p className="mt-3 text-xs font-medium uppercase tracking-wider text-brand-600">
-          {DOMAIN_LABELS[getSimulatorDomain(sim)]}
+          {sim.domainLabel}
         </p>
         <h3 className="mt-2 font-display text-xl font-semibold text-brand-900 group-hover:text-brand-700">
           {sim.title}

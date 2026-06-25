@@ -3,27 +3,26 @@ import { CapaciteEmpruntForm } from "./CapaciteEmpruntForm";
 import { RendementLocatifForm } from "./RendementLocatifForm";
 import { MensualitePretForm } from "./MensualitePretForm";
 import { GenericSimulatorForm } from "./GenericSimulatorForm";
-import { simulators } from "@/lib/simulators";
+import { getGenericFormSlugs } from "@/lib/simulators/navigation";
 
-/**
- * Mapping slug → composant formulaire.
- * Les simulateurs avec formFields utilisent GenericSimulatorForm.
- */
-export const simulatorForms: Record<string, ComponentType> = {
+const genericFormSlugs = getGenericFormSlugs();
+
+const simulatorForms: Record<string, ComponentType> = {
   "capacite-emprunt": CapaciteEmpruntForm,
   "rendement-locatif": RendementLocatifForm,
   "mensualite-pret-immobilier": MensualitePretForm,
 };
 
-for (const sim of simulators) {
-  if (sim.formFields && sim.defaultValues && !simulatorForms[sim.slug]) {
-    const slug = sim.slug;
-    simulatorForms[slug] = function SimulatorFormWrapper() {
+export function getSimulatorForm(slug: string): ComponentType | undefined {
+  if (simulatorForms[slug]) {
+    return simulatorForms[slug];
+  }
+
+  if (genericFormSlugs.has(slug)) {
+    return function GenericFormWrapper() {
       return createElement(GenericSimulatorForm, { slug });
     };
   }
-}
 
-export function getSimulatorForm(slug: string): ComponentType | undefined {
-  return simulatorForms[slug];
+  return undefined;
 }

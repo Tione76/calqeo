@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { simulators } from "@/lib/simulators";
-import { getSimulatorsGroupedByDomain } from "@/lib/simulators/navigation";
-import { DOMAIN_LABELS, getSimulatorDomain } from "@/lib/simulators/types";
+import {
+  getSimulatorsGroupedByDomain,
+  SIMULATOR_COUNT,
+} from "@/lib/simulators/navigation";
 import { Card } from "@/components/ui/Card";
 import { SimulatorIconComponent } from "@/components/ui/SimulatorIcon";
 
 export const metadata: Metadata = {
   title: "Simulateurs et calculateurs en ligne — Tous les outils gratuits",
-  description: `${simulators.length} simulateurs et calculateurs gratuits : crédit immobilier, impôts, travaux, santé, budget. Estimez et calculez en ligne sans inscription.`,
+  description: `${SIMULATOR_COUNT} simulateurs et calculateurs gratuits : crédit immobilier, impôts, travaux, santé, budget. Estimez et calculez en ligne sans inscription.`,
   alternates: { canonical: "/simulateurs" },
 };
 
@@ -33,7 +34,7 @@ export default function SimulateursPage() {
         Simulateurs et calculateurs en ligne gratuits
       </h1>
       <p className="mt-3 max-w-2xl text-lg text-slate-600">
-        {simulators.length} outils pour simuler un crédit, calculer un impôt,
+        {SIMULATOR_COUNT} outils pour simuler un crédit, calculer un impôt,
         estimer des travaux ou comparer des scénarios — résultats instantanés,
         sans inscription.
       </p>
@@ -81,7 +82,7 @@ export default function SimulateursPage() {
                   <Card hover className="flex h-full flex-col">
                     <SimulatorIconComponent icon={sim.icon} />
                     <p className="mt-3 text-xs font-medium uppercase tracking-wider text-brand-600">
-                      {DOMAIN_LABELS[getSimulatorDomain(sim)]}
+                      {sim.domainLabel}
                     </p>
                     <h3 className="mt-2 font-display text-xl font-semibold text-brand-900 group-hover:text-brand-700">
                       {sim.title}

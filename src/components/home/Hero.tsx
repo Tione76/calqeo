@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { simulators } from "@/lib/simulators";
 import { DOMAIN_ORDER, DOMAIN_LABELS, DOMAIN_ANCHORS } from "@/lib/simulators/types";
+import { SIMULATOR_COUNT } from "@/lib/simulators/navigation";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { SITE } from "@/lib/site/config";
 
@@ -26,7 +26,7 @@ export function Hero() {
           </h1>
 
           <p className="mt-6 text-lg leading-relaxed text-brand-100 sm:text-xl">
-            {SITE.tagline}. {simulators.length} outils : immobilier, finance,
+            {SITE.tagline}. {SIMULATOR_COUNT} outils : immobilier, finance,
             emploi, entreprises, fiscalité, travaux, santé et quotidien.
           </p>
 
@@ -68,7 +68,7 @@ export function Hero() {
 
         <div className="mx-auto mt-16 grid max-w-4xl gap-6 sm:grid-cols-3">
           {[
-            { value: String(simulators.length), label: "Outils disponibles" },
+            { value: String(SIMULATOR_COUNT), label: "Outils disponibles" },
             { value: "8", label: "Grandes catégories" },
             { value: "0 €", label: "Coût d'utilisation" },
           ].map((stat) => (

@@ -1,5 +1,5 @@
 import searchIndex from "@/data/simulator-search-index.json";
-import type { SiteDomain } from "@/lib/simulators/types";
+import type { SiteDomain, SimulatorIcon } from "@/lib/simulators/types";
 
 export interface SearchableSimulator {
   slug: string;
@@ -8,6 +8,7 @@ export interface SearchableSimulator {
   metaTitle: string;
   metaDescription: string;
   category: string;
+  icon: SimulatorIcon;
   domain: SiteDomain;
   domainLabel: string;
   keywords: string[];

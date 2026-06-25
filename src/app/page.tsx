@@ -1,6 +1,13 @@
-import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { Hero } from "@/components/home/Hero";
-import { SimulatorGrid } from "@/components/home/SimulatorGrid";
+
+const SimulatorGrid = dynamic(
+  () =>
+    import("@/components/home/SimulatorGrid").then((mod) => ({
+      default: mod.SimulatorGrid,
+    })),
+  { loading: () => <SimulatorGridFallback /> }
+);
 
 function SimulatorGridFallback() {
   return (
@@ -20,9 +27,7 @@ export default function HomePage() {
     <>
       <Hero />
       <div className="container-app py-16 sm:py-20">
-        <Suspense fallback={<SimulatorGridFallback />}>
-          <SimulatorGrid />
-        </Suspense>
+        <SimulatorGrid />
 
         <section className="mt-20 rounded-2xl bg-brand-900 px-8 py-12 text-center text-white sm:px-12">
           <h2 className="font-display text-2xl font-bold sm:text-3xl">

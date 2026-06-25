@@ -3,15 +3,17 @@ import { Inter } from "next/font/google";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ConsentProvider } from "@/components/consent/ConsentProvider";
-import { CookieBanner } from "@/components/consent/CookieBanner";
+import { DeferredCookieBanner } from "@/components/consent/DeferredCookieBanner";
 import { SITE } from "@/lib/site/config";
 import { createHomeMetadata, jsonLdWebsite } from "@/lib/utils/seo";
 import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-inter",
   display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -41,7 +43,7 @@ export default function RootLayout({
             <main className="flex-1">{children}</main>
             <Footer />
           </div>
-          <CookieBanner />
+          <DeferredCookieBanner />
         </ConsentProvider>
       </body>
     </html>

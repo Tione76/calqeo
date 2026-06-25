@@ -42,7 +42,18 @@ export default async function SimulatorPage({ params }: PageProps) {
     notFound();
   }
 
-  const related = getRelatedSimulators(slug);
+  const related = getRelatedSimulators(slug).map((sim) => {
+    const simDomain = getSimulatorDomain(sim);
+    return {
+      slug: sim.slug,
+      title: sim.title,
+      shortDescription: sim.shortDescription,
+      icon: sim.icon,
+      category: sim.category,
+      domain: simDomain,
+      domainLabel: DOMAIN_LABELS[simDomain],
+    };
+  });
 
   const domain = getSimulatorDomain(simulator);
   const breadcrumbJsonLd = jsonLdBreadcrumb([
