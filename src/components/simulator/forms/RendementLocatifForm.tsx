@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { RendementLocatifInput } from "@/lib/simulators/rendement-locatif";
 import { rendementLocatif } from "@/lib/simulators/rendement-locatif";
+import { useEnrichedSimulatorResult } from "@/components/simulator/useEnrichedSimulatorResult";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -23,9 +24,10 @@ export function RendementLocatifForm() {
   const [values, setValues] = useState(defaultValues);
   const [submitted, setSubmitted] = useState(defaultValues);
 
-  const result = useMemo(
-    () => rendementLocatif.calculate(submitted),
-    [submitted]
+  const result = useEnrichedSimulatorResult(
+    "rendement-locatif",
+    submitted,
+    (input) => rendementLocatif.calculate(input)
   );
 
   const update = (field: keyof RendementLocatifInput, value: number) => {

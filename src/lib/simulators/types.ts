@@ -48,10 +48,55 @@ export interface ResultTable {
   caption?: string;
 }
 
+/** Niveau d'interprétation pédagogique du résultat. */
+export type InterpretationLevel =
+  | "favorable"
+  | "intermediate"
+  | "warning"
+  | "neutral";
+
+export interface ResultPrimary {
+  label: string;
+  value: string;
+}
+
+export interface ResultInterpretation {
+  level: InterpretationLevel;
+  badge?: string;
+  title: string;
+  message: string;
+}
+
+export interface ResultAdvice {
+  title: string;
+  items: string[];
+}
+
+export interface ResultComparison {
+  scenario: string;
+  value: string;
+  detail?: string;
+}
+
+export interface ResultCallout {
+  variant: "info" | "tip" | "warning" | "note";
+  title: string;
+  text: string;
+}
+
 export interface SimulatorResult {
+  /** Résumé court — conservé pour compatibilité et accessibilité. */
   summary: string;
   lines: ResultLine[];
   table?: ResultTable;
+  /** Résultat principal mis en avant (sinon dérivé automatiquement). */
+  primary?: ResultPrimary;
+  /** Phrase contextualisée avec les valeurs saisies. */
+  narrative?: string;
+  interpretation?: ResultInterpretation;
+  advice?: ResultAdvice;
+  comparisons?: ResultComparison[];
+  callouts?: ResultCallout[];
 }
 
 export interface FormFieldOption {

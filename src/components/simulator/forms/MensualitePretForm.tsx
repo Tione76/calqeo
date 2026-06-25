@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { MensualitePretInput } from "@/lib/simulators/mensualite-pret";
 import { mensualitePret } from "@/lib/simulators/mensualite-pret";
+import { useEnrichedSimulatorResult } from "@/components/simulator/useEnrichedSimulatorResult";
 import { Input, Select } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -21,9 +22,10 @@ export function MensualitePretForm() {
   const [values, setValues] = useState(defaultValues);
   const [submitted, setSubmitted] = useState(defaultValues);
 
-  const result = useMemo(
-    () => mensualitePret.calculate(submitted),
-    [submitted]
+  const result = useEnrichedSimulatorResult(
+    "mensualite-pret-immobilier",
+    submitted,
+    (input) => mensualitePret.calculate(input)
   );
 
   const update = (field: keyof MensualitePretInput, value: number) => {

@@ -25,7 +25,7 @@ export function LegalLayout({ title, children }: LegalLayoutProps) {
         <div className="mt-8 space-y-6 text-sm leading-relaxed text-slate-700">{children}</div>
       </article>
       <p className="mx-auto mt-10 max-w-3xl text-xs text-slate-500">
-        Dernière mise à jour : juin 2025. Consultez aussi{" "}
+        Dernière mise à jour : juin 2026. Consultez aussi{" "}
         <Link href={LEGAL_LINKS.confidentialite} className="text-brand-600 hover:underline">
           la politique de confidentialité
         </Link>{" "}

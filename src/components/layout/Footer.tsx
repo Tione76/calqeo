@@ -87,13 +87,11 @@ export function Footer() {
           <p className="text-sm leading-relaxed text-slate-600">
             Les résultats sont fournis à titre indicatif et ne constituent pas un
             conseil professionnel (juridique, fiscal, financier ou médical).
-            Ce site peut afficher des publicités via Google AdSense, sous réserve de
-            votre consentement.
           </p>
         </div>
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-6 text-sm text-slate-500">
-          <p>© {currentYear} {SITE.name}. Tous droits réservés.</p>
+          <p>© {currentYear} Calqeo. Tous droits réservés.</p>
           <Link href="/simulateurs" className="font-semibold text-brand-600 hover:text-brand-700">
             Tous les outils ({simulators.length})
           </Link>
