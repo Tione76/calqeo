@@ -92,3 +92,8 @@ export function useAdvertisingConsent(): boolean {
   const ctx = useContext(ConsentContext);
   return ctx?.consent?.advertising ?? false;
 }
+
+export function useAnalyticsConsent(): boolean {
+  const ctx = useContext(ConsentContext);
+  return ctx?.consent?.analytics ?? false;
+}

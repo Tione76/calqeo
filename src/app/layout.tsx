@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ConsentProvider } from "@/components/consent/ConsentProvider";
 import { DeferredCookieBanner } from "@/components/consent/DeferredCookieBanner";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { SITE } from "@/lib/site/config";
 import { createHomeMetadata } from "@/lib/utils/seo";
 import "./globals.css";
@@ -36,6 +38,9 @@ export default function RootLayout({
             <Footer />
           </div>
           <DeferredCookieBanner />
+          <Suspense fallback={null}>
+            <GoogleAnalytics />
+          </Suspense>
         </ConsentProvider>
       </body>
     </html>
