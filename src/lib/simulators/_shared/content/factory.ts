@@ -24,25 +24,29 @@ export interface SimulatorContentSpec {
 }
 
 export function createEnrichedEntry(
+  slug: string,
   spec: SimulatorContentSpec
 ): ContentRegistry[string] {
   return {
-    content: buildRichContent({
-      intro: spec.intro,
-      definition: spec.definition,
-      objectif: spec.objectif,
-      variables: spec.variables,
-      formules: [
-        p(spec.formule),
-        ...(spec.formuleDetail ? [hl("Formule", spec.formuleDetail)] : []),
-      ],
-      interpretation: spec.interpretation.map((t) => p(t)),
-      limitesCalcul: spec.limitesCalcul,
-      example: spec.example,
-      maillage: spec.maillage,
-      conseils: spec.conseils,
-      limites: spec.limites,
-    }),
+    content: buildRichContent(
+      {
+        intro: spec.intro,
+        definition: spec.definition,
+        objectif: spec.objectif,
+        variables: spec.variables,
+        formules: [
+          p(spec.formule),
+          ...(spec.formuleDetail ? [hl("Formule", spec.formuleDetail)] : []),
+        ],
+        interpretation: spec.interpretation.map((t) => p(t)),
+        limitesCalcul: spec.limitesCalcul,
+        example: spec.example,
+        maillage: spec.maillage,
+        conseils: spec.conseils,
+        limites: spec.limites,
+      },
+      slug
+    ),
     faq: buildFaq(spec.faq),
   };
 }
@@ -53,7 +57,7 @@ export function createRegistry(
   return Object.fromEntries(
     Object.entries(entries).map(([slug, spec]) => [
       slug,
-      createEnrichedEntry(spec),
+      createEnrichedEntry(slug, spec),
     ])
   );
 }

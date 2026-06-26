@@ -1,9 +1,8 @@
 import type { ContentRegistry } from "./types";
-import { buildRichContent, buildFaq, p, hl } from "../content-builder";
+import { registryEntry, p, hl } from "../content-builder";
 
 export const fiscaliteContent: ContentRegistry = {
-  "impot-sur-le-revenu": {
-    content: buildRichContent({
+  "impot-sur-le-revenu": registryEntry("impot-sur-le-revenu", {
       intro:
         "Estimez votre impôt sur le revenu (IR) à partir du revenu net imposable et du nombre de parts fiscales, selon le barème progressif en vigueur.",
       definition:
@@ -31,6 +30,8 @@ export const fiscaliteContent: ContentRegistry = {
           "À retenir",
           "Un couple avec 2 parts et 45 000 € de revenus nets paie sensiblement moins qu'un célibataire au même revenu global, grâce au quotient familial."
         ),
+        p("Le revenu net imposable se lit sur l'avis d'imposition (case « Revenu imposable »), pas sur votre bulletin de paie ni sur le revenu fiscal de référence."),
+        hl("Erreur fréquente", "Appliquer le barème au salaire brut : l'impôt se calcule sur le revenu net imposable après abattements et charges déductibles."),
       ],
       limitesCalcul: [
         "Décote pour les revenus modestes non incluse",
@@ -70,20 +71,20 @@ export const fiscaliteContent: ContentRegistry = {
         "Ne remplace pas l'avis d'imposition ni un conseil fiscal personnalisé.",
         "Cas particuliers (résidents à l'étranger, micro-entrepreneurs, BNC…) non couverts.",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
-        question: "Qu'est-ce que le revenu net imposable ?",
+        question: "45 000 € de revenus pour un couple : combien d'impôt ?",
         answer:
-          "C'est le total de vos revenus après abattements forfaitaires ou frais réels, moins certaines charges déductibles (pensions alimentaires, cotisations PER, etc.). C'est la base sur laquelle s'applique le barème.",
+          "Avec 2 parts, le revenu par part est 22 500 €. L'impôt tourne autour de 2 465 €, soit environ 5,5 % de taux effectif.",
       },
       {
-        question: "Comment sont calculées les parts fiscales ?",
+        question: "Où trouver mon revenu net imposable sur l'avis d'impôt ?",
         answer:
-          "1 part pour un adulte célibataire, 2 pour un couple marié ou pacsé, +0,5 par enfant (1 part à partir du 3e enfant). Le parent isolé bénéficie d'une demi-part supplémentaire.",
+          "Case « Revenu imposable » page 1 de l'avis d'imposition. Ne confondez pas avec le revenu fiscal de référence, utilisé pour d'autres dispositifs.",
       },
       {
-        question: "Quelle est la différence entre taux effectif et TMI ?",
+        question: "Quelle différence entre taux effectif et TMI ?",
         answer:
           "Le taux effectif est le rapport impôt ÷ revenu (ex. 5,5 %). Le TMI (taux marginal) est la tranche du dernier euro gagné (ex. 11 % ou 30 %). Le TMI sert à évaluer l'intérêt d'une déduction ou d'un placement.",
       },
@@ -93,9 +94,9 @@ export const fiscaliteContent: ContentRegistry = {
           "Non. La décote réduit l'impôt des foyers modestes (revenu par part inférieur à environ 19 000 €). Notre simulateur calcule l'impôt brut avant cette réduction.",
       },
       {
-        question: "Quand dois-je déclarer mes revenus ?",
+        question: "Combien de parts fiscales pour un couple avec 2 enfants ?",
         answer:
-          "La déclaration en ligne s'effectue généralement d'avril à début juin pour les revenus de l'année précédente. Les dates exactes varient selon votre département.",
+          "2 parts pour le couple plus 0,5 part par enfant, soit 3 parts au total. Le 3e enfant et suivants ouvrent 1 part chacun.",
       },
       {
         question: "Le prélèvement à la source remplace-t-il la déclaration ?",
@@ -103,30 +104,29 @@ export const fiscaliteContent: ContentRegistry = {
           "Non. L'impôt est prélevé mensuellement sur vos revenus, mais la déclaration annuelle recalcule l'impôt définitif et ajuste le solde (remboursement ou complément).",
       },
       {
-        question: "Les réductions d'impôt sont-elles prises en compte ?",
+        question: "Réductions Pinel, PER, dons : prises en compte ?",
         answer:
-          "Non. Les réductions (dons, frais de garde, investissement locatif Pinel…) et crédits d'impôt (emploi à domicile) viennent en déduction après le calcul du barème.",
+          "Non. Les réductions et crédits d'impôt viennent en déduction après le calcul du barème. Utilisez les simulateurs dédiés pour les estimer.",
       },
       {
-        question: "Un revenu de 45 000 € pour 2 parts, c'est beaucoup d'impôt ?",
-        answer:
-          "Avec 2 parts, le revenu par part est de 22 500 €. L'impôt estimé tourne autour de 2 465 €, soit un taux effectif d'environ 5,5 % — bien en deçà du TMI de 11 %.",
-      },
-      {
-        question: "Comment réduire légalement mon impôt sur le revenu ?",
+        question: "Comment réduire légalement son impôt sur le revenu ?",
         answer:
           "Versements sur un PER (déduction immédiate), crédit d'impôt emploi à domicile, réductions pour investissements éligibles, optimisation du quotient familial… Chaque levier dépend de votre situation.",
       },
       {
-        question: "Ce simulateur utilise-t-il le barème 2024 ?",
+        question: "Quel barème utilise ce simulateur ?",
         answer:
-          "Oui, le barème 2024 s'applique aux revenus 2025 déclarés au printemps 2024. Les seuils de tranches sont indexés chaque année.",
+          "Le barème 2026 appliqué aux revenus 2025 (seuils indexés : 0 % jusqu'à 11 294 € par part, puis 11 %, 30 %, 41 % et 45 %).",
       },
-    ]),
-  },
+      {
+        question: "Micro-entrepreneur : ce simulateur me concerne-t-il ?",
+        answer:
+          "Partiellement. Votre impôt se calcule sur le CA après abattement forfaitaire micro, pas sur le brut encaissé. Croisez avec le simulateur micro-entrepreneur-charges pour les cotisations.",
+      },
+    
+  ]),
 
-  "quotient-familial": {
-    content: buildRichContent({
+  "quotient-familial": registryEntry("quotient-familial", {
       intro:
         "Mesurez l'impact du quotient familial sur votre impôt : nombre de parts, revenu par part et gain fiscal par rapport à une imposition sans parts supplémentaires.",
       definition:
@@ -195,8 +195,8 @@ export const fiscaliteContent: ContentRegistry = {
         "Simulation sans plafonnement ni cas de demi-part supplémentaire.",
         "Ne tient pas compte des revenus du conjoint si vous êtes imposés séparément.",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Combien de parts pour un couple sans enfant ?",
         answer: "Un couple marié ou pacsé bénéficie de 2 parts de base, quel que soit le régime matrimonial.",
@@ -245,11 +245,10 @@ export const fiscaliteContent: ContentRegistry = {
         answer:
           "Oui, en saisissant 3 enfants : le 3e enfant ajoute 1 part entière (et non 0,5), ce qui accroît davantage le gain fiscal.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "prelevement-a-la-source": {
-    content: buildRichContent({
+  "prelevement-a-la-source": registryEntry("prelevement-a-la-source", {
       intro:
         "Estimez votre taux de prélèvement à la source (PAS) et le montant mensuel prélevé sur votre salaire net, à partir de votre impôt annuel estimé.",
       definition:
@@ -316,12 +315,12 @@ export const fiscaliteContent: ContentRegistry = {
         "Estimation basée sur un seul salaire et un revenu imposable global.",
         "Ne simule pas les acomptes des indépendants et professions libérales.",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
-        question: "Qu'est-ce que le prélèvement à la source ?",
+        question: "Où consulter mon taux de prélèvement à la source ?",
         answer:
-          "C'est le prélèvement de l'impôt sur le revenu directement sur vos revenus (salaire, pension, etc.) au moment où ils sont versés, plutôt qu'en une fois l'année suivante.",
+          "Sur impots.gouv.fr, rubrique « Gérer mon prélèvement à la source », ou sur votre espace personnel France Travail / employeur pour le taux transmis.",
       },
       {
         question: "Comment est calculé mon taux personnalisé ?",
@@ -368,11 +367,10 @@ export const fiscaliteContent: ContentRegistry = {
         answer:
           "Oui, la déclaration annuelle reste obligatoire. Elle détermine l'impôt définitif et ajuste les prélèvements effectués dans l'année.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "flat-tax-30-pourcent": {
-    content: buildRichContent({
+  "flat-tax-30-pourcent": registryEntry("flat-tax-30-pourcent", {
       intro:
         "Calculez la fiscalité au prélèvement forfaitaire unique (PFU, flat tax 30 %) sur vos revenus de capitaux mobiliers, et comparez avec l'option barème progressif.",
       definition:
@@ -439,8 +437,8 @@ export const fiscaliteContent: ContentRegistry = {
         "Comparaison barème simplifiée, sans abattement dividendes ni CSG déductible.",
         "Ne couvre pas les plus-values immobilières ni les revenus professionnels.",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Quels revenus sont soumis au PFU ?",
         answer:
@@ -490,11 +488,10 @@ export const fiscaliteContent: ContentRegistry = {
         answer:
           "Via le formulaire 2042 (cases 2DC pour dividendes, 2TR pour intérêts, etc.) ou le report automatique si vous acceptez le préremplissage.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "micro-entrepreneur-charges": {
-    content: buildRichContent({
+  "micro-entrepreneur-charges": registryEntry("micro-entrepreneur-charges", {
       intro:
         "Estimez les charges sociales URSSAF et, le cas échéant, l'impôt libératoire d'un micro-entrepreneur (auto-entrepreneur) selon son chiffre d'affaires et son type d'activité.",
       definition:
@@ -523,6 +520,8 @@ export const fiscaliteContent: ContentRegistry = {
           "Plafonds de CA",
           "77 700 € pour la vente, 188 700 € pour les prestations de services (2024). Au-delà, vous basculez vers un autre régime."
         ),
+        p("En BNC, les cotisations (24,6 %) prélèvent plus qu'en BIC (21,2 %) à CA égal : le choix d'activité impacte directement votre net."),
+        hl("Erreur fréquente", "Déduire ses frais professionnels du CA avant de calculer les cotisations : en micro, les cotisations s'appliquent toujours sur le CA encaissé brut."),
       ],
       limitesCalcul: [
         "CFE, taxe sur les véhicules de société et autres taxes non incluses",
@@ -561,61 +560,59 @@ export const fiscaliteContent: ContentRegistry = {
         "Ne calcule pas l'impôt au barème ni l'abattement forfaitaire micro.",
         "Exonérations (ACRE, ZFU…) non prises en compte.",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
-        question: "Sur quoi sont calculées les charges du micro-entrepreneur ?",
-        answer:
-          "Sur le chiffre d'affaires encaissé, et non sur le bénéfice. Même si vos charges professionnelles sont élevées, le taux s'applique sur le CA total.",
-      },
-      {
-        question: "Quels sont les taux de cotisations en 2024 ?",
-        answer: "Vente de marchandises : 12,3 %. Prestations BIC : 21,2 %. Prestations BNC : 24,6 %.",
-      },
-      {
-        question: "Qu'est-ce que l'impôt libératoire ?",
-        answer:
-          "Une option pour payer l'impôt sur le revenu en même temps que les cotisations URSSAF, à un taux fixe (1 % à 2,2 % du CA selon l'activité).",
-      },
-      {
-        question: "35 000 € de CA BIC : combien de charges ?",
+        question: "35 000 € de CA en prestations BIC : combien de cotisations ?",
         answer: "Environ 7 420 € de cotisations sociales (21,2 %), soit un net de 27 580 € avant impôt sur le revenu.",
       },
       {
-        question: "Quels sont les plafonds de chiffre d'affaires ?",
-        answer:
-          "77 700 € pour la vente et 188 700 € pour les prestations de services en 2024. Le dépassement entraîne une sortie du régime micro.",
+        question: "Auto-entrepreneur BNC ou BIC : quel taux URSSAF ?",
+        answer: "BNC (prestations intellectuelles) : 24,6 %. BIC (prestations commerciales) : 21,2 %. Vente de marchandises : 12,3 %.",
       },
       {
-        question: "Dois-je payer la TVA ?",
-        answer:
-          "En principe non, si vous bénéficiez de la franchise en base de TVA (seuils : 39 100 € vente, 77 700 € services). Au-delà, la TVA devient due.",
+        question: "Impôt libératoire micro-entrepreneur : combien ça coûte ?",
+        answer: "1 % du CA en vente, 1,7 % en BIC, 2,2 % en BNC. Il remplace l'impôt au barème si vous avez opté pour cette option.",
       },
       {
-        question: "La CFE est-elle incluse ?",
+        question: "Les frais pro réduisent-ils les cotisations micro ?",
+        answer:
+          "Non. Les cotisations sont proportionnelles au CA encaissé, quels que soient vos dépenses. Seul un passage au régime réel permet de déduire les charges.",
+      },
+      {
+        question: "Plafond micro-entreprise prestations : combien en 2024 ?",
+        answer:
+          "188 700 € de CA pour les prestations de services. Au-delà, vous sortez du régime micro. Vente : 77 700 €.",
+      },
+      {
+        question: "Franchise TVA micro-entrepreneur : quels seuils ?",
+        answer:
+          "39 100 € pour la vente et 77 700 € pour les services en franchise de base. Au-delà, la TVA devient due selon les règles du régime.",
+      },
+      {
+        question: "Impôt libératoire ou barème : lequel choisir ?",
+        answer:
+          "Le libératoire simplifie la gestion et peut être avantageux si votre TMI dépasse environ 12 %. Sinon, le barème avec abattement forfaitaire peut coûter moins cher.",
+      },
+      {
+        question: "L'ACRE réduit-elle mes cotisations la première année ?",
+        answer:
+          "Oui, l'ACRE exonère partiellement les cotisations (environ 50 % la 1re année). Ce simulateur ne l'intègre pas : utilisez le simulateur exonération ACRE.",
+      },
+      {
+        question: "La CFE est-elle incluse dans le calcul ?",
         answer:
           "Non. La cotisation foncière des entreprises (CFE) est due chaque année, avec exonération la première année d'activité.",
       },
       {
-        question: "L'ACRE réduit-t-elle mes cotisations ?",
-        answer:
-          "Oui, l'aide à la création ou reprise d'entreprise exonère partiellement les cotisations la première année. Ce simulateur n'intègre pas cette exonération.",
-      },
-      {
-        question: "Impôt libératoire ou barème : que choisir ?",
-        answer:
-          "Le libératoire simplifie la gestion et peut être avantageux si votre TMI est élevé. Sinon, le barème avec abattement forfaitaire peut coûter moins cher.",
-      },
-      {
-        question: "Comment déclarer mon CA ?",
+        question: "Comment et quand déclarer son CA micro-entrepreneur ?",
         answer:
           "Déclaration mensuelle ou trimestrielle sur autoentrepreneur.urssaf.fr, plus la déclaration de revenus annuelle (formulaire 2042-C-PRO).",
       },
-    ]),
-  },
+    
+  ]),
 
-  "credit-impot-emploi-domicile": {
-    content: buildRichContent({
+  "credit-impot-emploi-domicile": registryEntry("credit-impot-emploi-domicile", {
       intro:
         "Estimez le crédit d'impôt de 50 % sur vos dépenses d'emploi à domicile : ménage, garde d'enfants, soutien scolaire et autres services éligibles.",
       definition:
@@ -677,8 +674,8 @@ export const fiscaliteContent: ContentRegistry = {
         "Plafond standard uniquement, sans majorations.",
         "Ne vérifie pas l'éligibilité précise de chaque service.",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Quels services ouvrent droit au crédit d'impôt ?",
         answer:
@@ -726,11 +723,10 @@ export const fiscaliteContent: ContentRegistry = {
         answer:
           "Oui, toutes les dépenses éligibles s'additionnent dans le plafond global de 12 000 € (sous réserve des majorations éventuelles).",
       },
-    ]),
-  },
+    
+  ]),
 
-  "impot-dividendes": {
-    content: buildRichContent({
+  "impot-dividendes": registryEntry("impot-dividendes", {
       intro:
         "Calculez l'impôt sur vos dividendes perçus : prélèvement forfaitaire unique (PFU 30 %) ou option barème progressif avec abattement de 40 %.",
       definition:
@@ -798,8 +794,8 @@ export const fiscaliteContent: ContentRegistry = {
         "Simulation simplifiée du barème avec abattement 40 %.",
         "Ne traite pas les dividendes reçus via des structures juridiques (SCI, SAS…).",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Les dividendes sont-ils taxés automatiquement au PFU ?",
         answer:
@@ -849,11 +845,10 @@ export const fiscaliteContent: ContentRegistry = {
         answer:
           "Ce simulateur intègre l'abattement de 40 % spécifique aux dividendes au barème, pour une comparaison PFU/barème plus précise.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "taux-marginal-imposition": {
-    content: buildRichContent({
+  "taux-marginal-imposition": registryEntry("taux-marginal-imposition", {
       intro:
         "Identifiez votre taux marginal d'imposition (TMI) — la tranche dans laquelle est taxé votre dernier euro de revenu — et comparez-le à votre taux effectif.",
       definition:
@@ -918,8 +913,8 @@ export const fiscaliteContent: ContentRegistry = {
         "TMI calculé sur le barème seul, hors prélèvements sociaux.",
         "Ne tient pas compte des revenus taxés à taux spécifiques (plus-values, PFU…).",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Qu'est-ce que le taux marginal d'imposition (TMI) ?",
         answer:
@@ -970,11 +965,10 @@ export const fiscaliteContent: ContentRegistry = {
         answer:
           "Oui, les seuils du barème sont revalorisés chaque année pour tenir compte de l'inflation. Le simulateur utilise le barème 2024.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "donation-numeraire": {
-    content: buildRichContent({
+  "donation-numeraire": registryEntry("donation-numeraire", {
       intro:
         "Estimez les droits de donation lors d'une transmission d'argent à un enfant, petit-enfant ou conjoint, en tenant compte des abattements renouvelables tous les 15 ans.",
       definition:
@@ -1042,8 +1036,8 @@ export const fiscaliteContent: ContentRegistry = {
         "Taux forfaitaire simplifié, pas le barème progressif réel.",
         "Ne remplace pas un acte notarié ni un conseil en transmission.",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Quel abattement pour une donation à un enfant ?",
         answer:
@@ -1093,11 +1087,10 @@ export const fiscaliteContent: ContentRegistry = {
         answer:
           "La donation permet d'anticiper la transmission et d'utiliser les abattements de son vivant. La succession applique d'autres abattements (100 000 € par enfant également).",
       },
-    ]),
-  },
+    
+  ]),
 
-  "cesu-credit-impot": {
-    content: buildRichContent({
+  "cesu-credit-impot": registryEntry("cesu-credit-impot", {
       intro:
         "Calculez le crédit d'impôt lié à l'utilisation de chèques emploi service universel (CESU) pour des services à la personne à domicile.",
       definition:
@@ -1165,8 +1158,8 @@ export const fiscaliteContent: ContentRegistry = {
         "Plafond standard sans majorations.",
         "Ne distingue pas les CESU papier des CESU dématérialisés.",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Qu'est-ce qu'un CESU ?",
         answer:
@@ -1217,6 +1210,6 @@ export const fiscaliteContent: ContentRegistry = {
         answer:
           "Oui. Les CESU préfinancés doivent être déclarés et réduisent le crédit d'impôt calculé sur vos dépenses personnelles.",
       },
-    ]),
-  },
+    
+  ]),
 };

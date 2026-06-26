@@ -4,7 +4,7 @@ export const capaciteEmpruntContent: SimulatorContent = {
   sections: [
     {
       id: "comment-fonctionne",
-      title: "Comment fonctionne ce calcul ?",
+      title: "Comment estimer sa capacité d'emprunt immobilier ?",
       subtitle:
         "Ce simulateur estime le montant maximal que vous pouvez emprunter en croisant vos revenus, vos charges existantes, le taux d'endettement retenu et les conditions du crédit (durée et taux d'intérêt). Il intègre aussi votre apport personnel pour estimer votre budget d'achat total.",
       subsections: [
@@ -192,7 +192,7 @@ export const capaciteEmpruntContent: SimulatorContent = {
     },
     {
       id: "exemple-concret",
-      title: "Exemple concret chiffré",
+      title: "Exemple de calcul de capacité d'emprunt",
       subtitle:
         "Cas pratique : Sophie, salariée en CDI, souhaite acheter sa résidence principale.",
       subsections: [
@@ -269,13 +269,13 @@ export const capaciteEmpruntContent: SimulatorContent = {
     },
     {
       id: "conseils-limites",
-      title: "Conseils et limites",
+      title: "Conseils pour préparer votre dossier bancaire",
       subtitle:
         "Quelques repères pour interpréter vos résultats et éviter les erreurs courantes.",
       subsections: [
         {
           id: "conseils-pratiques",
-          title: "Conseils pratiques",
+          title: "Que faut-il savoir avant d'emprunter ?",
           blocks: [
             {
               type: "list",
@@ -292,7 +292,7 @@ export const capaciteEmpruntContent: SimulatorContent = {
         },
         {
           id: "limites-simulateur",
-          title: "Limites du simulateur",
+          title: "Que ne prend pas en compte ce simulateur ?",
           blocks: [
             {
               type: "list",
@@ -313,6 +313,19 @@ export const capaciteEmpruntContent: SimulatorContent = {
 };
 
 export const capaciteEmpruntFaq: FAQItem[] = [
+  {
+    question: "Combien puis-je emprunter avec 3 000 € de revenus nets par mois ?",
+    blocks: [
+      {
+        type: "paragraph",
+        text: "Avec 3 000 € nets, sans charges de crédit et un taux d'endettement de 35 %, la mensualité maximale est d'environ 1 050 €. Sur 20 ans à 3,5 %, cela représente un capital empruntable aux alentours de 180 000 €, hors apport.",
+      },
+      {
+        type: "paragraph",
+        text: "Chaque euro de mensualité de crédit en cours réduit d'autant votre capacité. Renseignez vos charges réelles dans le simulateur pour affiner ce chiffre.",
+      },
+    ],
+  },
   {
     question: "Comment est calculée la capacité d'emprunt ?",
     blocks: [

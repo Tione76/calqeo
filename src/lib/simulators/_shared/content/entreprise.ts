@@ -249,6 +249,7 @@ export const entrepriseContent: ContentRegistry = createRegistry({
       "À 50 000 € brut, les dividendes laissent 35 000 € net (30 % de prélèvement) contre environ 22 500 € en salaire à 55 % de cotisations.",
       "Le salaire ouvre des droits retraite, chômage et prévoyance ; les dividendes n'y contribuent pas.",
       "La rémunération optimale combine souvent un salaire modeste et des dividendes, au-delà de ce comparatif simplifié.",
+      "Un salaire minimum (SMIC ou légèrement au-dessus) sécurise votre couverture sociale ; le surplus peut transiter en dividendes si la trésorerie le permet.",
     ],
     limitesCalcul: [
       "Flat tax 30 % simplifiée — option barème non simulée",

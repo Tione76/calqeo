@@ -21,6 +21,8 @@ export const emploiContent: ContentRegistry = createRegistry({
       "Un taux de cotisations de 22 % est une moyenne pour un salarié non cadre ; les cadres peuvent approcher 25 à 28 %.",
       "Le net calculé ici est celui avant impôt : le prélèvement à la source vient en déduction supplémentaire selon votre taux personnalisé.",
       "Les cotisations patronales ne sont pas déduites du salaire : elles sont payées par l'employeur en plus du brut.",
+      "Sur une fiche de paie, repérez la ligne « Net à payer avant impôt sur le revenu » pour comparer directement au résultat du simulateur.",
+      "Une prime exceptionnelle ou un 13e mois non lissé fausse l'estimation si vous les intégrez dans le brut mensuel saisi.",
     ],
     limitesCalcul: [
       "Taux de cotisations saisi manuellement — pas de calcul ligne par ligne du bulletin.",

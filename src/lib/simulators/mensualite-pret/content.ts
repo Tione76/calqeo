@@ -4,7 +4,7 @@ export const mensualitePretContent: SimulatorContent = {
   sections: [
     {
       id: "comment-fonctionne",
-      title: "Comment fonctionne ce calcul ?",
+      title: "Comment calculer la mensualité d'un crédit immobilier ?",
       subtitle:
         "Ce simulateur calcule la mensualité de votre crédit immobilier à partir du capital emprunté, du taux d'intérêt, de la durée de remboursement et, en option, du taux d'assurance emprunteur.",
       subsections: [
@@ -172,7 +172,7 @@ export const mensualitePretContent: SimulatorContent = {
     },
     {
       id: "exemple-concret",
-      title: "Exemple concret chiffré",
+      title: "Exemple de calcul de mensualité de prêt immobilier",
       subtitle:
         "Cas pratique : Thomas et Julie financent leur résidence principale.",
       subsections: [
@@ -231,17 +231,32 @@ export const mensualitePretContent: SimulatorContent = {
             },
           ],
         },
+        {
+          id: "erreurs-frequentes",
+          title: "Erreurs fréquentes dans le calcul de mensualité",
+          blocks: [
+            {
+              type: "list",
+              items: [
+                "Comparer une mensualité hors assurance à un budget calculé avec assurance incluse.",
+                "Oublier que le taux affiché par la banque est annuel : le simulateur le convertit en taux mensuel pour le calcul.",
+                "Choisir la durée la plus longue sans chiffrer le surcoût total en intérêts.",
+                "Négliger les frais de dossier et de garantie, absents du calcul mais présents dans le TAEG.",
+              ],
+            },
+          ],
+        },
       ],
     },
     {
       id: "conseils-limites",
-      title: "Conseils et limites",
+      title: "Conseils pour ajuster votre mensualité de prêt",
       subtitle:
         "Optimisez votre financement et connaissez les limites de l'outil.",
       subsections: [
         {
           id: "conseils-pratiques",
-          title: "Conseils pratiques",
+          title: "Que faut-il savoir sur la mensualité de crédit ?",
           blocks: [
             {
               type: "list",
@@ -257,7 +272,7 @@ export const mensualitePretContent: SimulatorContent = {
         },
         {
           id: "limites-simulateur",
-          title: "Limites du simulateur",
+          title: "Que ne couvre pas cette simulation de mensualité ?",
           blocks: [
             {
               type: "list",

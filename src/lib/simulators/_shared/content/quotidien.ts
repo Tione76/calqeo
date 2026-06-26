@@ -1,14 +1,8 @@
-import {
-  buildRichContent,
-  buildFaq,
-  p,
-  hl,
-} from "../content-builder";
+import { registryEntry, p, hl } from "../content-builder";
 import type { ContentRegistry } from "./types";
 
 export const quotidienContent: ContentRegistry = {
-  "calculateur-tva": {
-    content: buildRichContent({
+  "calculateur-tva": registryEntry("calculateur-tva", {
       intro:
         "Calculez instantanément le montant HT, TTC ou la TVA selon le taux applicable — indispensable pour les achats, factures et devis.",
       definition:
@@ -71,8 +65,8 @@ export const quotidienContent: ContentRegistry = {
         "Taux France métropolitaine uniquement",
         "Cas particuliers (DOM, intracommunautaire) non couverts",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Quel taux de TVA à 20 % ?",
         answer:
@@ -123,11 +117,10 @@ export const quotidienContent: ContentRegistry = {
         answer:
           "Franchise en base, export, ou activité exonérée (certaines professions médicales, associations).",
       },
-    ]),
-  },
+    
+  ]),
 
-  "calculateur-pourcentage": {
-    content: buildRichContent({
+  "calculateur-pourcentage": registryEntry("calculateur-pourcentage", {
       intro:
         "Calculez un pourcentage d'une valeur, une augmentation ou une réduction — l'outil universel pour remises, hausses et statistiques.",
       definition:
@@ -190,8 +183,8 @@ export const quotidienContent: ContentRegistry = {
         "Une seule opération par calcul",
         "Ne gère pas les pourcentages composés sur plusieurs périodes",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Comment calculer X % d'un nombre ?",
         answer:
@@ -242,11 +235,10 @@ export const quotidienContent: ContentRegistry = {
         answer:
           "Excel : =A1*0,15 pour 15 % de A1. Ou =A1*(1+0,10) pour +10 %.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "regle-de-trois": {
-    content: buildRichContent({
+  "regle-de-trois": registryEntry("regle-de-trois", {
       intro:
         "Résolvez les problèmes de proportion en un clic : si A correspond à B, que vaut C ? Idéal pour prix, recettes et conversions.",
       definition:
@@ -308,8 +300,8 @@ export const quotidienContent: ContentRegistry = {
         "Proportion directe seulement",
         "Relations non linéaires (carré, cube) non couvertes",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Règle de trois directe : c'est quoi ?",
         answer:
@@ -360,11 +352,10 @@ export const quotidienContent: ContentRegistry = {
         answer:
           "=C2*B2/A2 où A2, B2, C2 sont les trois valeurs connues et le résultat est X.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "calculateur-age": {
-    content: buildRichContent({
+  "calculateur-age": registryEntry("calculateur-age", {
       intro:
         "Calculez votre âge exact en années, mois et jours — utile pour les démarches administratives, échéances légales et anniversaires.",
       definition:
@@ -427,8 +418,8 @@ export const quotidienContent: ContentRegistry = {
         "Dates valides uniquement",
         "Pas de fuseau horaire",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Âge légal de la retraite en France ?",
         answer:
@@ -479,11 +470,10 @@ export const quotidienContent: ContentRegistry = {
         answer:
           "Le 29 février ajoute un jour tous les 4 ans. Le calcul des jours totaux en tient compte.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "calculateur-pourboire": {
-    content: buildRichContent({
+  "calculateur-pourboire": registryEntry("calculateur-pourboire", {
       intro:
         "Calculez le pourboire et le total à payer au restaurant, avec partage par personne — pratique après un repas entre amis.",
       definition:
@@ -548,8 +538,8 @@ export const quotidienContent: ContentRegistry = {
         "Usages variables selon les pays",
         "Service inclus obligatoire en France",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Pourboire obligatoire en France ?",
         answer:
@@ -600,11 +590,10 @@ export const quotidienContent: ContentRegistry = {
         answer:
           "Optionnel. 1-2 € ou 5-10 % si service exceptionnel. Vérifiez si la plateforme prend une part.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "partage-facture": {
-    content: buildRichContent({
+  "partage-facture": registryEntry("partage-facture", {
       intro:
         "Divisez l'addition entre plusieurs personnes, avec pourboire inclus et option pour ceux qui paient plus (alcool, plat premium).",
       definition:
@@ -672,8 +661,8 @@ export const quotidienContent: ContentRegistry = {
         "Division simplifiée",
         "Montants individuels non détaillés par plat",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Division égale ou personnalisée ?",
         answer:
@@ -724,11 +713,10 @@ export const quotidienContent: ContentRegistry = {
         answer:
           "Enregistrez qui a payé quoi. L'app calcule qui doit à qui et minimise les virements.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "convertisseur-devises": {
-    content: buildRichContent({
+  "convertisseur-devises": registryEntry("convertisseur-devises", {
       intro:
         "Convertissez des montants entre euros, dollars, livres et francs suisses au taux de change que vous saisissez — idéal avant un voyage.",
       definition:
@@ -792,8 +780,8 @@ export const quotidienContent: ContentRegistry = {
         "Taux manuel — pas de mise à jour automatique",
         "Frais bancaires non inclus",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Meilleur taux de change pour voyager ?",
         answer:
@@ -844,11 +832,10 @@ export const quotidienContent: ContentRegistry = {
         answer:
           "Reconvertir les devises restantes — souvent avec marge. Dépensez ou gardez pour prochain voyage.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "convertisseur-heures-minutes": {
-    content: buildRichContent({
+  "convertisseur-heures-minutes": registryEntry("convertisseur-heures-minutes", {
       intro:
         "Convertissez heures en minutes, minutes en heures décimales ou secondes — utile pour le travail, les trajets et la facturation.",
       definition:
@@ -912,8 +899,8 @@ export const quotidienContent: ContentRegistry = {
       limites: [
         "Durée saisie directement — pas calcul entre deux horaires",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Heures décimales : comment convertir ?",
         answer:
@@ -964,11 +951,10 @@ export const quotidienContent: ContentRegistry = {
         answer:
           "Ce convertisseur gère des durées, pas des horaires avec fuseaux. Pour fuseaux, outils spécifiques.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "vitesse-distance-temps": {
-    content: buildRichContent({
+  "vitesse-distance-temps": registryEntry("vitesse-distance-temps", {
       intro:
         "Calculez la vitesse, la distance ou la durée d'un trajet avec la formule V = D / T — planifiez vos départs et arrivées.",
       definition:
@@ -1033,8 +1019,8 @@ export const quotidienContent: ContentRegistry = {
         "Vitesse constante supposée",
         "Péages et carburant non inclus",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Vitesse moyenne sur autoroute ?",
         answer:
@@ -1085,11 +1071,10 @@ export const quotidienContent: ContentRegistry = {
         answer:
           "Vitesses moyennes différentes (TGV ~250 km/h). Utilisez la vitesse moyenne du train.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "evolution-pourcentage": {
-    content: buildRichContent({
+  "evolution-pourcentage": registryEntry("evolution-pourcentage", {
       intro:
         "Mesurez la variation en pourcentage entre une valeur initiale et une valeur finale — hausse, baisse et coefficient multiplicateur.",
       definition:
@@ -1152,8 +1137,8 @@ export const quotidienContent: ContentRegistry = {
         "Une seule période",
         "Valeur initiale nulle : non calculable",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Hausse 50 % puis baisse 50 % : résultat ?",
         answer:
@@ -1204,6 +1189,6 @@ export const quotidienContent: ContentRegistry = {
         answer:
           "=(B1-A1)/A1*100 ou =(B1/A1-1)*100 pour le pourcentage d'évolution.",
       },
-    ]),
-  },
+    
+  ]),
 };

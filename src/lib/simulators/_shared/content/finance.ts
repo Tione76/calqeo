@@ -1,9 +1,8 @@
-import { buildRichContent, buildFaq, p, hl } from "../content-builder";
+import { registryEntry, p, hl } from "../content-builder";
 import type { ContentRegistry } from "./types";
 
 export const financeContent: ContentRegistry = {
-  "mensualite-credit-consommation": {
-    content: buildRichContent({
+  "mensualite-credit-consommation": registryEntry("mensualite-credit-consommation", {
       intro:
         "Estimez la mensualité d'un prêt personnel ou crédit à la consommation avant de comparer les offres bancaires.",
       definition:
@@ -62,8 +61,7 @@ export const financeContent: ContentRegistry = {
         "Ne tient pas compte de l'assurance emprunteur facultative.",
         "Les conditions varient selon votre profil et votre historique bancaire.",
       ],
-    }),
-    faq: buildFaq([
+    }, [
       {
         question: "Qu'est-ce qu'une mensualité de crédit consommation ?",
         answer:
@@ -115,10 +113,8 @@ export const financeContent: ContentRegistry = {
           "Taux fixe, pas de frais ni d'assurance. Pour un devis exact, consultez votre banque ou un comparateur agréé.",
       },
     ]),
-  },
 
-  "interets-composes": {
-    content: buildRichContent({
+  "interets-composes": registryEntry("interets-composes", {
       intro:
         "Visualisez la croissance de votre épargne lorsque les intérêts générés sont réinvestis et produisent eux-mêmes des intérêts.",
       definition:
@@ -180,8 +176,7 @@ export const financeContent: ContentRegistry = {
         "Inflation et fiscalité non prises en compte.",
         "Ne remplace pas un conseil en gestion de patrimoine.",
       ],
-    }),
-    faq: buildFaq([
+    }, [
       {
         question: "Qu'est-ce que les intérêts composés ?",
         answer:
@@ -233,10 +228,8 @@ export const financeContent: ContentRegistry = {
           "Rendement constant, pas de fiscalité ni de frais. Les résultats passés ne préjugent pas des performances futures.",
       },
     ]),
-  },
 
-  "simulateur-inflation": {
-    content: buildRichContent({
+  "simulateur-inflation": registryEntry("simulateur-inflation", {
       intro:
         "Mesurez l'érosion progressive du pouvoir d'achat de votre épargne laissée en liquidités face à l'inflation.",
       definition:
@@ -295,8 +288,7 @@ export const financeContent: ContentRegistry = {
         "Ne modélise pas les hausses sectorielles (énergie, santé).",
         "Estimation pédagogique, pas une prévision économique.",
       ],
-    }),
-    faq: buildFaq([
+    }, [
       {
         question: "Qu'est-ce que l'érosion du pouvoir d'achat ?",
         answer:
@@ -348,10 +340,8 @@ export const financeContent: ContentRegistry = {
           "Taux constant, pas de rémunération du capital. Pour une analyse fine, croisez avec le simulateur intérêts composés.",
       },
     ]),
-  },
 
-  "budget-reste-a-vivre": {
-    content: buildRichContent({
+  "budget-reste-a-vivre": registryEntry("budget-reste-a-vivre", {
       intro:
         "Calculez le montant disponible chaque mois pour vos dépenses courantes, loisirs et épargne après déduction des charges obligatoires.",
       definition:
@@ -371,6 +361,8 @@ export const financeContent: ContentRegistry = {
       interpretation: [
         p("Un reste à vivre confortable laisse de la marge pour l'alimentation, les loisirs et l'épargne. Un reste faible signale un budget tendu ou un endettement excessif."),
         hl("Seuil bancaire", "Les banques exigent souvent 800 à 1 200 € de reste à vivre par adulte, variable selon la zone géographique et la composition du foyer."),
+        p("Le reste à vivre se calcule avant les dépenses variables (courses, loisirs) : c'est la marge après charges incompressibles, pas l'argent « libre » au sens strict."),
+        hl("Erreur fréquente", "Oublier un crédit revolving ou sous-estimer les charges de copropriété et l'impôt sur le revenu mensualisé."),
       ],
       limitesCalcul: [
         "Charges variables (courses, loisirs) non déduites.",
@@ -410,22 +402,21 @@ export const financeContent: ContentRegistry = {
         "Seuils bancaires variables selon l'établissement et la région.",
         "Ne remplace pas un bilan budgétaire complet avec un conseiller.",
       ],
-    }),
-    faq: buildFaq([
+    }, [
       {
-        question: "Qu'est-ce que le reste à vivre ?",
+        question: "3 000 € nets et 1 200 € de charges : combien de reste à vivre ?",
         answer:
-          "C'est le montant mensuel disponible après déduction du logement, des crédits et des charges fixes obligatoires.",
+          "3 000 − 1 200 = 1 800 €/mois, soit 60 % de vos revenus. Ce niveau est confortable pour un adulte seul en province.",
       },
       {
-        question: "Comment le calculer ?",
+        question: "800 € de reste à vivre : suffisant pour un crédit immo ?",
         answer:
-          "Soustrayez de vos revenus nets le loyer ou la mensualité, les autres crédits et les charges fixes (énergie, assurances, etc.).",
+          "C'est souvent le minimum exigé par les banques pour un adulte seul, mais la barre monte en Île-de-France (1 000 à 1 200 €), surtout avec des enfants.",
       },
       {
-        question: "Quel reste à vivre minimum pour obtenir un crédit ?",
+        question: "Endettement à 33 % mais reste à vivre faible : pourquoi un refus ?",
         answer:
-          "Les banques exigent généralement 800 à 1 200 € par adulte, parfois plus en zone tendue (Île-de-France).",
+          "Les banques croisent les deux critères. Un endettement conforme avec un reste à vivre insuffisant peut entraîner un refus, surtout en zone tendue.",
       },
       {
         question: "Reste à vivre et taux d'endettement : quel lien ?",
@@ -435,38 +426,36 @@ export const financeContent: ContentRegistry = {
       {
         question: "Quelles charges inclure dans « charges fixes » ?",
         answer:
-          "Énergie, assurances, téléphone, internet, transports, cantine, garde d'enfants, abonnements essentiels.",
+          "Énergie, assurances, téléphone, internet, transports, cantine, garde d'enfants, abonnements essentiels et impôt sur le revenu mensualisé.",
       },
       {
-        question: "Comment interpréter un reste à vivre faible ?",
+        question: "Faut-il inclure l'épargne automatique dans le calcul ?",
         answer:
-          "Identifiez les postes compressibles, renégociez vos crédits ou reportez les nouveaux emprunts.",
+          "Non. Le reste à vivre est ce qui reste avant l'épargne volontaire et les dépenses courantes variables (courses, loisirs).",
       },
       {
-        question: "Comment augmenter son reste à vivre ?",
+        question: "Comment augmenter son reste à vivre rapidement ?",
         answer:
-          "Réduire les charges fixes, rembourser les crédits les plus coûteux, ou augmenter les revenus (heures sup, activité complémentaire).",
+          "Renégocier assurance, énergie et mobile, solder un crédit conso coûteux, ou augmenter les revenus (heures sup, activité complémentaire).",
       },
       {
-        question: "Faut-il inclure l'épargne dans le calcul ?",
+        question: "Couple avec enfants : quel reste à vivre viser ?",
         answer:
-          "Non. Le reste à vivre est ce qui reste avant l'épargne volontaire et les dépenses courantes variables.",
+          "Les banques appliquent des coefficients par enfant. Visez au moins 1 000 à 1 500 € par adulte selon la zone, plus une marge par enfant à charge.",
       },
       {
-        question: "Quelles erreurs éviter ?",
+        question: "Quelles erreurs fausser le reste à vivre ?",
         answer:
-          "Oublier un crédit revolving, sous-estimer les charges de copropriété ou les dépenses annuelles réparties (impôts, entretien auto).",
+          "Oublier un crédit revolving, sous-estimer la copropriété, ne pas provisionner l'impôt sur le revenu ou les dépenses annuelles réparties (entretien auto).",
       },
       {
-        question: "Quelles sont les limites du simulateur ?",
+        question: "Quelles limites de ce simulateur ?",
         answer:
           "Pas de prise en compte des dépenses variables ni des charges exceptionnelles. Complétez avec un suivi budgétaire mensuel.",
       },
     ]),
-  },
 
-  "simulateur-retraite": {
-    content: buildRichContent({
+  "simulateur-retraite": registryEntry("simulateur-retraite", {
       intro:
         "Projetez le capital que vous pourrez accumuler d'ici la retraite grâce à une épargne régulière, en complément de vos droits sociaux.",
       definition:
@@ -487,6 +476,8 @@ export const financeContent: ContentRegistry = {
       interpretation: [
         p("Le capital estimé montre le complément possible à vos pensions légales. Le retrait à 4 % donne un ordre de grandeur du revenu mensuel sans épuiser le capital trop vite."),
         hl("PER", "Le Plan d'Épargne Retraite offre une réduction d'impôt sur les versements, mais les fonds sont bloqués jusqu'à la retraite (sauf cas de déblocage anticipé)."),
+        p("Commencer tôt compense un rendement modeste : à versements égaux, 10 ans de plus d'épargne peuvent doubler le capital final grâce aux intérêts composés."),
+        hl("Erreur fréquente", "Confondre ce complément d'épargne avec le montant de votre pension retraite légale : consultez Info-retraite pour estimer vos droits sociaux."),
       ],
       limitesCalcul: [
         "Rendement constant — pas de volatilité des marchés.",
@@ -529,63 +520,60 @@ export const financeContent: ContentRegistry = {
         "Rendement non garanti — scénarios prudents recommandés.",
         "Fiscalité à la sortie non détaillée ici.",
       ],
-    }),
-    faq: buildFaq([
+    }, [
       {
-        question: "À quoi sert le simulateur retraite ?",
+        question: "300 € par mois pendant 27 ans à 4 % : quel capital retraite ?",
         answer:
-          "Il projette un capital d'épargne personnelle complémentaire aux pensions de la Sécurité sociale, selon vos versements et un rendement estimé.",
+          "Avec 15 000 € déjà épargnés, le capital final tourne autour de 218 000 € dans notre exemple. Le simulateur adapte le calcul à vos paramètres.",
       },
       {
-        question: "Comment est calculé le capital final ?",
+        question: "Règle des 4 % : combien retirer par mois à la retraite ?",
         answer:
-          "Par capitalisation mensuelle du capital existant au rendement indiqué, avec ajout du versement mensuel, sur la durée entre aujourd'hui et l'âge de retraite.",
+          "Capital × 4 % ÷ 12. Sur 218 000 €, cela donne environ 729 €/mois de retrait durable sur 25-30 ans, en supposant un rendement moyen suffisant.",
       },
       {
-        question: "Qu'est-ce que la règle des 4 % ?",
+        question: "PER ou assurance-vie pour préparer sa retraite ?",
         answer:
-          "Elle estime qu'un retrait annuel de 4 % du capital permet de le préserver environ 25-30 ans, en supposant un rendement moyen de 5-7 %.",
+          "Le PER offre une réduction d'impôt à l'entrée mais bloque les fonds. L'assurance-vie est plus souple et fiscalement avantageuse après 8 ans pour la transmission.",
       },
       {
-        question: "PER ou PEA pour la retraite ?",
+        question: "Quel rendement annuel utiliser dans le simulateur ?",
         answer:
-          "Le PER offre une réduction d'impôt à l'entrée mais bloque les fonds. Le PEA est plus souple mais sans avantage fiscal immédiat.",
+          "4 % est prudent (fonds euros + obligations). 6-7 % pour un portefeuille actions diversifié sur long terme, avec volatilité à intégrer mentalement.",
       },
       {
-        question: "Quel rendement utiliser ?",
+        question: "À 45 ans, combien épargner pour compléter sa retraite ?",
         answer:
-          "4 % est prudent (fonds euros + obligations). 6-7 % pour un portefeuille actions diversifié sur long terme, avec volatilité.",
+          "Plus vous commencez tard, plus le versement mensuel doit être élevé pour atteindre le même capital. Testez plusieurs scénarios de versement dans le simulateur.",
       },
       {
-        question: "Comment interpréter le retrait mensuel ?",
+        question: "Ce simulateur remplace-t-il Info-retraite ou M@rel ?",
         answer:
-          "C'est un ordre de grandeur de complément de revenu, en euros d'aujourd'hui. Corrigez mentalement pour l'inflation future.",
+          "Non. Il projette uniquement votre épargne personnelle. Vos pensions légales se estiment sur les simulateurs officiels de l'Assurance retraite.",
       },
       {
-        question: "Ce simulateur remplace-t-il M@rel ?",
+        question: "L'inflation est-elle prise en compte ?",
         answer:
-          "Non. M@rel et Info-retraite calculent vos droits sociaux. Ce simulateur couvre uniquement l'épargne personnelle.",
+          "Non. Les montants affichés sont en euros d'aujourd'hui. L'inflation réduira le pouvoir d'achat futur : prévoyez des versements croissants.",
       },
       {
-        question: "Faut-il tenir compte de l'inflation ?",
+        question: "Peut-on retirer plus de 4 % du capital ?",
         answer:
-          "Oui. Intégrez 2 % d'inflation minimum dans vos besoins futurs. 729 € dans 27 ans auront un pouvoir d'achat bien inférieur.",
+          "Oui, mais le capital risque de s'épuiser plus vite. La règle des 4 % vise un équilibre entre revenu et préservation sur 25-30 ans.",
       },
       {
-        question: "Quelles erreurs éviter ?",
+        question: "Versements réguliers ou ponctuels : que simuler ?",
         answer:
-          "Compter uniquement sur l'épargne sans vérifier vos droits sociaux, ou surestimer le rendement (8-10 % de façon systématique).",
+          "Indiquez votre capital actuel plus un versement mensuel moyen. Les versements irréguliers peuvent être lissés sur une moyenne annuelle.",
       },
       {
-        question: "Quelles sont les limites du calcul ?",
+        question: "Quelles limites de cette projection ?",
         answer:
-          "Rendement constant, pas de fiscalité à la sortie, pas de prise en compte des aléas (chômage, baisse de revenus).",
+          "Rendement constant, pas de volatilité ni de fiscalité à la sortie détaillée. Complétez avec un conseiller pour un plan personnalisé.",
       },
     ]),
-  },
 
-  "rendement-livret-a": {
-    content: buildRichContent({
+  "rendement-livret-a": registryEntry("rendement-livret-a", {
       intro:
         "Estimez les intérêts produits par votre Livret A sur une période donnée, dans un cadre fiscal avantageux et sans risque.",
       definition:
@@ -643,8 +631,7 @@ export const financeContent: ContentRegistry = {
         "Calcul par quinzaine non modélisé.",
         "Ne compare pas au rendement des placements risqués (PEA, actions).",
       ],
-    }),
-    faq: buildFaq([
+    }, [
       {
         question: "Qu'est-ce que le Livret A ?",
         answer:
@@ -696,10 +683,8 @@ export const financeContent: ContentRegistry = {
           "Pas de modélisation par quinzaine, pas de mouvements (dépôts/retraits) intermédiaires, taux constant.",
       },
     ]),
-  },
 
-  "rendement-pea": {
-    content: buildRichContent({
+  "rendement-pea": registryEntry("rendement-pea", {
       intro:
         "Estimez la performance nette de votre Plan d'Épargne en Actions (PEA) en tenant compte de la fiscalité avant et après 5 ans de détention.",
       definition:
@@ -762,8 +747,7 @@ export const financeContent: ContentRegistry = {
         "Frais de gestion et droits de garde non inclus.",
         "Plafond de versements : 150 000 € sur le PEA classique.",
       ],
-    }),
-    faq: buildFaq([
+    }, [
       {
         question: "Qu'est-ce que le PEA ?",
         answer:
@@ -815,10 +799,8 @@ export const financeContent: ContentRegistry = {
           "Rendement constant, capital unique, pas de frais. Les performances passées ne garantissent pas les résultats futurs.",
       },
     ]),
-  },
 
-  "cout-total-credit-consommation": {
-    content: buildRichContent({
+  "cout-total-credit-consommation": registryEntry("cout-total-credit-consommation", {
       intro:
         "Calculez le coût réel d'un crédit à la consommation : intérêts, frais de dossier et TAEG simplifié pour comparer les offres.",
       definition:
@@ -881,8 +863,7 @@ export const financeContent: ContentRegistry = {
         "Assurance emprunteur non incluse par défaut.",
         "Ne tient pas compte des pénalités de remboursement anticipé.",
       ],
-    }),
-    faq: buildFaq([
+    }, [
       {
         question: "Qu'est-ce que le coût total d'un crédit ?",
         answer:
@@ -934,10 +915,8 @@ export const financeContent: ContentRegistry = {
           "TAEG simplifié, pas d'assurance ni de frais annexes variables. L'offre contractuelle fait foi.",
       },
     ]),
-  },
 
-  "loa-vs-credit-auto": {
-    content: buildRichContent({
+  "loa-vs-credit-auto": registryEntry("loa-vs-credit-auto", {
       intro:
         "Comparez le coût total d'une Location avec Option d'Achat (LOA) et d'un crédit auto classique pour choisir le meilleur financement.",
       definition:
@@ -999,8 +978,7 @@ export const financeContent: ContentRegistry = {
         "Option d'achat LOA non incluse dans le calcul.",
         "Entretien, assurance et carburant non comparés.",
       ],
-    }),
-    faq: buildFaq([
+    }, [
       {
         question: "Qu'est-ce que la LOA ?",
         answer:
@@ -1052,10 +1030,8 @@ export const financeContent: ContentRegistry = {
           "Option d'achat LOA, assurance et entretien non inclus. Valeur de reprise indicative.",
       },
     ]),
-  },
 
-  "frais-kilometriques": {
-    content: buildRichContent({
+  "frais-kilometriques": registryEntry("frais-kilometriques", {
       intro:
         "Estimez vos frais kilométriques professionnels déductibles selon le barème fiscal officiel simplifié.",
       definition:
@@ -1113,8 +1089,7 @@ export const financeContent: ContentRegistry = {
         "Trajets domicile-travail généralement exclus.",
         "Impossible de cumuler barème et frais réels sur le même véhicule.",
       ],
-    }),
-    faq: buildFaq([
+    }, [
       {
         question: "Qu'est-ce que le barème kilométrique ?",
         answer:
@@ -1166,5 +1141,4 @@ export const financeContent: ContentRegistry = {
           "Barème simplifié à coefficient fixe. Le barème officiel prévoit des tranches dégressives selon le kilométrage total annuel.",
       },
     ]),
-  },
 };

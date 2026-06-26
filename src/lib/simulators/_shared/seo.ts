@@ -193,6 +193,38 @@ function inferToolKind(sim: SimulatorDefinition): ToolKind {
   return "simulateur";
 }
 
+/** Slugs où « Calculateur » reste plus naturel que « Simulateur » (H1 uniquement). */
+const H1_CALCULATEUR_SLUGS = new Set<string>([
+  "calculateur-imc",
+  "calculateur-tva",
+  "calculateur-pourcentage",
+  "calculateur-age",
+  "calculateur-pourboire",
+  "calculateur-ovulation",
+  "calculateur-tjm-freelance",
+  "regle-de-trois",
+  "partage-facture",
+  "convertisseur-devises",
+  "convertisseur-heures-minutes",
+  "vitesse-distance-temps",
+  "evolution-pourcentage",
+  "quantite-peinture",
+  "calcul-carrelage",
+  "volume-beton",
+  "surface-parquet",
+  "volume-surface-piece",
+  "quantite-mortier",
+  "frais-de-notaire",
+  "date-accouchement",
+]);
+
+function inferH1Kind(sim: SimulatorDefinition): ToolKind {
+  if (H1_CALCULATEUR_SLUGS.has(sim.slug)) return "calculateur";
+  const overrideTitle = SEO_OVERRIDES[sim.slug]?.title;
+  if (overrideTitle && /^calculateur/i.test(overrideTitle)) return "calculateur";
+  return "simulateur";
+}
+
 function frenchDe(phrase: string): string {
   const trimmed = phrase.trim();
   const first = trimmed.charAt(0).toLowerCase();
@@ -217,6 +249,36 @@ export function buildSeoTitle(sim: SimulatorDefinition): string {
   }
 
   const kind = inferToolKind(sim);
+  const label = kind === "calculateur" ? "Calculateur" : "Simulateur";
+  return `${label} ${frenchDe(raw)}`;
+}
+
+/** Titre H1 affiché sur la page — privilégie « Simulateur » sauf cas pertinents. */
+export function buildH1Title(sim: SimulatorDefinition): string {
+  const override = SEO_OVERRIDES[sim.slug]?.title;
+  if (override) {
+    if (
+      !H1_CALCULATEUR_SLUGS.has(sim.slug) &&
+      /^Calculateur/i.test(override)
+    ) {
+      return override.replace(/^Calculateur/i, "Simulateur");
+    }
+    return override;
+  }
+
+  const raw = sim.title.trim();
+  if (/^(simulateur|calculateur)\s/i.test(raw)) {
+    const normalized = capitalizeFirst(raw);
+    if (
+      !H1_CALCULATEUR_SLUGS.has(sim.slug) &&
+      /^Calculateur/i.test(normalized)
+    ) {
+      return normalized.replace(/^Calculateur/i, "Simulateur");
+    }
+    return normalized;
+  }
+
+  const kind = inferH1Kind(sim);
   const label = kind === "calculateur" ? "Calculateur" : "Simulateur";
   return `${label} ${frenchDe(raw)}`;
 }
@@ -274,7 +336,7 @@ export function applySeoEnrichment(sim: SimulatorDefinition): SimulatorDefinitio
 
   return {
     ...sim,
-    title: seoTitle,
+    title: buildH1Title(sim),
     metaTitle,
     metaDescription,
     keywords,

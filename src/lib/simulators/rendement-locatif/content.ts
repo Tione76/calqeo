@@ -4,7 +4,7 @@ export const rendementLocatifContent: SimulatorContent = {
   sections: [
     {
       id: "comment-fonctionne",
-      title: "Comment fonctionne ce calcul ?",
+      title: "Comment calculer le rendement locatif d'un bien ?",
       subtitle:
         "Ce simulateur mesure la rentabilité de votre investissement locatif en comparant les loyers perçus au coût total d'acquisition, puis en intégrant les charges et la vacance locative.",
       subsections: [
@@ -156,11 +156,26 @@ export const rendementLocatifContent: SimulatorContent = {
             },
           ],
         },
+        {
+          id: "erreurs-frequentes",
+          title: "Erreurs fréquentes dans l'évaluation d'un investissement locatif",
+          blocks: [
+            {
+              type: "list",
+              items: [
+                "Se fier au rendement brut sans intégrer taxe foncière, copropriété et vacance locative.",
+                "Oublier les frais de notaire et de travaux dans le coût total d'acquisition.",
+                "Comparer le rendement d'une grande ville à celui d'une zone rurale sans tenir compte du risque et de la liquidité.",
+                "Ignorer le crédit : un bon rendement brut peut masquer un cash-flow négatif si la mensualité est élevée.",
+              ],
+            },
+          ],
+        },
       ],
     },
     {
       id: "exemple-concret",
-      title: "Exemple concret chiffré",
+      title: "Exemple de calcul de rendement locatif",
       subtitle:
         "Cas pratique : Marc investit dans un appartement locatif en province.",
       subsections: [
@@ -233,13 +248,13 @@ export const rendementLocatifContent: SimulatorContent = {
     },
     {
       id: "conseils-limites",
-      title: "Conseils et limites",
+      title: "Conseils pour améliorer la rentabilité locative",
       subtitle:
         "Optimisez votre analyse et connaissez les limites de l'outil.",
       subsections: [
         {
           id: "conseils-pratiques",
-          title: "Conseils pratiques",
+          title: "Que faut-il savoir avant d'investir en locatif ?",
           blocks: [
             {
               type: "list",
@@ -255,7 +270,7 @@ export const rendementLocatifContent: SimulatorContent = {
         },
         {
           id: "limites-simulateur",
-          title: "Limites du simulateur",
+          title: "Que ne mesure pas ce simulateur de rendement ?",
           blocks: [
             {
               type: "list",

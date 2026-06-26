@@ -1,4 +1,8 @@
 import type { ContentBlock, FAQItem, SimulatorContent } from "../types";
+import {
+  getSimulatorHeadings,
+  type SimulatorHeadings,
+} from "./content/simulator-headings";
 
 
 
@@ -120,6 +124,8 @@ export function buildContent(params: {
 
 export interface RichContentSpec {
 
+  slug?: string;
+
   intro: string;
 
   definition: string;
@@ -158,7 +164,12 @@ export interface RichContentSpec {
 
 
 
-export function buildRichContent(spec: RichContentSpec): SimulatorContent {
+export function buildRichContent(
+  spec: RichContentSpec,
+  slug?: string
+): SimulatorContent {
+  const resolvedSlug = slug ?? spec.slug ?? "";
+  const h: SimulatorHeadings = getSimulatorHeadings(resolvedSlug);
 
   const howSubsections = [
 
@@ -166,7 +177,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
       id: "definition",
 
-      title: "Définition",
+      title: h.definition,
 
       blocks: [p(spec.definition)],
 
@@ -176,7 +187,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
       id: "objectif",
 
-      title: "Objectif du simulateur",
+      title: h.objectif,
 
       blocks: [p(spec.objectif)],
 
@@ -186,7 +197,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
       id: "variables",
 
-      title: "Variables prises en compte",
+      title: h.variables,
 
       blocks: [ul(spec.variables, "Paramètres du formulaire :")],
 
@@ -196,7 +207,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
       id: "formules",
 
-      title: "Formule(s) utilisée(s)",
+      title: h.formules,
 
       blocks: spec.formules,
 
@@ -206,7 +217,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
       id: "interpretation",
 
-      title: "Interprétation du résultat",
+      title: h.interpretation,
 
       blocks: spec.interpretation,
 
@@ -216,7 +227,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
       id: "limites-calcul",
 
-      title: "Limites du calcul",
+      title: h.limitesCalcul,
 
       blocks: [ul(spec.limitesCalcul)],
 
@@ -232,7 +243,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
       id: "maillage",
 
-      title: "Simulateurs complémentaires",
+      title: h.maillage,
 
       blocks: [
 
@@ -256,7 +267,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
         id: "comment-fonctionne",
 
-        title: "Comment fonctionne ce calcul ?",
+        title: h.mainSection,
 
         subtitle: spec.intro,
 
@@ -268,7 +279,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
         id: "exemple-concret",
 
-        title: "Exemple concret",
+        title: h.exempleSection,
 
         subtitle: spec.example.title,
 
@@ -278,7 +289,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
             id: "exemple-donnees",
 
-            title: "Données saisies",
+            title: h.exempleDonnees,
 
             blocks: [ul(spec.example.donnees)],
 
@@ -288,7 +299,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
             id: "exemple-calcul",
 
-            title: "Calcul effectué",
+            title: h.exempleCalcul,
 
             blocks: [ul(spec.example.calcul, undefined, true)],
 
@@ -298,7 +309,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
             id: "exemple-resultat",
 
-            title: "Résultat obtenu",
+            title: h.exempleResultat,
 
             blocks: [hl("Résultat", spec.example.resultat)],
 
@@ -308,7 +319,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
             id: "exemple-interpretation",
 
-            title: "Interprétation",
+            title: h.exempleInterpretation,
 
             blocks: [p(spec.example.interpretation)],
 
@@ -322,7 +333,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
         id: "conseils-limites",
 
-        title: "Conseils et limites",
+        title: h.conseilsSection,
 
         subtitle:
 
@@ -334,7 +345,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
             id: "conseils",
 
-            title: "Conseils pratiques",
+            title: h.conseils,
 
             blocks: [ul(spec.conseils)],
 
@@ -344,7 +355,7 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
             id: "limites",
 
-            title: "Limites du simulateur",
+            title: h.limites,
 
             blocks: [ul(spec.limites)],
 
@@ -358,6 +369,20 @@ export function buildRichContent(spec: RichContentSpec): SimulatorContent {
 
   };
 
+}
+
+
+
+/** Assemble contenu enrichi + FAQ en passant le slug pour les titres SEO manuels. */
+export function registryEntry(
+  slug: string,
+  spec: Omit<RichContentSpec, "slug">,
+  faqItems: { question: string; answer: string | ContentBlock[] }[]
+): { content: SimulatorContent; faq: FAQItem[] } {
+  return {
+    content: buildRichContent(spec, slug),
+    faq: buildFaq(faqItems),
+  };
 }
 
 

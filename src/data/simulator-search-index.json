@@ -427,7 +427,7 @@
   },
   {
     "slug": "rendement-locatif-brut",
-    "title": "Calculateur de rendement locatif brut",
+    "title": "Simulateur de rendement locatif brut",
     "shortDescription": "Calculez rapidement le rendement locatif brut (loyers / investissement).",
     "metaTitle": "Calculateur de rendement locatif brut — Avant charges et vacance",
     "metaDescription": "Estimez le rendement locatif brut avant charges : loyers annuels rapportés au coût total d'acquisition. Idéal pour comparer rapidement plusieurs biens.",
@@ -449,7 +449,7 @@
   },
   {
     "slug": "rendement-locatif-net",
-    "title": "Calculateur de rendement locatif net",
+    "title": "Simulateur de rendement locatif net",
     "shortDescription": "Calculez le rendement locatif net après charges et vacance locative.",
     "metaTitle": "Calculateur de rendement locatif net — Après charges et vacance",
     "metaDescription": "Calculez le rendement locatif net après charges courantes et vacance locative. Affinez la rentabilité réelle de votre investissement locatif.",
@@ -1113,7 +1113,7 @@
   },
   {
     "slug": "frais-kilometriques",
-    "title": "Calculateur de frais kilométriques",
+    "title": "Simulateur de frais kilométriques",
     "shortDescription": "Estimez vos frais kilométriques professionnels selon le barème fiscal.",
     "metaTitle": "Calculateur frais kilométriques — Barème fiscal 2026",
     "metaDescription": "Estimez vos frais kilométriques déductibles selon le barème fiscal officiel. Calcul gratuit pour déclaration d'impôts.",
@@ -1400,7 +1400,7 @@
   },
   {
     "slug": "revenu-net-independant",
-    "title": "Calculateur de revenu net indépendant",
+    "title": "Simulateur de revenu net indépendant",
     "shortDescription": "Estimez le revenu net après charges sociales à partir de votre chiffre d'affaires annuel.",
     "metaTitle": "Simulateur revenu net indépendant — Après charges",
     "metaDescription": "Calculez votre revenu net d'indépendant : CA, charges URSSAF et frais. Complément au simulateur micro-entrepreneur fiscal.",
@@ -1423,7 +1423,7 @@
   },
   {
     "slug": "sasu-remuneration-dividendes",
-    "title": "Calculateur de sASU salaire vs dividendes",
+    "title": "Simulateur de sASU salaire vs dividendes",
     "shortDescription": "Comparez le net perçu via salaire (assimilé salarié) ou dividendes (flat tax) en SASU.",
     "metaTitle": "Simulateur SASU salaire vs dividendes — Comparatif net",
     "metaDescription": "Calculateur de sASU salaire vs dividendes : Comparez le net perçu via salaire (assimilé salarié) ou dividendes (flat tax) en SASU. Calculez en ligne gratuitement — estimation instantanée pour vos projets entreprises & indépendants.",
@@ -1447,7 +1447,7 @@
   },
   {
     "slug": "portage-salarial-vs-freelance",
-    "title": "Calculateur de portage salarial vs freelance",
+    "title": "Simulateur de portage salarial vs freelance",
     "shortDescription": "Comparez le revenu net en portage salarial (~50 % du CA) et en micro-entreprise freelance.",
     "metaTitle": "Simulateur portage salarial vs freelance — Comparatif net",
     "metaDescription": "Calculateur de portage salarial vs freelance : Comparez le revenu net en portage salarial (~50 % du CA) et en micro-entreprise freelance. Calculez en ligne gratuitement — estimation instantanée pour vos projets entreprises & indépendants.",
@@ -1470,7 +1470,7 @@
   },
   {
     "slug": "seuil-franchise-tva",
-    "title": "Calculateur de seuil franchise TVA",
+    "title": "Simulateur de seuil franchise TVA",
     "shortDescription": "Vérifiez si votre CA annuel reste sous les seuils de franchise en base de TVA.",
     "metaTitle": "Simulateur seuil franchise TVA — Plafonds 2025",
     "metaDescription": "Calculateur de seuil franchise TVA : Vérifiez si votre CA annuel reste sous les seuils de franchise en base de TVA. Calculez en ligne gratuitement — estimation instantanée pour vos projets entreprises & indépendants.",
@@ -1494,7 +1494,7 @@
   },
   {
     "slug": "break-even-entreprise",
-    "title": "Calculateur de seuil de rentabilité",
+    "title": "Simulateur de seuil de rentabilité",
     "shortDescription": "Calculez le chiffre d'affaires minimum pour couvrir vos charges fixes et variables.",
     "metaTitle": "Simulateur seuil de rentabilité — Break-even",
     "metaDescription": "Calculateur de seuil de rentabilité : Calculez le chiffre d'affaires minimum pour couvrir vos charges fixes et variables. Calculez en ligne gratuitement — estimation instantanée pour vos projets entreprises & indépendants.",
@@ -1518,7 +1518,7 @@
   },
   {
     "slug": "marge-commerciale-taux",
-    "title": "Calculateur de marge commerciale",
+    "title": "Simulateur de marge commerciale",
     "shortDescription": "Calculez le prix de vente HT à partir du coût d'achat et du taux de marge souhaité.",
     "metaTitle": "Simulateur marge commerciale — Prix de vente et markup",
     "metaDescription": "Calculez votre marge commerciale, coefficient multiplicateur et prix de vente HT. Outil gratuit commerçants et artisans.",
@@ -1542,7 +1542,7 @@
   },
   {
     "slug": "cout-horaire-charge-tns",
-    "title": "Calculateur de coût horaire chargé TNS",
+    "title": "Simulateur de coût horaire chargé TNS",
     "shortDescription": "Estimez le taux horaire facturable pour couvrir charges TNS, frais et rémunération nette.",
     "metaTitle": "Simulateur coût horaire chargé TNS — Tarif indépendant",
     "metaDescription": "Calculateur de coût horaire chargé TNS : Estimez le taux horaire facturable pour couvrir charges TNS, frais et rémunération nette. Calculez en ligne gratuitement — estimation instantanée pour vos projets entreprises & indépendants.",
@@ -1566,7 +1566,7 @@
   },
   {
     "slug": "exoneration-acre",
-    "title": "Calculateur d'exonération ACRE",
+    "title": "Simulateur d'exonération ACRE",
     "shortDescription": "Estimez l'économie de charges sociales grâce à l'ACRE la première année d'activité.",
     "metaTitle": "Simulateur exonération ACRE — Réduction charges créateur",
     "metaDescription": "Calculez l'économie ACRE sur vos cotisations URSSAF la 1re année : 50 % de réduction (simplifié). Outil créateurs d'entreprise.",
@@ -1590,7 +1590,7 @@
   },
   {
     "slug": "facturation-objectif-revenu-net",
-    "title": "Calculateur de facturation objectif revenu net",
+    "title": "Simulateur de facturation objectif revenu net",
     "shortDescription": "Calculez le CA mensuel à facturer pour atteindre un revenu net mensuel cible.",
     "metaTitle": "Simulateur facturation objectif revenu net — CA mensuel",
     "metaDescription": "Calculateur de facturation objectif revenu net : Calculez le CA mensuel à facturer pour atteindre un revenu net mensuel cible. Calculez en ligne gratuitement — estimation instantanée pour vos projets entreprises & indépendants.",
@@ -2097,7 +2097,7 @@
   },
   {
     "slug": "poids-ideal",
-    "title": "Calculateur de poids idéal",
+    "title": "Simulateur de poids idéal",
     "shortDescription": "Estimez votre poids idéal selon différentes formules (Creff, Lorentz, IMC cible).",
     "metaTitle": "Calculateur de poids idéal — Calcul gratuit en ligne",
     "metaDescription": "Calculateur de poids idéal : Estimez votre poids idéal selon différentes formules (Creff, Lorentz, IMC cible). Calculez en ligne gratuitement — estimation instantanée pour vos projets santé.",
@@ -2120,7 +2120,7 @@
   },
   {
     "slug": "calories-journalieres",
-    "title": "Calculateur de calories journalières",
+    "title": "Simulateur de calories journalières",
     "shortDescription": "Estimez vos besoins caloriques quotidiens selon l'activité physique.",
     "metaTitle": "Calculateur calories journalières — BMR et besoins",
     "metaDescription": "Calculateur de calories journalières : Estimez vos besoins caloriques quotidiens selon l'activité physique. Calculez en ligne gratuitement — estimation instantanée pour vos projets santé.",
@@ -2189,7 +2189,7 @@
   },
   {
     "slug": "hydratation-quotidienne",
-    "title": "Calculateur d'hydratation quotidienne",
+    "title": "Simulateur d'hydratation quotidienne",
     "shortDescription": "Estimez la quantité d'eau à consommer chaque jour selon votre poids et activité.",
     "metaTitle": "Calculateur hydratation quotidienne — Eau par jour",
     "metaDescription": "Calculateur d'hydratation quotidienne : Estimez la quantité d'eau à consommer chaque jour selon votre poids et activité. Calculez en ligne gratuitement — estimation instantanée pour vos projets santé.",
@@ -2212,7 +2212,7 @@
   },
   {
     "slug": "proteines-journalieres",
-    "title": "Calculateur de protéines journalières",
+    "title": "Simulateur de protéines journalières",
     "shortDescription": "Calculez vos besoins quotidiens en protéines selon poids et objectif.",
     "metaTitle": "Calculateur protéines journalières — Besoins",
     "metaDescription": "Calculateur de protéines journalières : Calculez vos besoins quotidiens en protéines selon poids et objectif. Calculez en ligne gratuitement — estimation instantanée pour vos projets santé.",
@@ -2235,7 +2235,7 @@
   },
   {
     "slug": "economies-arret-tabac",
-    "title": "Calculateur d'économies arrêt tabac",
+    "title": "Simulateur d'économies arrêt tabac",
     "shortDescription": "Calculez les économies réalisées en arrêtant le tabac sur une période donnée.",
     "metaTitle": "Calculateur d'économies arrêt tabac — Calcul gratuit en ligne",
     "metaDescription": "Calculateur d'économies arrêt tabac : Calculez les économies réalisées en arrêtant le tabac sur une période donnée. Calculez en ligne gratuitement — estimation instantanée pour vos projets santé.",
@@ -2258,7 +2258,7 @@
   },
   {
     "slug": "unites-alcool",
-    "title": "Calculateur d'unités d'alcool",
+    "title": "Simulateur d'unités d'alcool",
     "shortDescription": "Convertissez vos consommations en unités d'alcool et comparez aux recommandations.",
     "metaTitle": "Calculateur unités d'alcool — Consommation",
     "metaDescription": "Calculateur d'unités d'alcool : Convertissez vos consommations en unités d'alcool et comparez aux recommandations. Calculez en ligne gratuitement — estimation instantanée pour vos projets santé.",
@@ -2281,7 +2281,7 @@
   },
   {
     "slug": "cycles-sommeil",
-    "title": "Calculateur de cycles de sommeil",
+    "title": "Simulateur de cycles de sommeil",
     "shortDescription": "Calculez les heures idéales de réveil ou de coucher selon les cycles de 90 minutes.",
     "metaTitle": "Calculateur cycles de sommeil — Heure réveil",
     "metaDescription": "Calculateur de cycles de sommeil : Calculez les heures idéales de réveil ou de coucher selon les cycles de 90 minutes. Calculez en ligne gratuitement — estimation instantanée pour vos projets santé.",

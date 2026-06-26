@@ -245,7 +245,7 @@
         },
         {
           "slug": "rendement-locatif-brut",
-          "title": "Calculateur de rendement locatif brut",
+          "title": "Simulateur de rendement locatif brut",
           "shortDescription": "Calculez rapidement le rendement locatif brut (loyers / investissement).",
           "icon": "chart",
           "category": "investissement",
@@ -254,7 +254,7 @@
         },
         {
           "slug": "rendement-locatif-net",
-          "title": "Calculateur de rendement locatif net",
+          "title": "Simulateur de rendement locatif net",
           "shortDescription": "Calculez le rendement locatif net après charges et vacance locative.",
           "icon": "chart",
           "category": "investissement",
@@ -597,7 +597,7 @@
         },
         {
           "slug": "frais-kilometriques",
-          "title": "Calculateur de frais kilométriques",
+          "title": "Simulateur de frais kilométriques",
           "shortDescription": "Estimez vos frais kilométriques professionnels selon le barème fiscal.",
           "icon": "calculator",
           "category": "credit",
@@ -790,15 +790,15 @@
         },
         {
           "slug": "revenu-net-independant",
-          "title": "Calculateur de revenu net indépendant"
+          "title": "Simulateur de revenu net indépendant"
         },
         {
           "slug": "sasu-remuneration-dividendes",
-          "title": "Calculateur de sASU salaire vs dividendes"
+          "title": "Simulateur de sASU salaire vs dividendes"
         },
         {
           "slug": "break-even-entreprise",
-          "title": "Calculateur de seuil de rentabilité"
+          "title": "Simulateur de seuil de rentabilité"
         }
       ],
       "preview": [
@@ -813,7 +813,7 @@
         },
         {
           "slug": "revenu-net-independant",
-          "title": "Calculateur de revenu net indépendant",
+          "title": "Simulateur de revenu net indépendant",
           "shortDescription": "Estimez le revenu net après charges sociales à partir de votre chiffre d'affaires annuel.",
           "icon": "wallet",
           "category": "independant",
@@ -822,7 +822,7 @@
         },
         {
           "slug": "sasu-remuneration-dividendes",
-          "title": "Calculateur de sASU salaire vs dividendes",
+          "title": "Simulateur de sASU salaire vs dividendes",
           "shortDescription": "Comparez le net perçu via salaire (assimilé salarié) ou dividendes (flat tax) en SASU.",
           "icon": "chart",
           "category": "independant",
@@ -831,7 +831,7 @@
         },
         {
           "slug": "portage-salarial-vs-freelance",
-          "title": "Calculateur de portage salarial vs freelance",
+          "title": "Simulateur de portage salarial vs freelance",
           "shortDescription": "Comparez le revenu net en portage salarial (~50 % du CA) et en micro-entreprise freelance.",
           "icon": "scale",
           "category": "independant",
@@ -840,7 +840,7 @@
         },
         {
           "slug": "seuil-franchise-tva",
-          "title": "Calculateur de seuil franchise TVA",
+          "title": "Simulateur de seuil franchise TVA",
           "shortDescription": "Vérifiez si votre CA annuel reste sous les seuils de franchise en base de TVA.",
           "icon": "percent",
           "category": "entreprise-gestion",
@@ -849,7 +849,7 @@
         },
         {
           "slug": "break-even-entreprise",
-          "title": "Calculateur de seuil de rentabilité",
+          "title": "Simulateur de seuil de rentabilité",
           "shortDescription": "Calculez le chiffre d'affaires minimum pour couvrir vos charges fixes et variables.",
           "icon": "chart",
           "category": "entreprise-gestion",
@@ -869,7 +869,7 @@
         },
         {
           "slug": "revenu-net-independant",
-          "title": "Calculateur de revenu net indépendant",
+          "title": "Simulateur de revenu net indépendant",
           "shortDescription": "Estimez le revenu net après charges sociales à partir de votre chiffre d'affaires annuel.",
           "icon": "wallet",
           "category": "independant",
@@ -878,7 +878,7 @@
         },
         {
           "slug": "sasu-remuneration-dividendes",
-          "title": "Calculateur de sASU salaire vs dividendes",
+          "title": "Simulateur de sASU salaire vs dividendes",
           "shortDescription": "Comparez le net perçu via salaire (assimilé salarié) ou dividendes (flat tax) en SASU.",
           "icon": "chart",
           "category": "independant",
@@ -887,7 +887,7 @@
         },
         {
           "slug": "portage-salarial-vs-freelance",
-          "title": "Calculateur de portage salarial vs freelance",
+          "title": "Simulateur de portage salarial vs freelance",
           "shortDescription": "Comparez le revenu net en portage salarial (~50 % du CA) et en micro-entreprise freelance.",
           "icon": "scale",
           "category": "independant",
@@ -896,7 +896,7 @@
         },
         {
           "slug": "seuil-franchise-tva",
-          "title": "Calculateur de seuil franchise TVA",
+          "title": "Simulateur de seuil franchise TVA",
           "shortDescription": "Vérifiez si votre CA annuel reste sous les seuils de franchise en base de TVA.",
           "icon": "percent",
           "category": "entreprise-gestion",
@@ -905,7 +905,7 @@
         },
         {
           "slug": "break-even-entreprise",
-          "title": "Calculateur de seuil de rentabilité",
+          "title": "Simulateur de seuil de rentabilité",
           "shortDescription": "Calculez le chiffre d'affaires minimum pour couvrir vos charges fixes et variables.",
           "icon": "chart",
           "category": "entreprise-gestion",
@@ -914,7 +914,7 @@
         },
         {
           "slug": "marge-commerciale-taux",
-          "title": "Calculateur de marge commerciale",
+          "title": "Simulateur de marge commerciale",
           "shortDescription": "Calculez le prix de vente HT à partir du coût d'achat et du taux de marge souhaité.",
           "icon": "calculator",
           "category": "entreprise-gestion",
@@ -923,7 +923,7 @@
         },
         {
           "slug": "cout-horaire-charge-tns",
-          "title": "Calculateur de coût horaire chargé TNS",
+          "title": "Simulateur de coût horaire chargé TNS",
           "shortDescription": "Estimez le taux horaire facturable pour couvrir charges TNS, frais et rémunération nette.",
           "icon": "tools",
           "category": "independant",
@@ -932,7 +932,7 @@
         },
         {
           "slug": "exoneration-acre",
-          "title": "Calculateur d'exonération ACRE",
+          "title": "Simulateur d'exonération ACRE",
           "shortDescription": "Estimez l'économie de charges sociales grâce à l'ACRE la première année d'activité.",
           "icon": "percent",
           "category": "independant",
@@ -941,7 +941,7 @@
         },
         {
           "slug": "facturation-objectif-revenu-net",
-          "title": "Calculateur de facturation objectif revenu net",
+          "title": "Simulateur de facturation objectif revenu net",
           "shortDescription": "Calculez le CA mensuel à facturer pour atteindre un revenu net mensuel cible.",
           "icon": "chart",
           "category": "independant",
@@ -1306,7 +1306,7 @@
         },
         {
           "slug": "calories-journalieres",
-          "title": "Calculateur de calories journalières"
+          "title": "Simulateur de calories journalières"
         },
         {
           "slug": "date-accouchement",
@@ -1314,7 +1314,7 @@
         },
         {
           "slug": "poids-ideal",
-          "title": "Calculateur de poids idéal"
+          "title": "Simulateur de poids idéal"
         }
       ],
       "preview": [
@@ -1329,7 +1329,7 @@
         },
         {
           "slug": "poids-ideal",
-          "title": "Calculateur de poids idéal",
+          "title": "Simulateur de poids idéal",
           "shortDescription": "Estimez votre poids idéal selon différentes formules (Creff, Lorentz, IMC cible).",
           "icon": "scale",
           "category": "sante",
@@ -1338,7 +1338,7 @@
         },
         {
           "slug": "calories-journalieres",
-          "title": "Calculateur de calories journalières",
+          "title": "Simulateur de calories journalières",
           "shortDescription": "Estimez vos besoins caloriques quotidiens selon l'activité physique.",
           "icon": "heart",
           "category": "sante",
@@ -1365,7 +1365,7 @@
         },
         {
           "slug": "hydratation-quotidienne",
-          "title": "Calculateur d'hydratation quotidienne",
+          "title": "Simulateur d'hydratation quotidienne",
           "shortDescription": "Estimez la quantité d'eau à consommer chaque jour selon votre poids et activité.",
           "icon": "heart",
           "category": "sante",
@@ -1385,7 +1385,7 @@
         },
         {
           "slug": "poids-ideal",
-          "title": "Calculateur de poids idéal",
+          "title": "Simulateur de poids idéal",
           "shortDescription": "Estimez votre poids idéal selon différentes formules (Creff, Lorentz, IMC cible).",
           "icon": "scale",
           "category": "sante",
@@ -1394,7 +1394,7 @@
         },
         {
           "slug": "calories-journalieres",
-          "title": "Calculateur de calories journalières",
+          "title": "Simulateur de calories journalières",
           "shortDescription": "Estimez vos besoins caloriques quotidiens selon l'activité physique.",
           "icon": "heart",
           "category": "sante",
@@ -1421,7 +1421,7 @@
         },
         {
           "slug": "hydratation-quotidienne",
-          "title": "Calculateur d'hydratation quotidienne",
+          "title": "Simulateur d'hydratation quotidienne",
           "shortDescription": "Estimez la quantité d'eau à consommer chaque jour selon votre poids et activité.",
           "icon": "heart",
           "category": "sante",
@@ -1430,7 +1430,7 @@
         },
         {
           "slug": "proteines-journalieres",
-          "title": "Calculateur de protéines journalières",
+          "title": "Simulateur de protéines journalières",
           "shortDescription": "Calculez vos besoins quotidiens en protéines selon poids et objectif.",
           "icon": "scale",
           "category": "sante",
@@ -1439,7 +1439,7 @@
         },
         {
           "slug": "economies-arret-tabac",
-          "title": "Calculateur d'économies arrêt tabac",
+          "title": "Simulateur d'économies arrêt tabac",
           "shortDescription": "Calculez les économies réalisées en arrêtant le tabac sur une période donnée.",
           "icon": "heart",
           "category": "sante",
@@ -1448,7 +1448,7 @@
         },
         {
           "slug": "unites-alcool",
-          "title": "Calculateur d'unités d'alcool",
+          "title": "Simulateur d'unités d'alcool",
           "shortDescription": "Convertissez vos consommations en unités d'alcool et comparez aux recommandations.",
           "icon": "scale",
           "category": "sante",
@@ -1457,7 +1457,7 @@
         },
         {
           "slug": "cycles-sommeil",
-          "title": "Calculateur de cycles de sommeil",
+          "title": "Simulateur de cycles de sommeil",
           "shortDescription": "Calculez les heures idéales de réveil ou de coucher selon les cycles de 90 minutes.",
           "icon": "heart",
           "category": "sante",

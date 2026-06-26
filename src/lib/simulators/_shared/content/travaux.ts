@@ -1,14 +1,8 @@
-import {
-  buildRichContent,
-  buildFaq,
-  p,
-  hl,
-} from "../content-builder";
+import { registryEntry, p, hl } from "../content-builder";
 import type { ContentRegistry } from "./types";
 
 export const travauxContent: ContentRegistry = {
-  "quantite-peinture": {
-    content: buildRichContent({
+  "quantite-peinture": registryEntry("quantite-peinture", {
       intro:
         "Avant d'acheter vos pots de peinture, estimez précisément la quantité nécessaire pour couvrir murs et plafonds sans gaspillage ni rupture de stock.",
       definition:
@@ -71,8 +65,8 @@ export const travauxContent: ContentRegistry = {
         "Estimation indicative — le rendement sur l'emballage est mesuré en conditions idéales",
         "Ne remplace pas le conseil d'un peintre professionnel pour des surfaces complexes",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Combien de couches de peinture appliquer ?",
         answer:
@@ -123,11 +117,10 @@ export const travauxContent: ContentRegistry = {
         answer:
           "Fermez hermétiquement le pot, stockez à température ambiante et notez la référence couleur pour les retouches futures.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "calcul-carrelage": {
-    content: buildRichContent({
+  "calcul-carrelage": registryEntry("calcul-carrelage", {
       intro:
         "Pour un sol ou un mur carrelé sans mauvaise surprise, calculez le nombre exact de carreaux et la colle nécessaire avant le passage en magasin.",
       definition:
@@ -193,8 +186,8 @@ export const travauxContent: ContentRegistry = {
         "Estimation simplifiée — les formes de pièce complexes augmentent les chutes",
         "Dosage de colle variable selon le type de carreau et le support",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Quelle marge de chutes prévoir ?",
         answer:
@@ -245,11 +238,10 @@ export const travauxContent: ContentRegistry = {
         answer:
           "Attendez 24 à 48 h après la pose avant d'appliquer le joint, selon la colle utilisée.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "volume-beton": {
-    content: buildRichContent({
+  "volume-beton": registryEntry("volume-beton", {
       intro:
         "Commander la bonne quantité de béton évite les retards de chantier et les surcoûts liés à une toupie partiellement vide ou à des sacs insuffisants.",
       definition:
@@ -316,8 +308,8 @@ export const travauxContent: ContentRegistry = {
         "Estimation géométrique simple — ouvrages irréguliers nécessitent un calcul manuel",
         "Prix et disponibilité du béton variable selon la région",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Toupie ou sacs prémélangés ?",
         answer:
@@ -368,11 +360,10 @@ export const travauxContent: ContentRegistry = {
         answer:
           "Section (largeur × épaisseur) × hauteur. Exemple : 0,20 × 0,20 × 2,50 m = 0,10 m³.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "surface-parquet": {
-    content: buildRichContent({
+  "surface-parquet": registryEntry("surface-parquet", {
       intro:
         "Estimez la surface de parquet ou stratifié à acheter, en intégrant les chutes de coupe et le format des packs vendus en magasin.",
       definition:
@@ -438,8 +429,8 @@ export const travauxContent: ContentRegistry = {
         "Estimation pour pièce rectangulaire simple",
         "Ne couvre pas le coût ni le choix entre massif, contrecollé et stratifié",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Parquet massif ou stratifié ?",
         answer:
@@ -490,11 +481,10 @@ export const travauxContent: ContentRegistry = {
         answer:
           "Contrecollé : couche noble sur support, bon rapport qualité-prix. Massif : lame entière, réparable plusieurs fois.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "maprimerenov": {
-    content: buildRichContent({
+  "maprimerenov": registryEntry("maprimerenov", {
       intro:
         "MaPrimeRénov' finance une partie de vos travaux de rénovation énergétique. Estimez le montant de l'aide selon vos revenus et le type de travaux envisagés.",
       definition:
@@ -558,8 +548,8 @@ export const travauxContent: ContentRegistry = {
         "Barème indicatif — vérifiez les montants actualisés sur france-renov.gouv.fr",
         "Conditions d'éligibilité du logement (âge, résidence principale) non vérifiées ici",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "L'artisan RGE est-il obligatoire ?",
         answer:
@@ -610,11 +600,10 @@ export const travauxContent: ContentRegistry = {
         answer:
           "MaPrimeRénov' est une aide publique. Les CEE sont des primes versées par les fournisseurs d'énergie, cumulables.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "estimation-consommation-energie": {
-    content: buildRichContent({
+  "estimation-consommation-energie": registryEntry("estimation-consommation-energie", {
       intro:
         "Anticipez votre facture énergétique annuelle et comparez l'impact de l'isolation et du mode de chauffage sur votre budget.",
       definition:
@@ -682,8 +671,8 @@ export const travauxContent: ContentRegistry = {
         "Modèle simplifié — ne remplace pas un DPE officiel",
         "Ne tient pas compte des aides à la rénovation",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Quel kWh/m²/an pour un logement moyen ?",
         answer:
@@ -734,11 +723,10 @@ export const travauxContent: ContentRegistry = {
         answer:
           "Le bailleur fournit le DPE. Le locataire paie les factures d'énergie selon le contrat de location.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "pompe-a-chaleur-economies": {
-    content: buildRichContent({
+  "pompe-a-chaleur-economies": registryEntry("pompe-a-chaleur-economies", {
       intro:
         "Une pompe à chaleur (PAC) air/eau peut diviser vos factures de chauffage. Estimez les économies annuelles et le temps de retour sur investissement.",
       definition:
@@ -807,8 +795,8 @@ export const travauxContent: ContentRegistry = {
         "Estimation basée sur un SCOP moyen — le rendement réel dépend de votre installation",
         "Ne remplace pas une étude thermique personnalisée",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "PAC air/eau ou géothermique ?",
         answer:
@@ -859,11 +847,10 @@ export const travauxContent: ContentRegistry = {
         answer:
           "Minimum 3,5 pour une PAC air/eau. Les meilleurs modèles atteignent 4,5 à 5 en conditions optimales.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "volume-surface-piece": {
-    content: buildRichContent({
+  "volume-surface-piece": registryEntry("volume-surface-piece", {
       intro:
         "Surface au sol et volume d'une pièce sont les bases de tous vos calculs de matériaux : peinture, parquet, climatisation, ventilation.",
       definition:
@@ -930,8 +917,8 @@ export const travauxContent: ContentRegistry = {
         "Géométrie rectangulaire simple",
         "Ne calcule pas la surface du plafond séparément (égale à la surface sol)",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Comment calculer la surface des murs ?",
         answer:
@@ -982,11 +969,10 @@ export const travauxContent: ContentRegistry = {
         answer:
           "Surface en m² (2D) pour revêtements. Volume en m³ (3D) pour chauffage, climatisation et acoustique.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "quantite-mortier": {
-    content: buildRichContent({
+  "quantite-mortier": registryEntry("quantite-mortier", {
       intro:
         "Mortier-colle, joint ou enduit : estimez la quantité en kilogrammes et le nombre de sacs à acheter pour votre surface à traiter.",
       definition:
@@ -1051,8 +1037,8 @@ export const travauxContent: ContentRegistry = {
         "Dosages indicatifs — vérifier sur chaque produit",
         "Ne calcule pas le primaire d'accrochage ni les additifs",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Colle intérieur ou extérieur ?",
         answer:
@@ -1103,11 +1089,10 @@ export const travauxContent: ContentRegistry = {
         answer:
           "Technique du double encollage pour grands formats. Utilisez une cloche à traire adaptée.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "economies-isolation": {
-    content: buildRichContent({
+  "economies-isolation": registryEntry("economies-isolation", {
       intro:
         "L'isolation est le levier le plus efficace pour réduire vos factures et améliorer votre DPE. Estimez les économies et le retour sur investissement.",
       definition:
@@ -1174,8 +1159,8 @@ export const travauxContent: ContentRegistry = {
         "Taux indicatifs — audit énergétique recommandé pour précision",
         "Ne couvre pas l'isolation phonique",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Prix d'une isolation de combles ?",
         answer:
@@ -1226,6 +1211,6 @@ export const travauxContent: ContentRegistry = {
         answer:
           "Combles perdus : 1 journée. ITE complète : plusieurs semaines selon la surface.",
       },
-    ]),
-  },
+    
+  ]),
 };

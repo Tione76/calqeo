@@ -1,14 +1,8 @@
-import {
-  buildRichContent,
-  buildFaq,
-  p,
-  hl,
-} from "../content-builder";
+import { registryEntry, p, hl } from "../content-builder";
 import type { ContentRegistry } from "./types";
 
 export const santeContent: ContentRegistry = {
-  "calculateur-imc": {
-    content: buildRichContent({
+  "calculateur-imc": registryEntry("calculateur-imc", {
       intro:
         "L'indice de masse corporelle (IMC) est un repère rapide pour évaluer si votre poids est adapté à votre taille, selon les critères de l'OMS.",
       definition:
@@ -69,8 +63,8 @@ export const santeContent: ContentRegistry = {
         "Indicateur statistique — ne remplace pas un avis médical",
         "Morphologie individuelle non prise en compte",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Quel IMC est considéré comme normal ?",
         answer:
@@ -121,11 +115,10 @@ export const santeContent: ContentRegistry = {
         answer:
           "Lors de changements de poids significatifs. Pas besoin de calcul quotidien — le poids fluctue naturellement.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "poids-ideal": {
-    content: buildRichContent({
+  "poids-ideal": registryEntry("poids-ideal", {
       intro:
         "Le poids idéal n'est pas un chiffre unique : plusieurs formules (Creff, Lorentz, IMC 22) donnent des repères selon votre taille, âge et sexe.",
       definition:
@@ -192,8 +185,8 @@ export const santeContent: ContentRegistry = {
         "Formules statistiques — ne tiennent pas compte de la morphologie fine",
         "Sportifs et personnes très musclées : IMC et poids idéal peu pertinents",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Creff ou Lorentz : quelle formule choisir ?",
         answer:
@@ -244,11 +237,10 @@ export const santeContent: ContentRegistry = {
         answer:
           "Même heure, même conditions (matin, avant petit-déjeuner). Utilisez toujours le même balance.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "calories-journalieres": {
-    content: buildRichContent({
+  "calories-journalieres": registryEntry("calories-journalieres", {
       intro:
         "Connaître vos besoins caloriques quotidiens est la base pour maintenir, perdre ou gagner du poids en toute sécurité.",
       definition:
@@ -319,8 +311,8 @@ export const santeContent: ContentRegistry = {
         "Estimation standard — métabolisme réel variable",
         "Ne remplace pas un bilan nutritionnel professionnel",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "BMR vs besoins totaux : quelle différence ?",
         answer:
@@ -371,11 +363,10 @@ export const santeContent: ContentRegistry = {
         answer:
           "MyFitnessPal, Yazio, FatSecret — utiles mais ne remplacent pas un suivi professionnel si besoin.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "date-accouchement": {
-    content: buildRichContent({
+  "date-accouchement": registryEntry("date-accouchement", {
       intro:
         "La date probable d'accouchement (DPA) est estimée à partir du premier jour de vos dernières règles, selon la règle de Naegele.",
       definition:
@@ -436,8 +427,8 @@ export const santeContent: ContentRegistry = {
         "Estimation — échographie plus précise",
         "Cycles irréguliers : fiabilité réduite",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Qu'est-ce que la règle de Naegele ?",
         answer:
@@ -488,11 +479,10 @@ export const santeContent: ContentRegistry = {
         answer:
           "Valise maternité, plan de naissance, cours de préparation, choix du pédiatre, organisation du retour.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "calculateur-ovulation": {
-    content: buildRichContent({
+  "calculateur-ovulation": registryEntry("calculateur-ovulation", {
       intro:
         "Identifiez votre date d'ovulation et la fenêtre fertile pour planifier ou éviter une grossesse, selon la durée de votre cycle.",
       definition:
@@ -554,8 +544,8 @@ export const santeContent: ContentRegistry = {
         "Méthode indicative — pas un diagnostic médical",
         "Contraception naturelle peu fiable sans suivi complet",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Quand est la période fertile ?",
         answer:
@@ -606,11 +596,10 @@ export const santeContent: ContentRegistry = {
         answer:
           "L'ovulation peut reprendre dès le 1er cycle sans pilule, ou après plusieurs mois. Variable selon les femmes.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "hydratation-quotidienne": {
-    content: buildRichContent({
+  "hydratation-quotidienne": registryEntry("hydratation-quotidienne", {
       intro:
         "Une hydratation suffisante soutient le métabolisme, la concentration et la performance physique. Estimez vos besoins quotidiens en eau.",
       definition:
@@ -676,8 +665,8 @@ export const santeContent: ContentRegistry = {
         "Besoins variables selon pathologies",
         "Ne remplace pas un avis médical en cas de restriction hydrique",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Combien d'eau par jour pour un adulte ?",
         answer:
@@ -728,11 +717,10 @@ export const santeContent: ContentRegistry = {
         answer:
           "Nettoyez régulièrement. Inox ou verre préférables. Évitez plastique chauffé.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "proteines-journalieres": {
-    content: buildRichContent({
+  "proteines-journalieres": registryEntry("proteines-journalieres", {
       intro:
         "Les protéines sont essentielles pour les muscles, la réparation tissulaire et l'immunité. Calculez vos besoins selon votre poids et vos objectifs.",
       definition:
@@ -795,8 +783,8 @@ export const santeContent: ContentRegistry = {
         "Ne remplace pas un bilan nutritionnel",
         "Suppléments non nécessaires si alimentation suffisante",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Combien de protéines par jour ?",
         answer:
@@ -847,11 +835,10 @@ export const santeContent: ContentRegistry = {
         answer:
           "Augmentez progressivement. Fibres et hydratation aident à la digestion des apports élevés.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "economies-arret-tabac": {
-    content: buildRichContent({
+  "economies-arret-tabac": registryEntry("economies-arret-tabac", {
       intro:
         "Arrêter le tabac améliore votre santé et libère un budget considérable. Calculez les économies réalisées et les cigarettes évitées.",
       definition:
@@ -916,8 +903,8 @@ export const santeContent: ContentRegistry = {
         "Estimation financière — ne couvre pas tous les coûts santé",
         "Prix du tabac évolutif selon les taxes",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Quelle aide pour arrêter le tabac ?",
         answer:
@@ -968,11 +955,10 @@ export const santeContent: ContentRegistry = {
         answer:
           "24 h : monoxyde de carbone normalisé. 2-12 semaines : circulation améliorée. 1-9 mois : toux et essoufflement réduits.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "unites-alcool": {
-    content: buildRichContent({
+  "unites-alcool": registryEntry("unites-alcool", {
       intro:
         "Comprenez votre consommation d'alcool en unités d'alcool et comparez-la aux recommandations de Santé publique France.",
       definition:
@@ -1036,8 +1022,8 @@ export const santeContent: ContentRegistry = {
         "Verres standard simplifiés",
         "Ne remplace pas un accompagnement en cas d'addiction",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Qu'est-ce qu'une unité d'alcool ?",
         answer:
@@ -1088,11 +1074,10 @@ export const santeContent: ContentRegistry = {
         answer:
           "Interactions nombreuses et dangereuses. Lisez les notices et consultez si vous prenez des médicaments.",
       },
-    ]),
-  },
+    
+  ]),
 
-  "cycles-sommeil": {
-    content: buildRichContent({
+  "cycles-sommeil": registryEntry("cycles-sommeil", {
       intro:
         "Réveillez-vous entre les cycles de sommeil pour plus de fraîcheur. Calculez l'heure idéale de coucher ou de réveil selon les cycles de 90 minutes.",
       definition:
@@ -1156,8 +1141,8 @@ export const santeContent: ContentRegistry = {
         "Cycles de durée variable — expérimentez ±30 min",
         "Ne traite pas les troubles du sommeil (insomnie, apnée)",
       ],
-    }),
-    faq: buildFaq([
+    
+  }, [
       {
         question: "Combien de cycles de sommeil ?",
         answer:
@@ -1208,6 +1193,6 @@ export const santeContent: ContentRegistry = {
         answer:
           "Besoins similaires (7-9 h) mais structure change. Seniors : cycles plus courts, réveils nocturnes plus fréquents.",
       },
-    ]),
-  },
+    
+  ]),
 };

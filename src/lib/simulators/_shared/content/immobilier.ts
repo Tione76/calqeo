@@ -1,9 +1,8 @@
-import { buildRichContent, buildFaq, p, hl } from "../content-builder";
+import { registryEntry, p, hl } from "../content-builder";
 import type { ContentRegistry } from "./types";
 
 export const immobilierContent: ContentRegistry = {
-  "frais-de-notaire": {
-    content: buildRichContent({
+  "frais-de-notaire": registryEntry("frais-de-notaire", {
       intro:
         "Les frais de notaire représentent un poste budgétaire majeur lors d'un achat immobilier. Ce simulateur estime leur montant selon le prix d'achat et la nature du bien (ancien ou neuf).",
       definition:
@@ -21,6 +20,9 @@ export const immobilierContent: ContentRegistry = {
       interpretation: [
         p("Un montant élevé de frais de notaire augmente le budget global sans augmenter la valeur du bien. Intégrez-le dès la recherche de financement."),
         hl("Ordre de grandeur", "Pour 250 000 € dans l'ancien, comptez environ 18 750 € de frais. Dans le neuf, environ 6 250 €."),
+        p("En bien ancien, environ 80 % des frais correspondent à des droits et taxes versés à l'État ; le solde rémunère le notaire (émoluments) et couvre les formalités."),
+        hl("Erreur fréquente", "Confondre frais de notaire et honoraires d'agence : ces deux postes s'additionnent au prix affiché dans l'annonce."),
+        p("Pour dimensionner votre apport, provisionnez le prix du bien plus 7 à 8 % dans l'ancien, ou plus 2 à 3 % en neuf si votre banque ne finance pas les frais."),
       ],
       limitesCalcul: [
         "Taux moyens nationaux : le montant exact varie selon le département.",
@@ -48,26 +50,24 @@ export const immobilierContent: ContentRegistry = {
         "Dans le neuf, vérifiez si des frais de garantie d'achèvement s'ajoutent.",
         "Demandez une estimation détaillée (proforma) au notaire avant la signature.",
         "Certains prêteurs acceptent de financer une partie des frais, selon votre profil.",
+        "En copropriété, vérifiez si le notaire demande des provisions pour charges impayées du vendeur.",
       ],
       limites: [
         "Estimation indicative basée sur des taux moyens.",
         "Ne remplace pas le décompte notarial officiel.",
       ],
-    }),
-    faq: buildFaq([
-      { question: "Combien coûtent les frais de notaire dans l'ancien ?", answer: "En moyenne, entre 7 et 8 % du prix d'achat au niveau national. Notre simulateur applique 7,5 %." },
-      { question: "Les frais sont-ils moins élevés dans le neuf ?", answer: "Oui, environ 2 à 3 % en VEFA grâce à des droits de mutation réduits. Ici, le taux neuf est de 2,5 %." },
-      { question: "Peut-on financer les frais de notaire par le crédit ?", answer: "Parfois, selon la banque et votre apport. Souvent, ils doivent être payés comptant ou via l'apport personnel." },
-      { question: "Les frais de notaire sont-ils négociables ?", answer: "Non pour les émoluments, encadrés par la loi. Seuls certains actes annexes peuvent légèrement varier." },
-      { question: "Que comprennent exactement les frais de notaire ?", answer: "Les droits de mutation (taxes), les émoluments du notaire et les débours (formalités, copies, publications)." },
-      { question: "Faut-il les payer en une seule fois ?", answer: "Oui, généralement au moment de la signature de l'acte authentique chez le notaire." },
-      { question: "Les honoraires d'agence sont-ils inclus ?", answer: "Non, ce simulateur ne couvre que les frais de notaire. Utilisez le simulateur frais d'agence pour les honoraires." },
-      { question: "Comment estimer les frais avant d'avoir un notaire ?", answer: "Ce simulateur fournit une estimation rapide. Une proforma notariale affinera le montant selon votre département." },
-    ]),
-  },
+  }, [
+      { question: "Quel pourcentage de frais de notaire pour un appartement ancien ?", answer: "Comptez en moyenne 7 à 8 % du prix d'achat au niveau national. Notre simulateur applique 7,5 % pour l'ancien." },
+      { question: "Frais de notaire neuf ou ancien : combien économiser ?", answer: "En VEFA ou neuf, les droits réduits ramènent les frais autour de 2 à 3 % du prix, contre 7 à 8 % dans l'ancien. Sur 250 000 €, l'écart dépasse souvent 12 000 €." },
+      { question: "Peut-on financer les frais de notaire avec le crédit immobilier ?", answer: "Selon la banque et votre apport, une partie peut être incluse dans le prêt. Souvent, ils restent à charge de l'acheteur via l'apport personnel." },
+      { question: "Les frais de notaire sont-ils négociables ?", answer: "Non pour les émoluments, encadrés par la loi. Seuls certains débours ou actes annexes peuvent varier légèrement." },
+      { question: "Qui paie les frais de notaire à l'achat ?", answer: "L'acheteur règle l'intégralité des frais de notaire à la signature. Le vendeur, lui, paie sa propre commission d'agence s'il en a une." },
+      { question: "Frais de notaire et impôt : peut-on les déduire ?", answer: "Pour un logement personnel, non. En investissement locatif, les frais d'acquisition peuvent majorer le prix de revient fiscal." },
+      { question: "Pourquoi les frais diffèrent-ils selon le département ?", answer: "Les droits de mutation varient légèrement selon les taux départementaux et communaux, d'où des écarts de quelques centaines d'euros à prix égal." },
+      { question: "Honoraires d'agence et frais de notaire : même chose ?", answer: "Non. Les honoraires d'agence sont réglés selon le mandat de vente. Les frais de notaire sont une ligne distincte, calculée par le notaire." },
+  ]),
 
-  "taux-endettement": {
-    content: buildRichContent({
+  "taux-endettement": registryEntry("taux-endettement", {
       intro:
         "Le taux d'endettement mesure la part de vos revenus consacrée au remboursement de vos crédits. C'est un critère central pour l'octroi d'un prêt immobilier en France.",
       definition:
@@ -86,6 +86,9 @@ export const immobilierContent: ContentRegistry = {
       interpretation: [
         p("Un taux inférieur ou égal à 35 % est généralement accepté par les banques. Au-delà, le dossier risque un refus sauf exceptions rares."),
         hl("Reste à vivre", "Certaines banques analysent aussi le reste à vivre après charges, au-delà du seul taux d'endettement."),
+        p("Les banques retiennent le revenu net perçu sur le bulletin (après cotisations, avant impôt), pas le brut contractuel."),
+        hl("Erreur fréquente", "Oublier le crédit revolving dont la mensualité minimale figure sur le relevé bancaire : il entre dans le calcul même si le capital est modeste."),
+        p("Si votre ratio frôle 35 %, soldez un petit crédit conso ou allongez la durée du prêt projeté avant de déposer le dossier."),
       ],
       limitesCalcul: [
         "Ne modélise pas le reste à vivre exigé par certaines banques.",
@@ -123,21 +126,18 @@ export const immobilierContent: ContentRegistry = {
         "Critères bancaires complémentaires non modélisés (âge, stabilité professionnelle).",
         "Exceptions HCSF possibles mais rares depuis 2022.",
       ],
-    }),
-    faq: buildFaq([
-      { question: "Quel est le plafond d'endettement en France ?", answer: "Le HCSF recommande un maximum de 35 % des revenus nets, charges de crédit incluses." },
-      { question: "L'assurance emprunteur compte-t-elle dans le calcul ?", answer: "Oui, les banques l'intègrent généralement dans la mensualité prise en compte." },
-      { question: "Peut-on dépasser 35 % ?", answer: "Exceptionnellement pour certains profils ou opérations, mais c'est devenu rare depuis 2022." },
-      { question: "Comment réduire son taux d'endettement ?", answer: "Augmenter les revenus, solder un crédit, allonger la durée ou augmenter l'apport pour réduire la mensualité." },
-      { question: "Les loyers perçus comptent-ils comme revenus ?", answer: "Oui, mais les banques n'en retiennent qu'une partie (souvent 70 à 80 %) selon leur politique." },
-      { question: "Faut-il inclure les pensions alimentaires versées ?", answer: "Oui, elles sont généralement déduites des revenus ou ajoutées aux charges." },
-      { question: "Le taux d'endettement est-il le seul critère bancaire ?", answer: "Non, le reste à vivre, l'apport, l'âge et la stabilité professionnelle sont aussi analysés." },
-      { question: "Comment simuler la mensualité de mon projet ?", answer: "Utilisez le simulateur mensualité crédit immobilier pour estimer la mensualité à intégrer ici." },
-    ]),
-  },
+  }, [
+      { question: "Quel taux d'endettement maximum pour un crédit immobilier ?", answer: "Le HCSF encadre les banques autour de 35 % des revenus nets, mensualités de crédit et assurance incluses." },
+      { question: "4 000 € de revenus et 1 400 € de crédits : suis-je à la limite ?", answer: "1 400 ÷ 4 000 = 35 %. Vous êtes au plafond recommandé : toute hausse de mensualité pourrait bloquer un nouveau prêt." },
+      { question: "Le loyer actuel entre-t-il dans le calcul si je suis locataire ?", answer: "Non, tant que vous n'avez pas de crédit immobilier en cours. En revanche, la future mensualité du prêt projeté doit être incluse." },
+      { question: "Un crédit conso de 200 €/mois compte-t-il dans les 35 % ?", answer: "Oui. Toutes les mensualités en cours — auto, conso, revolving, prêt travaux — s'ajoutent au numérateur." },
+      { question: "Revenus locatifs : quelle part compte pour la banque ?", answer: "Les banques retiennent souvent 70 à 80 % des loyers perçus, parfois après déduction de la mensualité du crédit sur le bien loué." },
+      { question: "Peut-on emprunter à deux pour améliorer le taux d'endettement ?", answer: "Oui, les revenus du co-emprunteur s'additionnent et les charges aussi. Cela élargit la capacité si son endettement propre est faible." },
+      { question: "Dossier refusé malgré moins de 35 % : pourquoi ?", answer: "Le reste à vivre, l'âge en fin de prêt, l'apport ou la stabilité professionnelle peuvent faire échouer un dossier même sous le plafond." },
+      { question: "Rachat de crédit : comment ça améliore le ratio ?", answer: "Regrouper vos crédits réduit parfois la mensualité totale, ce qui fait baisser le taux d'endettement et libère de la capacité d'emprunt." },
+  ]),
 
-  "cout-total-credit-immobilier": {
-    content: buildRichContent({
+  "cout-total-credit-immobilier": registryEntry("cout-total-credit-immobilier", {
       intro:
         "Au-delà de la mensualité affichée, un crédit immobilier génère un coût global significatif en intérêts et en assurance. Ce simulateur révèle le montant total que vous rembourserez sur toute la durée.",
       definition:
@@ -159,6 +159,8 @@ export const immobilierContent: ContentRegistry = {
       interpretation: [
         p("Une mensualité faible obtenue en allongeant la durée peut masquer un coût total très élevé en intérêts."),
         hl("Attention", "Sur 20 ans à 3,5 %, 250 000 € empruntés coûtent près de 98 000 € d'intérêts seuls."),
+        p("Réduire la durée de 5 à 7 ans peut faire économiser autant qu'une baisse de 0,3 point de taux sur 20 ans."),
+        hl("Cas pratique", "Sur 250 000 € à 3,5 %, passer de 20 à 25 ans fait baisser la mensualité d'environ 200 €, mais ajoute plus de 30 000 € d'intérêts au total."),
       ],
       limitesCalcul: [
         "Frais de dossier et de garantie non inclus.",
@@ -198,21 +200,18 @@ export const immobilierContent: ContentRegistry = {
         "Ne remplace pas l'offre de prêt bancaire (TAEG).",
         "Remboursements anticipés et modulations non pris en compte.",
       ],
-    }),
-    faq: buildFaq([
-      { question: "Qu'est-ce que le coût total du crédit ?", answer: "La somme de tous les intérêts et assurances payés, plus le capital remboursé." },
-      { question: "Comment réduire le coût total ?", answer: "Durée plus courte, taux plus bas, assurance optimisée et remboursements anticipés." },
-      { question: "Le coût total inclut-il le capital ?", answer: "Oui : coût global = capital + intérêts + assurance." },
-      { question: "Différence avec le TAEG ?", answer: "Le TAEG inclut aussi les frais de dossier et garantie. Ce simulateur se concentre sur intérêts et assurance." },
-      { question: "Pourquoi la durée impacte-t-elle autant le coût ?", answer: "Plus la durée est longue, plus les intérêts s'accumulent, même si la mensualité baisse." },
-      { question: "L'assurance emprunteur pèse-t-elle lourd ?", answer: "Sur 20 ans, elle peut représenter 10 000 à 20 000 €. La délégation d'assurance permet souvent de réduire ce poste." },
-      { question: "Peut-on visualiser mois par mois ?", answer: "Oui, utilisez le simulateur tableau d'amortissement pour voir la répartition capital/intérêts." },
-      { question: "Un taux bas garantit-il un bon crédit ?", answer: "Pas seulement : vérifiez aussi les frais, l'assurance et les conditions de remboursement anticipé." },
-    ]),
-  },
+  }, [
+      { question: "250 000 € sur 20 ans à 3,5 % : combien d'intérêts au total ?", answer: "Environ 98 000 € d'intérêts seuls, soit un remboursement global proche de 348 000 € hors assurance." },
+      { question: "Mensualité basse mais coût total élevé : pourquoi ?", answer: "Allonger la durée réduit la mensualité mais laisse les intérêts s'accumuler plus longtemps. Comparez toujours le coût total, pas seulement la mensualité." },
+      { question: "Différence entre coût total et TAEG ?", answer: "Le TAEG inclut aussi les frais de dossier et garantie. Ce simulateur se concentre sur intérêts et assurance emprunteur." },
+      { question: "L'assurance emprunteur pèse-t-elle lourd sur 20 ans ?", answer: "Sur 20 ans, elle peut représenter 10 000 à 20 000 €. La délégation d'assurance permet souvent de réduire ce poste." },
+      { question: "Comment économiser des milliers d'euros sur un crédit immo ?", answer: "Négociez le taux, réduisez la durée, optimisez l'assurance et envisagez des remboursements anticipés en début de prêt." },
+      { question: "Un point de taux en moins : quel impact réel ?", answer: "Sur 250 000 € sur 20 ans, 1 point de moins économise environ 25 000 € d'intérêts. Même une baisse de 0,2 point mérite d'être chiffrée." },
+      { question: "Peut-on visualiser mois par mois capital et intérêts ?", answer: "Oui, utilisez le simulateur tableau d'amortissement pour voir la répartition sur chaque échéance." },
+      { question: "Remboursement anticipé : quand est-il le plus rentable ?", answer: "En début de prêt, quand la part d'intérêts dans chaque mensualité est la plus élevée. Chaque euro remboursé en avance génère alors plus d'économies." },
+  ]),
 
-  "tableau-amortissement": {
-    content: buildRichContent({
+  "tableau-amortissement": registryEntry("tableau-amortissement", {
       intro:
         "Le tableau d'amortissement détaille, mois par mois, la répartition de chaque mensualité entre capital remboursé et intérêts. C'est un outil essentiel pour comprendre l'évolution de votre crédit.",
       definition:
@@ -264,8 +263,7 @@ export const immobilierContent: ContentRegistry = {
         "Affichage partiel pour la lisibilité.",
         "Taux fixe uniquement.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Qu'est-ce qu'un tableau d'amortissement ?", answer: "Un échéancier listant pour chaque mois la part de capital, les intérêts et le capital restant dû." },
       { question: "Pourquoi les intérêts sont-ils plus élevés au début ?", answer: "Les intérêts sont calculés sur le capital restant dû, maximal en début de prêt." },
       { question: "Puis-je obtenir le tableau complet ?", answer: "Votre banque vous remettra l'échéancier officiel avec toutes les échéances à la signature." },
@@ -274,11 +272,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Mensualité constante signifie-t-elle des intérêts constants ?", answer: "Non, la mensualité est fixe mais la part d'intérêts diminue et celle du capital augmente." },
       { question: "Comment lire la première ligne du tableau ?", answer: "Elle montre la répartition de votre première mensualité : une grande part d'intérêts, une part moindre de capital." },
       { question: "Le tableau inclut-il l'assurance ?", answer: "Non, l'assurance emprunteur est facturée en supplément de la mensualité de crédit." },
-    ]),
-  },
+  ]),
 
-  "remboursement-anticipe": {
-    content: buildRichContent({
+  "remboursement-anticipe": registryEntry("remboursement-anticipe", {
       intro:
         "Rembourser par anticipation une partie ou la totalité de votre crédit immobilier peut générer des économies d'intérêts substantielles, mais des indemnités de remboursement anticipé (IRA) peuvent s'appliquer.",
       definition:
@@ -339,8 +335,7 @@ export const immobilierContent: ContentRegistry = {
         "Simulation indicative, non contractuelle.",
         "Choix réduction de durée vs mensualité non détaillé ici.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Qu'est-ce qu'un remboursement anticipé ?", answer: "Le versement d'une somme pour réduire ou solder le capital restant dû avant la fin du prêt." },
       { question: "Quelles sont les IRA ?", answer: "Les indemnités de remboursement anticipé, facturées par la banque pour compenser la perte d'intérêts futurs." },
       { question: "Peut-on être exonéré d'IRA ?", answer: "Oui, notamment en cas de vente du bien, décès, licenciement ou fin de contrat à durée déterminée." },
@@ -350,11 +345,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Quand rembourser par anticipation est-il intéressant ?", answer: "Quand le taux du prêt dépasse le rendement net de votre épargne disponible et que les IRA restent modérées." },
       { question: "Faut-il conserver une épargne de précaution ?", answer: "Oui, ne videz pas votre épargne au profit d'un remboursement anticipé si cela vous expose financièrement." },
       { question: "Comment la banque recalcule-t-elle l'échéancier ?", answer: "Elle établit un nouvel échéancier sur le CRD réduit, avec durée ou mensualité ajustée selon votre choix." },
-    ]),
-  },
+  ]),
 
-  "pret-taux-zero-ptz": {
-    content: buildRichContent({
+  "pret-taux-zero-ptz": registryEntry("pret-taux-zero-ptz", {
       intro:
         "Le Prêt à Taux Zéro (PTZ) est un dispositif d'aide à l'accession à la propriété réservé aux ménages modestes, soumis à des plafonds de revenus et de prix du bien selon la zone géographique.",
       definition:
@@ -375,6 +368,8 @@ export const immobilierContent: ContentRegistry = {
       interpretation: [
         p("Une inéligibilité au PTZ ne signifie pas que votre projet est impossible : d'autres dispositifs (Action Logement, prêt conventionné) peuvent compléter votre financement."),
         hl("Zone B1", "En zone B1 pour 2 personnes, le plafond de revenus est de 42 000 € pour le PTZ 2024."),
+        p("Le PTZ ne finance qu'une quotité du projet (souvent 20 à 40 % selon les revenus) : il complète un prêt principal, il ne remplace pas l'apport."),
+        hl("Erreur fréquente", "Confondre revenu fiscal de référence (case avis d'imposition) et revenu net imposable : seul le RFR sert au test d'éligibilité PTZ."),
       ],
       limitesCalcul: [
         "Plafonds simplifiés, à vérifier selon l'année et la réglementation en vigueur.",
@@ -412,22 +407,18 @@ export const immobilierContent: ContentRegistry = {
         "Plafonds mis à jour régulièrement par décret.",
         "Montant PTZ et différé de remboursement non calculés ici.",
       ],
-    }),
-    faq: buildFaq([
-      { question: "Qui peut obtenir un PTZ ?", answer: "Les primo-accédants respectant les plafonds de revenus et achetant leur résidence principale." },
-      { question: "Le PTZ est-il vraiment sans intérêts ?", answer: "Oui, le PTZ ne porte aucun intérêt. Seul le capital emprunté est remboursé." },
-      { question: "Quels revenus sont pris en compte ?", answer: "Le revenu fiscal de référence du foyer, tel qu'indiqué sur l'avis d'imposition." },
-      { question: "Peut-on cumuler PTZ et prêt immobilier classique ?", answer: "Oui, le PTZ complète généralement un prêt principal et parfois un prêt Action Logement." },
-      { question: "Le PTZ s'applique-t-il à l'ancien ?", answer: "Oui, avec travaux représentant au moins 25 % du coût total de l'opération." },
-      { question: "Quelle est la durée de remboursement du PTZ ?", answer: "Variable selon les revenus : différé possible (5, 10 ou 15 ans) puis remboursement sur 10, 12 ou 15 ans." },
-      { question: "Que faire si je ne suis pas éligible ?", answer: "Envisagez le prêt Action Logement, le prêt conventionné ou un bien dans une zone à plafonds plus favorables." },
-      { question: "Le prix du bien influence-t-il l'éligibilité ?", answer: "Oui, un plafond de prix au m² s'applique selon la zone et la surface du logement." },
-      { question: "Faut-il être propriétaire de son logement actuel ?", answer: "Non, le PTZ est réservé aux primo-accédants qui n'ont pas été propriétaires des 2 dernières années." },
-    ]),
-  },
+  }, [
+      { question: "Plafond de revenus PTZ pour un couple en zone B1 ?", answer: "Environ 42 000 € de revenu fiscal de référence pour 2 personnes en zone B1. Au-delà, le foyer n'est pas éligible au PTZ." },
+      { question: "Où trouver mon revenu fiscal de référence pour le PTZ ?", answer: "Sur l'avis d'imposition N-2, case « Revenu fiscal de référence ». Ne confondez pas avec le revenu net imposable." },
+      { question: "PTZ et prêt immobilier classique : cumul possible ?", answer: "Oui, le PTZ complète généralement un prêt principal et parfois un prêt Action Logement. Il ne finance pas 100 % du projet seul." },
+      { question: "PTZ dans l'ancien avec travaux : quelles conditions ?", answer: "Les travaux doivent représenter au moins 25 % du coût total de l'opération, en plus du respect des plafonds de revenus et de prix." },
+      { question: "Primo-accédant : combien de temps sans être propriétaire ?", answer: "Vous ne devez pas avoir été propriétaire de votre résidence principale au cours des 2 dernières années." },
+      { question: "PTZ sans intérêts : combien de temps pour le rembourser ?", answer: "Différé possible (5, 10 ou 15 ans selon revenus), puis remboursement sur 10, 12 ou 15 ans. Aucun intérêt n'est dû sur le capital PTZ." },
+      { question: "Non éligible au PTZ : quelles alternatives ?", answer: "Prêt Action Logement, prêt conventionné, Éco-PTZ pour travaux, ou achat en zone C où les plafonds de revenus sont plus favorables." },
+      { question: "Plafond de prix du bien pour le PTZ : comment ça marche ?", answer: "Un plafond au m² s'applique selon la zone et la surface du logement. Le prix d'achat ne doit pas le dépasser." },
+  ]),
 
-  "pret-relais": {
-    content: buildRichContent({
+  "pret-relais": registryEntry("pret-relais", {
       intro:
         "Le prêt relais permet de financer l'achat d'un nouveau logement en attendant la vente de votre bien actuel, en avançant une partie de la valeur estimée de ce dernier.",
       definition:
@@ -482,8 +473,7 @@ export const immobilierContent: ContentRegistry = {
         "Montant dépendant de l'appréciation bancaire du bien.",
         "Conditions de remboursement et pénalités de retard non détaillées.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Qu'est-ce qu'un prêt relais ?", answer: "Un crédit temporaire pour acheter un nouveau logement avant d'avoir vendu l'ancien." },
       { question: "Quelle quotité est généralement accordée ?", answer: "Entre 60 et 80 % de la valeur estimée de revente, selon la banque et le profil." },
       { question: "Que se passe-t-il si le bien ne se vend pas ?", answer: "Le relais doit être remboursé à l'échéance. Des prolongations ou renégociations sont parfois possibles." },
@@ -492,11 +482,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Faut-il vendre avant d'acheter ?", answer: "Pas obligatoirement : le relais permet d'acheter d'abord, mais implique une période de double charge." },
       { question: "Comment est estimée la valeur du bien ?", answer: "Par une expertise bancaire ou des estimations d'agents immobiliers retenues par la banque." },
       { question: "Le relais finance-t-il 100 % du nouveau bien ?", answer: "Non, il couvre seulement une partie. Un crédit principal complète le financement." },
-    ]),
-  },
+  ]),
 
-  "rachat-credit-immobilier": {
-    content: buildRichContent({
+  "rachat-credit-immobilier": registryEntry("rachat-credit-immobilier", {
       intro:
         "Le rachat ou la renégociation de crédit immobilier permet de profiter d'un taux plus bas pour réduire vos mensualités ou le coût total, sous réserve de frais de dossier et d'éventuelles pénalités.",
       definition:
@@ -517,6 +505,8 @@ export const immobilierContent: ContentRegistry = {
       interpretation: [
         p("Une économie mensuelle modeste peut représenter plusieurs milliers d'euros sur la durée restante. Comparez toujours le gain total aux frais de rachat."),
         hl("Seuil de rentabilité", "Le rachat est intéressant si les économies dépassent les frais sur la durée envisagée."),
+        p("Calculez le délai de retour sur investissement : divisez les frais de rachat par l'économie mensuelle pour savoir en combien de mois l'opération devient gagnante."),
+        hl("Renégociation interne", "Demandez d'abord à votre banque actuelle : une baisse de taux sans changement d'établissement évite souvent les frais de mainlevée."),
       ],
       limitesCalcul: [
         "Assurance emprunteur non recalculée séparément.",
@@ -556,22 +546,18 @@ export const immobilierContent: ContentRegistry = {
         "Estimation sans garantie d'acceptation bancaire.",
         "Assurance et garantie non détaillées.",
       ],
-    }),
-    faq: buildFaq([
-      { question: "Qu'est-ce qu'un rachat de crédit immobilier ?", answer: "Le remplacement de votre prêt en cours par un nouveau contrat, souvent à taux plus avantageux." },
-      { question: "Quand racheter son crédit ?", answer: "Quand les taux du marché sont nettement inférieurs à votre taux actuel et que les frais restent raisonnables." },
-      { question: "Quels frais prévoir ?", answer: "Frais de dossier, frais de garantie, frais de mainlevée et éventuelles IRA." },
-      { question: "Peut-on racheter chez une autre banque ?", answer: "Oui, c'est le rachat externe. La renégociation interne se fait auprès de votre banque actuelle." },
-      { question: "Le rachat allonge-t-il la durée ?", answer: "Pas nécessairement : vous pouvez conserver la durée restante pour maximiser les économies." },
-      { question: "L'assurance emprunteur peut-elle être changée ?", answer: "Oui, le rachat est l'occasion de souscrire une délégation d'assurance moins chère." },
-      { question: "Combien d'économies espérer ?", answer: "Variable selon l'écart de taux et le CRD. Même 50 €/mois représentent 9 000 € sur 15 ans." },
-      { question: "Faut-il un apport pour un rachat ?", answer: "Non, le rachat porte sur le capital restant dû sans apport supplémentaire." },
-      { question: "La renégociation interne est-elle moins chère ?", answer: "Souvent oui, car elle évite les frais de mainlevée et de nouveau dossier complet." },
-    ]),
-  },
+  }, [
+      { question: "Rachat de crédit immo : à partir de combien d'écart de taux ?", answer: "En pratique, un écart d'au moins 0,7 à 1 point sur le taux nominal, avec plusieurs années de crédit restantes, rend souvent l'opération intéressante après frais." },
+      { question: "180 000 € de CRD de 4,2 % à 3,5 % : quelle économie ?", answer: "Environ 63 €/mois dans notre exemple, soit près de 11 340 € sur 15 ans avant frais. Le simulateur chiffre votre cas précis." },
+      { question: "Renégociation interne ou rachat externe : lequel choisir ?", answer: "La renégociation interne évite souvent les frais de mainlevée. Le rachat externe permet de comparer plusieurs banques et de changer d'assurance emprunteur." },
+      { question: "Quels frais prévoir pour un rachat de prêt immobilier ?", answer: "Frais de dossier, frais de garantie, frais de mainlevée et éventuelles indemnités de remboursement anticipé (IRA) sur l'ancien contrat." },
+      { question: "Peut-on racheter sans apport personnel ?", answer: "Oui, le rachat porte sur le capital restant dû. Aucun apport supplémentaire n'est exigé en principe." },
+      { question: "Rachat et assurance emprunteur : peut-on changer ?", answer: "Oui, c'est l'occasion idéale de souscrire une délégation d'assurance moins chère, ce qui amplifie l'économie globale." },
+      { question: "Faut-il allonger la durée lors d'un rachat ?", answer: "Pas obligatoire. Conserver la durée restante maximise les économies d'intérêts. Allonger réduit la mensualité mais augmente le coût total." },
+      { question: "IRA : quand la banque peut-elle les appliquer ?", answer: "Si votre contrat le prévoit et que le remboursement intervient avant la fin de la période à taux fixe. Vérifiez votre offre de prêt initiale." },
+  ]),
 
-  "assurance-emprunteur": {
-    content: buildRichContent({
+  "assurance-emprunteur": registryEntry("assurance-emprunteur", {
       intro:
         "L'assurance emprunteur est obligatoire pour obtenir un crédit immobilier. Son coût, souvent sous-estimé, peut représenter plusieurs milliers d'euros sur la durée du prêt.",
       definition:
@@ -628,8 +614,7 @@ export const immobilierContent: ContentRegistry = {
         "Estimation sur capital initial constant.",
         "Tarification selon âge et état de santé non modélisée.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "L'assurance emprunteur est-elle obligatoire ?", answer: "Oui, les banques l'exigent pour couvrir le risque de non-remboursement." },
       { question: "Peut-on choisir son assurance ?", answer: "Oui, depuis la loi Lagarde puis Lemoine, vous pouvez souscrire une délégation externe." },
       { question: "Comment est calculé le coût ?", answer: "En pourcentage du capital emprunté, appliqué chaque année sur la durée du prêt." },
@@ -639,11 +624,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Peut-on changer d'assurance en cours de prêt ?", answer: "Oui, à chaque date anniversaire (Loi Hamon) ou à tout moment (Loi Lemoine) avec équivalence des garanties." },
       { question: "L'assurance couvre-t-elle le chômage ?", answer: "La garantie perte d'emploi (PE) est facultative et payante en supplément." },
       { question: "Comment réduire le coût de l'assurance ?", answer: "Comparer les délégations, adapter les quotités, cesser de fumer, choisir des garanties proportionnées." },
-    ]),
-  },
+  ]),
 
-  "frais-agence-immobiliere": {
-    content: buildRichContent({
+  "frais-agence-immobiliere": registryEntry("frais-agence-immobiliere", {
       intro:
         "Les honoraires d'agence immobilière s'ajoutent au prix d'achat lorsque la commission est à la charge de l'acquéreur. Ce poste peut représenter plusieurs milliers d'euros selon le prix du bien et le taux appliqué.",
       definition:
@@ -698,8 +681,7 @@ export const immobilierContent: ContentRegistry = {
         "Taux variable selon les agences et les zones.",
         "Ne remplace pas le mandat de vente.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Qui paie les honoraires d'agence ?", answer: "Le vendeur ou l'acquéreur, selon ce qui est indiqué dans l'annonce et le mandat." },
       { question: "Que signifie FAI ?", answer: "Frais d'Agence Inclus : le prix affiché comprend déjà les honoraires." },
       { question: "Quel est le taux moyen des agences ?", answer: "Entre 3 et 8 % du prix de vente, souvent autour de 4 à 5 % en province et 5 à 6 % en zone tendue." },
@@ -708,11 +690,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Les honoraires incluent-ils la TVA ?", answer: "Oui, les honoraires TTC incluent la TVA à 20 %." },
       { question: "Différence avec les frais de notaire ?", answer: "Les honoraires d'agence rémunèrent l'agent immobilier. Les frais de notaire couvrent les droits de mutation et les émoluments notariaux." },
       { question: "Faut-il payer l'agence si on achète sans intermédiaire ?", answer: "Non, en vente entre particuliers (PAP), il n'y a pas d'honoraires d'agence." },
-    ]),
-  },
+  ]),
 
-  "frais-garantie-emprunt": {
-    content: buildRichContent({
+  "frais-garantie-emprunt": registryEntry("frais-garantie-emprunt", {
       intro:
         "La garantie de prêt (hypothèque, caution Crédit Logement ou IPPD) protège la banque en cas de défaut de remboursement. Elle représente un coût non négligeable à intégrer dans votre plan de financement.",
       definition:
@@ -768,8 +748,7 @@ export const immobilierContent: ContentRegistry = {
         "Tarifs indicatifs selon les barèmes 2024.",
         "Choix de garantie souvent imposé par le prêteur.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Qu'est-ce qu'une garantie de prêt ?", answer: "Une sûreté permettant à la banque de récupérer le bien en cas de défaut de remboursement." },
       { question: "Quelle garantie choisir ?", answer: "La caution est souvent moins chère à la souscription. L'hypothèque peut être plus avantageuse sur le long terme." },
       { question: "Peut-on éviter la garantie ?", answer: "Non, toute banque exige une garantie pour un crédit immobilier." },
@@ -778,11 +757,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Quand payer la mainlevée ?", answer: "Au remboursement total du crédit ou à la revente du bien, pour libérer l'hypothèque ou la caution." },
       { question: "Hypothèque ou caution pour un investisseur ?", answer: "Les deux sont possibles. Comparez le coût total et la facilité de mainlevée en cas de revente." },
       { question: "La garantie couvre-t-elle 100 % du prêt ?", answer: "Généralement oui, ou un pourcentage élevé (70 à 120 % selon le type)." },
-    ]),
-  },
+  ]),
 
-  "effort-epargne-immobilier": {
-    content: buildRichContent({
+  "effort-epargne-immobilier": registryEntry("effort-epargne-immobilier", {
       intro:
         "Constituer un apport suffisant est souvent la première étape d'un projet immobilier. Ce simulateur estime le délai nécessaire pour atteindre votre objectif d'épargne à partir de votre capacité mensuelle.",
       definition:
@@ -837,8 +814,7 @@ export const immobilierContent: ContentRegistry = {
         "Sans rendement financier ni revalorisation.",
         "Ne remplace pas un conseil en gestion de patrimoine.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Quel apport viser pour un achat immobilier ?", answer: "Au minimum 10 % du prix, idéalement 15 à 20 % pour couvrir aussi les frais annexes." },
       { question: "L'épargne inclut-elle les frais de notaire ?", answer: "Oui, votre objectif devrait couvrir apport + frais de notaire + garantie." },
       { question: "Peut-on acheter sans apport ?", answer: "C'est devenu rare depuis 2022. Certaines banques acceptent 10 % de frais uniquement." },
@@ -847,11 +823,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Faut-il tout épargner avant de chercher ?", answer: "Non, commencez la recherche quand vous avez au moins 70 % de l'objectif, le reste s'accumulant pendant le processus." },
       { question: "Le PEL est-il utile pour l'apport ?", answer: "Oui, il offre un taux de prêt avantageux en plus de l'épargne constituée." },
       { question: "Peut-on utiliser un don familial comme apport ?", answer: "Oui, les dons familiaux sont acceptés par les banques comme apport personnel." },
-    ]),
-  },
+  ]),
 
-  "impact-hausse-taux": {
-    content: buildRichContent({
+  "impact-hausse-taux": registryEntry("impact-hausse-taux", {
       intro:
         "Une hausse des taux d'intérêt impacte directement votre mensualité et votre taux d'endettement. Anticiper cet effet est crucial pour sécuriser votre projet ou renégocier votre prêt.",
       definition:
@@ -913,8 +887,7 @@ export const immobilierContent: ContentRegistry = {
         "Scénario théorique sans garantie de taux futur.",
         "Autres charges du foyer non intégrées.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "De combien augmente la mensualité si le taux monte d'1 point ?", answer: "Sur 200 000 € sur 20 ans, environ 100 à 110 € par mois." },
       { question: "Comment se protéger d'une hausse des taux ?", answer: "Privilégiez un taux fixe et verrouillez-le avec une offre de prêt à taux fixe." },
       { question: "Le taux variable est-il risqué ?", answer: "Oui, la mensualité fluctue avec les taux du marché, avec un risque de hausse significative." },
@@ -923,11 +896,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Quel impact sur le coût total du crédit ?", answer: "Chaque point de taux supplémentaire peut coûter des dizaines de milliers d'euros sur la durée." },
       { question: "Les taux vont-ils remonter ?", answer: "Impossible à prédire. Simulez plusieurs scénarios pour vous prémunir." },
       { question: "L'assurance change-t-elle avec le taux ?", answer: "Non, l'assurance est indépendante du taux d'intérêt du crédit." },
-    ]),
-  },
+  ]),
 
-  "credit-travaux": {
-    content: buildRichContent({
+  "credit-travaux": registryEntry("credit-travaux", {
       intro:
         "Le crédit travaux finance la rénovation ou l'amélioration de votre logement. Comprendre sa mensualité et son coût total vous aide à dimensionner votre budget rénovation.",
       definition:
@@ -985,8 +956,7 @@ export const immobilierContent: ContentRegistry = {
         "Estimation sans devis travaux détaillé.",
         "Conditions d'éligibilité aux aides non vérifiées.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Quel taux pour un crédit travaux ?", answer: "Entre 3 et 6 % selon le montant, la durée et votre profil bancaire." },
       { question: "Peut-on cumuler crédit travaux et prêt immobilier ?", answer: "Oui, mais la mensualité totale doit respecter le taux d'endettement de 35 %." },
       { question: "Qu'est-ce que l'éco-PTZ ?", answer: "Un prêt à taux zéro pour financer des travaux de rénovation énergétique, sous conditions." },
@@ -995,11 +965,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Le crédit travaux est-il déductible ?", answer: "Non pour un logement principal. En location, les intérêts peuvent être déductibles au régime réel." },
       { question: "Peut-on financer des travaux d'agrandissement ?", answer: "Oui, si les travaux améliorent le logement et sont réalisés par des professionnels." },
       { question: "Assurance emprunteur obligatoire ?", answer: "Souvent oui, surtout pour les montants élevés. Elle peut être facultative pour les petits crédits travaux." },
-    ]),
-  },
+  ]),
 
-  "plus-value-immobiliere": {
-    content: buildRichContent({
+  "plus-value-immobiliere": registryEntry("plus-value-immobiliere", {
       intro:
         "Lors de la revente d'un bien immobilier, la plus-value réalisée peut être soumise à l'impôt. Ce simulateur estime le montant de la plus-value imposable et l'impôt correspondant.",
       definition:
@@ -1021,6 +989,9 @@ export const immobilierContent: ContentRegistry = {
       interpretation: [
         p("Plus la durée de détention est longue, plus les abattements réduisent l'impôt. Au-delà de 22 ans, l'impôt sur le revenu est nul ; au-delà de 30 ans, les prélèvements sociaux aussi."),
         hl("Résidence principale", "La vente de la résidence principale est exonérée de plus-value."),
+        p("Conservez les factures de travaux : sans justificatifs, seul un forfait de 15 % s'applique après 5 ans de détention, parfois moins avantageux que le montant réel."),
+        hl("Erreur fréquente", "Oublier de majorer le prix d'achat des frais de notaire et d'agence : ces sommes réduisent la plus-value imposable si elles sont documentées."),
+        p("Pour un investissement locatif, simulez l'impôt avant de vendre : attendre la 22e année peut faire disparaître l'IR sur la plus-value."),
       ],
       limitesCalcul: [
         "Abattements simplifiés selon durée.",
@@ -1060,21 +1031,18 @@ export const immobilierContent: ContentRegistry = {
         "Barème d'abattement simplifié.",
         "Cas particuliers (indivision, SCI) non traités.",
       ],
-    }),
-    faq: buildFaq([
-      { question: "Qu'est-ce que la plus-value immobilière ?", answer: "Le gain réalisé lors de la revente d'un bien, égal à la différence entre prix de vente et coût d'acquisition." },
-      { question: "La résidence principale est-elle imposable ?", answer: "Non, sa vente est exonérée de plus-value immobilière." },
-      { question: "Quels abattements pour durée de détention ?", answer: "6 %/an de la 6e à la 21e année, 4 % la 22e (exonération IR). Prélèvements sociaux : 1,65 %/an de la 6e à la 21e, 1,60 % la 22e à la 30e." },
-      { question: "Les travaux sont-ils déductibles ?", answer: "Oui, s'ils sont justifiés par factures ou via un forfait de 15 % si détention > 5 ans." },
-      { question: "Quel est le taux d'imposition ?", answer: "19 % d'impôt sur le revenu + 17,2 % de prélèvements sociaux sur la plus-value imposable." },
-      { question: "Peut-on reporter l'impôt ?", answer: "Oui, en cas de réinvestissement dans une résidence principale sous conditions." },
-      { question: "Y a-t-il une surtaxe pour grosses plus-values ?", answer: "Oui, une surtaxe s'applique au-delà de 50 000 € de plus-value imposable." },
-      { question: "Comment calculer le prix de vente net ?", answer: "Prix de vente moins frais de mutation (diagnostics, etc.) supportés par le vendeur." },
-    ]),
-  },
+  }, [
+      { question: "Plus-value immobilière après 12 ans : combien d'impôt ?", answer: "Les abattements réduisent l'impôt mais une taxation subsiste. Sur une plus-value brute de 49 000 €, comptez plusieurs milliers d'euros d'impôt selon les abattements appliqués." },
+      { question: "Vente résidence principale : faut-il payer l'impôt ?", answer: "Non, la vente de votre résidence principale est exonérée de plus-value immobilière, sous conditions de jouissance du logement." },
+      { question: "À partir de combien d'années la plus-value est exonérée ?", answer: "Exonération totale d'impôt sur le revenu après 22 ans de détention, et de prélèvements sociaux après 30 ans." },
+      { question: "Travaux sans factures : puis-je les déduire ?", answer: "Sans justificatifs, un forfait de 15 % du prix d'achat s'applique après 5 ans. Avec factures, le montant réel des travaux est déductible." },
+      { question: "Plus-value locative : quel taux d'imposition en 2025 ?", answer: "19 % d'impôt sur le revenu plus 17,2 % de prélèvements sociaux sur la plus-value imposable, après abattements pour durée de détention." },
+      { question: "Plus-value supérieure à 50 000 € : y a-t-il une surtaxe ?", answer: "Oui, une surtaxe progressive s'applique au-delà de 50 000 € de plus-value imposable. Ce simulateur ne la calcule pas." },
+      { question: "Frais de notaire à l'achat : impact sur la plus-value ?", answer: "Ils majoreront le prix d'acquisition retenu si vous les justifiez, ce qui réduit la plus-value brute à la revente." },
+      { question: "Report d'impôt si réinvestissement dans une RP : possible ?", answer: "Oui, sous conditions strictes (réinvestissement dans une résidence principale dans un délai de 24 mois). Renseignez-vous sur le report d'imposition." },
+  ]),
 
-  "rendement-locatif-brut": {
-    content: buildRichContent({
+  "rendement-locatif-brut": registryEntry("rendement-locatif-brut", {
       intro:
         "Le rendement locatif brut mesure le rapport entre les loyers annuels perçus et le coût total d'acquisition du bien. C'est le premier indicateur pour comparer des investissements immobiliers.",
       definition:
@@ -1132,8 +1100,7 @@ export const immobilierContent: ContentRegistry = {
         "Indicateur simplifié, non suffisant seul pour décider.",
         "Ne reflète pas la fiscalité ni le financement.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Qu'est-ce que le rendement locatif brut ?", answer: "Le rapport entre les loyers annuels et le coût total d'acquisition, avant charges." },
       { question: "Quel rendement brut viser ?", answer: "5 à 7 % en province, 3 à 4 % en zone tendue. Au-delà de 8 %, vérifiez la qualité du bien." },
       { question: "Différence brut et net ?", answer: "Le net déduit charges, vacance, taxe foncière et parfois fiscalité." },
@@ -1142,11 +1109,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Peut-on comparer deux villes avec le rendement brut ?", answer: "Oui, c'est un bon outil de comparaison, à condition d'utiliser les mêmes hypothèses." },
       { question: "Un rendement brut de 10 % est-il réaliste ?", answer: "Rare et souvent signe de risque (quartier difficile, travaux importants)." },
       { question: "Faut-il inclure les travaux de rénovation ?", answer: "Oui, tout investissement initial doit être intégré dans le coût total." },
-    ]),
-  },
+  ]),
 
-  "rendement-locatif-net": {
-    content: buildRichContent({
+  "rendement-locatif-net": registryEntry("rendement-locatif-net", {
       intro:
         "Le rendement locatif net affîne le rendement brut en déduisant les charges récurrentes et la vacance locative. Il reflète mieux la performance réelle de votre investissement.",
       definition:
@@ -1205,8 +1170,7 @@ export const immobilierContent: ContentRegistry = {
         "Sans prise en compte fiscale.",
         "Charges estimées, non contractuelles.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Quelle différence entre rendement brut et net ?", answer: "Le net déduit vacance locative et charges propriétaire du loyer perçu." },
       { question: "Quelles charges inclure ?", answer: "Taxe foncière, charges de copropriété non récupérables, assurance PNO, frais de gestion, entretien." },
       { question: "Quel taux de vacance prévoir ?", answer: "5 % en moyenne nationale, plus en zone rurale ou étudiante selon les périodes." },
@@ -1215,11 +1179,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Comment améliorer le rendement net ?", answer: "Négocier le prix d'achat, optimiser le loyer, réduire la vacance, minimiser les charges." },
       { question: "Les travaux d'entretien comptent-ils ?", answer: "Les charges courantes oui. Les gros travaux sont des investissements ponctuels, pas des charges récurrentes." },
       { question: "Le rendement net suffit-il pour investir ?", answer: "Non, analysez aussi le cash-flow, la fiscalité et le potentiel de plus-value." },
-    ]),
-  },
+  ]),
 
-  "cash-flow-immobilier": {
-    content: buildRichContent({
+  "cash-flow-immobilier": registryEntry("cash-flow-immobilier", {
       intro:
         "Le cash-flow immobilier mesure ce qu'il reste (ou manque) chaque mois entre les loyers perçus et l'ensemble des charges, y compris la mensualité de crédit. C'est l'indicateur clé de l'autofinancement.",
       definition:
@@ -1277,8 +1239,7 @@ export const immobilierContent: ContentRegistry = {
         "Estimation sans fiscalité mensualisée.",
         "Hypothèses de loyer et vacance simplifiées.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Qu'est-ce que le cash-flow immobilier ?", answer: "La différence entre les loyers nets perçus et toutes les charges, y compris le crédit." },
       { question: "Cash-flow positif ou négatif ?", answer: "Positif = le bien s'autofinance avec surplus. Négatif = vous complétez chaque mois." },
       { question: "Un cash-flow négatif est-il mauvais ?", answer: "Pas forcément : la plus-value et la fiscalité peuvent compenser un effort mensuel modéré." },
@@ -1287,11 +1248,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Cash-flow et rendement locatif : quelle différence ?", answer: "Le rendement est un ratio en %. Le cash-flow est un montant mensuel en euros." },
       { question: "Faut-il viser l'autofinancement total ?", answer: "C'est l'idéal, mais en zone tendue un effort mensuel modéré reste courant." },
       { question: "Le cash-flow inclut-il l'assurance PNO ?", answer: "Oui, si vous l'avez incluse dans les charges mensuelles saisies." },
-    ]),
-  },
+  ]),
 
-  "rentabilite-lmnp": {
-    content: buildRichContent({
+  "rentabilite-lmnp": registryEntry("rentabilite-lmnp", {
       intro:
         "La location meublée non professionnelle (LMNP) offre des avantages fiscaux significatifs via l'amortissement du bien. Ce simulateur estime la rentabilité nette d'un investissement en LMNP.",
       definition:
@@ -1348,8 +1307,7 @@ export const immobilierContent: ContentRegistry = {
         "Simulation fiscale simplifiée.",
         "Conditions de meublé non vérifiées.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Qu'est-ce que le LMNP ?", answer: "Location Meublée Non Professionnelle : louer un logement meublé avec un régime fiscal avantageux." },
       { question: "Micro-BIC ou régime réel ?", answer: "Micro-BIC si loyers < 77 700 €/an et charges faibles. Réel si amortissement avantageux." },
       { question: "Quels meubles sont obligatoires ?", answer: "Literie, volets, plaques de cuisson, four, réfrigérateur, vaisselle, etc. (décret en vigueur)." },
@@ -1358,11 +1316,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Peut-on passer du nu au meublé ?", answer: "Oui, en équipant le logement et en adaptant le bail meublé." },
       { question: "Quand devient-on LMP ?", answer: "Si les recettes locatives dépassent les autres revenus professionnels pendant plus de 5 ans." },
       { question: "La plus-value LMNP est-elle taxée ?", answer: "Oui, les amortissements déduits sont réintégrés dans le calcul de la plus-value à la revente." },
-    ]),
-  },
+  ]),
 
-  "budget-travaux": {
-    content: buildRichContent({
+  "budget-travaux": registryEntry("budget-travaux", {
       intro:
         "Estimer le budget travaux avant un achat ou une rénovation évite les mauvaises surprises. Ce simulateur calcule un ordre de grandeur selon la surface et le niveau de finition visé.",
       definition:
@@ -1415,8 +1371,7 @@ export const immobilierContent: ContentRegistry = {
         "Estimation moyenne nationale.",
         "Ne remplace pas un devis professionnel.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Combien coûtent des travaux au m² ?", answer: "Léger : 300-500 €/m². Moyen : 700-900 €/m². Lourd : 1 200-1 800 €/m²." },
       { question: "Comment financer les travaux ?", answer: "Épargne, crédit travaux, éco-PTZ ou intégration au prêt immobilier (prêt travaux couplé)." },
       { question: "Faut-il un architecte ?", answer: "Obligatoire si surface > 150 m² après travaux ou modification de structure." },
@@ -1425,11 +1380,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Quels travaux pour MaPrimeRénov' ?", answer: "Isolation, chauffage, ventilation, fenêtres — selon conditions de ressources et de gaines énergétiques." },
       { question: "Combien de temps durent les travaux ?", answer: "2 à 6 mois pour une rénovation moyenne de 65 m², selon la complexité." },
       { question: "Comment éviter les dépassements ?", answer: "Devis détaillés, marge de 15 %, suivi de chantier régulier et acomptes échelonnés." },
-    ]),
-  },
+  ]),
 
-  "rentabilite-apres-travaux": {
-    content: buildRichContent({
+  "rentabilite-apres-travaux": registryEntry("rentabilite-apres-travaux", {
       intro:
         "Les travaux de rénovation peuvent significativement améliorer la rentabilité locative d'un bien. Ce simulateur compare le rendement avant et après travaux pour mesurer le gain.",
       definition:
@@ -1487,8 +1440,7 @@ export const immobilierContent: ContentRegistry = {
         "Loyer après travaux basé sur estimation.",
         "Délai de retour sur investissement non calculé ici.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Les travaux améliorent-ils toujours la rentabilité ?", answer: "Pas toujours. Si le surcoût est trop élevé ou le loyer insuffisamment revalorisé, le rendement peut baisser." },
       { question: "Quels travaux ont le plus d'impact ?", answer: "Cuisine, salle de bain, isolation, double vitrage et mise aux normes électriques." },
       { question: "Comment estimer le loyer après travaux ?", answer: "Comparez avec des biens similaires rénovés dans le même quartier sur les sites d'annonces." },
@@ -1497,11 +1449,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Les travaux créent-ils de la plus-value ?", answer: "Oui, un bien rénové se vend et se loue mieux, générant une plus-value à la revente." },
       { question: "Peut-on déduire les travaux en location ?", answer: "Oui au régime réel foncier ou via amortissement LMNP." },
       { question: "Comment financer travaux et achat simultanément ?", answer: "Prêt immobilier avec travaux couplés, ou crédit travaux complémentaire." },
-    ]),
-  },
+  ]),
 
-  "rentabilite-scpi": {
-    content: buildRichContent({
+  "rentabilite-scpi": registryEntry("rentabilite-scpi", {
       intro:
         "Les SCPI (Sociétés Civiles de Placement Immobilier) permettent d'investir dans l'immobilier d'entreprise sans contrainte de gestion. Ce simulateur estime la rentabilité nette après frais de souscription.",
       definition:
@@ -1558,8 +1508,7 @@ export const immobilierContent: ContentRegistry = {
         "Performance passée non garantie pour l'avenir.",
         "Liquidité limitée des parts de SCPI.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Qu'est-ce qu'une SCPI ?", answer: "Une société qui investit collectivement dans l'immobilier locatif et redistribue les loyers aux associés." },
       { question: "Quel rendement espérer d'une SCPI ?", answer: "Historiquement 4 à 5 % de distribution annuelle, variable selon les SCPI." },
       { question: "Quels sont les frais d'une SCPI ?", answer: "Frais de souscription (8-12 %), frais de gestion (10-12 % des loyers), frais de sortie éventuels." },
@@ -1568,11 +1517,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "SCPI ou immobilier direct ?", answer: "SCPI : gestion déléguée, diversification, ticket d'entrée faible. Direct : contrôle, levier crédit, plus-value." },
       { question: "Comment sont imposés les revenus SCPI ?", answer: "Au PFU (30 %) ou au barème progressif + prélèvements sociaux." },
       { question: "Quel montant minimum pour une SCPI ?", answer: "Souvent à partir de 200 à 1 000 € selon les SCPI, parfois plus via le crédit." },
-    ]),
-  },
+  ]),
 
-  "rentabilite-location-courte-duree": {
-    content: buildRichContent({
+  "rentabilite-location-courte-duree": registryEntry("rentabilite-location-courte-duree", {
       intro:
         "La location courte durée (type Airbnb) peut générer des revenus supérieurs à la location classique, mais avec des charges et une vacance différentes. Ce simulateur estime la rentabilité spécifique à ce modèle.",
       definition:
@@ -1629,8 +1576,7 @@ export const immobilierContent: ContentRegistry = {
         "Occupation moyenne lissée sur l'année.",
         "Cadre réglementaire évolutif.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Location courte durée vs classique ?", answer: "Revenus potentiellement plus élevés mais charges, gestion et réglementation plus lourdes." },
       { question: "Quel taux d'occupation viser ?", answer: "60 à 75 % en zone touristique, 40 à 55 % en zone urbaine hors saison." },
       { question: "Faut-il déclarer son activité ?", answer: "Oui, en mairie (numéro d'enregistrement) et aux impôts (LMNP ou LMP)." },
@@ -1639,11 +1585,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Peut-on gérer à distance ?", answer: "Oui, via une conciergerie (20-25 % des revenus) qui gère accueil, ménage et maintenance." },
       { question: "LMNP pour la courte durée ?", answer: "Oui, le régime LMNP s'applique avec les mêmes avantages fiscaux." },
       { question: "Quel tarif par nuit fixer ?", answer: "Analysez la concurrence locale et ajustez selon saison, événements et taux d'occupation." },
-    ]),
-  },
+  ]),
 
-  "colocation-rentabilite": {
-    content: buildRichContent({
+  "colocation-rentabilite": registryEntry("colocation-rentabilite", {
       intro:
         "La colocation multiplie les revenus locatifs en louant chaque chambre individuellement. Ce simulateur estime la rentabilité spécifique de ce modèle d'investissement.",
       definition:
@@ -1699,8 +1643,7 @@ export const immobilierContent: ContentRegistry = {
         "Réglementation locale variable (PLU, autorisation).",
         "Gestion plus intensive non chiffrée.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "La colocation est-elle plus rentable ?", answer: "Généralement oui, les loyers cumulés dépassent de 20 à 40 % un bail unique." },
       { question: "Quelle surface minimale par chambre ?", answer: "9 m² minimum, avec hauteur sous plafond de 2,20 m et fenêtre." },
       { question: "Bail unique ou baux individuels ?", answer: "Les deux existent. Les baux individuels limitent la solidarité entre colocataires." },
@@ -1709,11 +1652,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "La colocation est-elle légale partout ?", answer: "Vérifiez le PLU local. Certaines communes imposent des restrictions." },
       { question: "Comment gérer les parties communes ?", answer: "Via un règlement intérieur et une clause d'entretien dans chaque bail." },
       { question: "Colocation et fiscalité ?", answer: "Revenus fonciers (nu) ou BIC (meublé). Chaque chambre génère un loyer imposable." },
-    ]),
-  },
+  ]),
 
-  "impot-revenus-fonciers": {
-    content: buildRichContent({
+  "impot-revenus-fonciers": registryEntry("impot-revenus-fonciers", {
       intro:
         "Les revenus locatifs sont imposés au titre des revenus fonciers. Le choix entre micro-foncier et régime réel impacte significativement votre impôt. Ce simulateur compare les deux options.",
       definition:
@@ -1770,8 +1711,7 @@ export const immobilierContent: ContentRegistry = {
         "Simulation sans prise en compte du déficit foncier.",
         "TMI estimé, non personnalisé.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Micro-foncier ou régime réel ?", answer: "Micro si loyers < 15 000 € et charges < 30 % des loyers. Réel si charges importantes." },
       { question: "Quel abattement en micro-foncier ?", answer: "30 % forfaitaire sur les loyers bruts, sans justificatif de charges." },
       { question: "Quelles charges déduire au réel ?", answer: "Taxe foncière, intérêts d'emprunt, travaux, assurance PNO, frais de gestion, charges copropriété." },
@@ -1780,11 +1720,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Peut-on changer de régime ?", answer: "Oui, mais le réel est irrévocable 3 ans. Le micro-foncier peut être choisi chaque année." },
       { question: "Les prélèvements sociaux s'appliquent-ils ?", answer: "Oui, 17,2 % sur les revenus fonciers imposables, en plus de l'impôt sur le revenu." },
       { question: "Location meublée : même régime ?", answer: "Non, la location meublée relève des BIC (micro-BIC ou réel), pas des revenus fonciers." },
-    ]),
-  },
+  ]),
 
-  "taxe-fonciere": {
-    content: buildRichContent({
+  "taxe-fonciere": registryEntry("taxe-fonciere", {
       intro:
         "La taxe foncière est un impôt local annuel supporté par le propriétaire. Son montant dépend de la valeur locative cadastrale (VLC) et des taux votés par les collectivités.",
       definition:
@@ -1839,8 +1777,7 @@ export const immobilierContent: ContentRegistry = {
         "Taux indicatif, variable selon la commune.",
         "Revalorisation annuelle de la VLC non projetée.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Comment est calculée la taxe foncière ?", answer: "VLC × 50 % (abattement) × taux voté par la commune et le département." },
       { question: "Où trouver la VLC de mon bien ?", answer: "Sur votre avis de taxe foncière, rubrique « base imposable » avant abattement." },
       { question: "Le locataire paie-t-il la taxe foncière ?", answer: "Non, sauf la taxe d'enlèvement des ordures ménagères (TEOM) récupérable." },
@@ -1849,11 +1786,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Taxe foncière et impôt sur le revenu ?", answer: "La taxe foncière est déductible des revenus fonciers au régime réel." },
       { question: "Différence taxe foncière et taxe d'habitation ?", answer: "La taxe d'habitation sur les résidences principales est supprimée. La taxe fonciere reste due par le propriétaire." },
       { question: "Comment contester la taxe foncière ?", answer: "Via une réclamation au centre des finances publiques dans les délais (fin décembre)." },
-    ]),
-  },
+  ]),
 
-  "deficit-foncier": {
-    content: buildRichContent({
+  "deficit-foncier": registryEntry("deficit-foncier", {
       intro:
         "Le déficit foncier permet de déduire les travaux et charges excédentaires de vos revenus immobiliers, voire de votre revenu global. C'est un levier fiscal puissant pour les investisseurs.",
       definition:
@@ -1913,8 +1848,7 @@ export const immobilierContent: ContentRegistry = {
         "Classification travaux simplifiée.",
         "Simulation sans conseil fiscal personnalisé.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Qu'est-ce que le déficit foncier ?", answer: "Un excédent de charges sur les loyers, déductible des revenus fonciers ou du revenu global." },
       { question: "Quel plafond d'imputation sur le revenu global ?", answer: "10 700 € par an pour les travaux d'entretien et de réparation." },
       { question: "Quels travaux créent un déficit foncier ?", answer: "Travaux de réparation, entretien, amélioration. Pas les travaux de construction ou agrandissement." },
@@ -1923,11 +1857,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Les intérêts d'emprunt créent-ils un déficit global ?", answer: "Non, les intérêts ne sont imputables que sur les revenus fonciers, pas sur le revenu global." },
       { question: "Peut-on cumuler déficit foncier et LMNP ?", answer: "Non, ce sont deux régimes distincts. Un bien est soit nu (foncier), soit meublé (BIC)." },
       { question: "Comment optimiser le déficit foncier ?", answer: "Concentrer les travaux déductibles sur une année et viser le plafond de 10 700 € imputable." },
-    ]),
-  },
+  ]),
 
-  "donation-succession-immobiliere": {
-    content: buildRichContent({
+  "donation-succession-immobiliere": registryEntry("donation-succession-immobiliere", {
       intro:
         "Transmettre un bien immobilier par donation ou succession déclenche des droits de mutation à titre gratuit (DMTG). Anticiper leur montant permet d'optimiser la transmission patrimoniale.",
       definition:
@@ -1984,8 +1916,7 @@ export const immobilierContent: ContentRegistry = {
         "Simulation sans historique des donations antérieures.",
         "Cas du conjoint survivant non détaillé.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Quels droits pour une donation à un enfant ?", answer: "Barème progressif de 5 à 45 % après abattement de 100 000 €." },
       { question: "Le conjoint paie-t-il des droits ?", answer: "Non, le conjoint est totalement exonéré de droits de succession." },
       { question: "Quand renouveler l'abattement ?", answer: "Tous les 15 ans pour les donations. Les successions n'ont pas de renouvellement." },
@@ -1994,11 +1925,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Les dettes réduisent-elles les droits ?", answer: "Oui, les dettes sur le bien (crédit en cours) réduisent la valeur transmise." },
       { question: "Faut-il passer par un notaire ?", answer: "Oui, la donation immobilière doit être authentifiée par acte notarié." },
       { question: "L'assurance-vie est-elle une alternative ?", answer: "Oui, les capitaux versés bénéficient d'abattements (152 500 € par bénéficiaire en droits)." },
-    ]),
-  },
+  ]),
 
-  "location-meublee-vs-nue": {
-    content: buildRichContent({
+  "location-meublee-vs-nue": registryEntry("location-meublee-vs-nue", {
       intro:
         "Le choix entre location meublée et location nue impacte vos revenus locatifs, votre fiscalité et votre gestion. Ce simulateur compare la rentabilité nette des deux options.",
       definition:
@@ -2054,8 +1983,7 @@ export const immobilierContent: ContentRegistry = {
         "Hypothèses de loyer simplifiées.",
         "Ne tient pas compte du temps de gestion.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Meublé ou nu : lequel est plus rentable ?", answer: "Le meublé génère des loyers plus élevés et une fiscalité souvent plus avantageuse." },
       { question: "Quelle fiscalité pour chaque type ?", answer: "Nu : revenus fonciers. Meublé : BIC (micro-BIC ou réel avec amortissement)." },
       { question: "Quelle durée de bail ?", answer: "Meublé : 1 an (9 mois étudiant). Nu : 3 ans (6 ans si personne morale)." },
@@ -2064,11 +1992,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Quels meubles sont obligatoires ?", answer: "Literie, volets, plaques, four, réfrigérateur, vaisselle, étagères, luminaires, etc." },
       { question: "Le dépôt de garantie diffère-t-il ?", answer: "Oui : 2 mois pour le nu, 1 mois pour le meublé." },
       { question: "Quel régime si je loue en meublé de tourisme ?", answer: "LMNP avec régime BIC, soumis à des règles spécifiques de durée et de déclaration." },
-    ]),
-  },
+  ]),
 
-  "ifi-impot-fortune-immobiliere": {
-    content: buildRichContent({
+  "ifi-impot-fortune-immobiliere": registryEntry("ifi-impot-fortune-immobiliere", {
       intro:
         "L'Impôt sur la Fortune Immobilière (IFI) s'applique aux contribuables dont le patrimoine immobilier net taxable dépasse 1,3 million d'euros. Ce simulateur estime le montant dû.",
       definition:
@@ -2126,8 +2052,7 @@ export const immobilierContent: ContentRegistry = {
         "Simulation sans prise en compte de toutes les exonérations.",
         "Valorisation des biens non actualisée.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "À partir de combien paie-t-on l'IFI ?", answer: "Dès 1,3 million € de patrimoine immobilier net taxable." },
       { question: "La résidence principale est-elle taxée ?", answer: "Oui, avec un abattement de 30 % sur sa valeur." },
       { question: "Quels biens entrent dans l'IFI ?", answer: "Tous les biens immobiliers : RP, locatif, SCPI, terrains. Pas les biens professionnels." },
@@ -2136,11 +2061,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "L'IFI remplace-t-il l'ISF ?", answer: "Oui, depuis 2018. Seul le patrimoine immobilier est taxé." },
       { question: "Comment réduire l'IFI ?", answer: "Dette, démembrement, investissement en biens professionnels, donation de nue-propriété." },
       { question: "Les SCPI sont-elles soumises à l'IFI ?", answer: "Oui, les parts de SCPI entrent dans l'assiette IFI." },
-    ]),
-  },
+  ]),
 
-  "revision-loyer-irl": {
-    content: buildRichContent({
+  "revision-loyer-irl": registryEntry("revision-loyer-irl", {
       intro:
         "En location vide, le loyer peut être révisé chaque année selon l'Indice de Référence des Loyers (IRL). Ce simulateur calcule le nouveau loyer applicable.",
       definition:
@@ -2196,8 +2119,7 @@ export const immobilierContent: ContentRegistry = {
         "IRL à saisir manuellement.",
         "Encadrement des loyers non contrôlé.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Qu'est-ce que l'IRL ?", answer: "L'Indice de Référence des Loyers, publié trimestriellement par l'INSEE." },
       { question: "Quand réviser le loyer ?", answer: "Une fois par an, à la date prévue dans le bail (souvent date anniversaire)." },
       { question: "Comment notifier le locataire ?", answer: "Par courrier recommandé avec le calcul : loyer × (nouvel IRL / ancien IRL)." },
@@ -2206,11 +2128,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "La révision s'applique-t-elle rétroactivement ?", answer: "Non, uniquement à compter de la date de révision." },
       { question: "Location meublée : même indice ?", answer: "Oui, l'IRL s'applique aussi aux baux meublés." },
       { question: "Où trouver l'IRL ?", answer: "Sur le site de l'INSEE, rubrique indices et références, IRL trimestriel." },
-    ]),
-  },
+  ]),
 
-  "encadrement-loyers": {
-    content: buildRichContent({
+  "encadrement-loyers": registryEntry("encadrement-loyers", {
       intro:
         "Dans les zones tendues, l'encadrement des loyers limite le montant du loyer à la signature d'un nouveau bail. Ce simulateur vérifie la conformité d'un loyer par rapport au plafond légal.",
       definition:
@@ -2265,8 +2185,7 @@ export const immobilierContent: ContentRegistry = {
         "Plafond saisi manuellement.",
         "Liste des communes encadrées non exhaustive ici.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Qu'est-ce que l'encadrement des loyers ?", answer: "Un plafond légal de loyer dans les zones tendues, basé sur un loyer de référence par quartier." },
       { question: "Dans quelles villes s'applique-t-il ?", answer: "Paris, Lille, Lyon, Villeurbanne, Montpellier, Bordeaux (partiel), et d'autres selon arrêtés préfectoraux." },
       { question: "Qu'est-ce que le complément de loyer ?", answer: "Un supplément justifié par des caractéristiques de localisation ou de confort exceptionnels." },
@@ -2275,11 +2194,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Que faire si le loyer dépasse le plafond ?", answer: "Le locataire peut contester. Le bailleur doit prouver le complément de loyer ou baisser le loyer." },
       { question: "L'encadrement concerne-t-il le meublé ?", answer: "Oui, avec des loyers de référence spécifiques au meublé." },
       { question: "Le locataire peut-il vérifier le loyer ?", answer: "Oui, via l'observatoire des loyers ou la commission de conciliation." },
-    ]),
-  },
+  ]),
 
-  "depot-garantie-locatif": {
-    content: buildRichContent({
+  "depot-garantie-locatif": registryEntry("depot-garantie-locatif", {
       intro:
         "Le dépôt de garantie est une somme versée par le locataire au bailleur lors de la signature du bail. Son montant est encadré par la loi et restitué en fin de bail sous conditions.",
       definition:
@@ -2332,8 +2249,7 @@ export const immobilierContent: ContentRegistry = {
         "Montant légal maximal uniquement.",
         "Retenues et litiges non modélisés.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Quel montant maximal pour le dépôt de garantie ?", answer: "1 mois de loyer HC pour le nu, 2 mois pour le meublé." },
       { question: "Le dépôt couvre-t-il les charges ?", answer: "Non, il se calcule sur le loyer hors charges uniquement." },
       { question: "Quand restituer le dépôt ?", answer: "1 mois si aucune retenue, 2 mois si retenue pour dégradations ou impayés." },
@@ -2342,11 +2258,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Différence dépôt et garantie Visale ?", answer: "Le dépôt est versé au bailleur. Visale est une caution gratuite de l'État pour le locataire." },
       { question: "Que faire en cas de litige sur le dépôt ?", answer: "Saisir la commission de conciliation, puis le tribunal judiciaire si nécessaire." },
       { question: "Le dépôt est-il révisé avec le loyer ?", answer: "Non, il reste fixe sauf renouvellement de bail avec nouveau loyer." },
-    ]),
-  },
+  ]),
 
-  "charges-recuperables-locataire": {
-    content: buildRichContent({
+  "charges-recuperables-locataire": registryEntry("charges-recuperables-locataire", {
       intro:
         "Certaines charges de copropriété et de propriété sont récupérables auprès du locataire. Ce simulateur estime le montant mensuel de charges locatives à refacturer.",
       definition:
@@ -2402,8 +2316,7 @@ export const immobilierContent: ContentRegistry = {
         "Liste des charges simplifiée.",
         "Décompte réel non simulé.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Quelles charges sont récupérables ?", answer: "Entretien courant, eau, chauffage, TEOM, ascenseur, gardien, éclairage des communs." },
       { question: "Quelles charges ne le sont pas ?", answer: "Gros travaux (ravalement, toiture), taxe foncière (sauf TEOM), frais de gestion du bailleur." },
       { question: "Comment facturer les charges au locataire ?", answer: "Par provisions mensuelles avec régularisation annuelle, ou par forfait de charges." },
@@ -2412,11 +2325,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Le locataire peut-il contester les charges ?", answer: "Oui, s'il estime que certaines charges ne sont pas récupérables." },
       { question: "La TEOM est-elle récupérable ?", answer: "Oui, la taxe d'enlèvement des ordures ménagères est récupérable sur le locataire." },
       { question: "Charges en colocation ?", answer: "Elles sont réparties entre colocataires, souvent au prorata des surfaces ou à parts égales." },
-    ]),
-  },
+  ]),
 
-  "revision-loyer-commercial": {
-    content: buildRichContent({
+  "revision-loyer-commercial": registryEntry("revision-loyer-commercial", {
       intro:
         "Les baux commerciaux prévoient une révision triennale ou annuelle du loyer indexée sur un indice spécifique (ILC ou ILAT). Ce simulateur calcule le loyer révisé.",
       definition:
@@ -2472,8 +2383,7 @@ export const immobilierContent: ContentRegistry = {
         "Indices à vérifier sur insee.fr.",
         "Clauses spécifiques du bail non analysées.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "Quel indice pour un bail commercial ?", answer: "ILC pour les commerces, ILAT pour les bureaux et activités tertiaires." },
       { question: "Quelle fréquence de révision ?", answer: "Triennale (tous les 3 ans) en principe, ou annuelle si prévu au bail." },
       { question: "Le locataire peut-il refuser la révision ?", answer: "Non, si la clause est valide et l'indice correctement appliqué." },
@@ -2482,11 +2392,9 @@ export const immobilierContent: ContentRegistry = {
       { question: "Différence ILC et ILAT ?", answer: "ILC pour commerces de détail, ILAT pour bureaux, entrepôts et activités tertiaires." },
       { question: "Qu'est-ce que le lissage de révision ?", answer: "Une clause étalant la hausse sur plusieurs périodes pour limiter les chocs." },
       { question: "Où trouver les indices ILC et ILAT ?", answer: "Sur le site de l'INSEE, rubrique indices des loyers commerciaux." },
-    ]),
-  },
+  ]),
 
-  "loyer-charges-comprises": {
-    content: buildRichContent({
+  "loyer-charges-comprises": registryEntry("loyer-charges-comprises", {
       intro:
         "Les annonces immobilières affichent souvent un loyer charges comprises (CC). Pour établir un bail conforme, il faut ventiler le loyer hors charges et le montant des provisions sur charges.",
       definition:
@@ -2538,8 +2446,7 @@ export const immobilierContent: ContentRegistry = {
         "Ventilation simplifiée.",
         "Ne remplace pas la rédaction du bail.",
       ],
-    }),
-    faq: buildFaq([
+  }, [
       { question: "CC signifie charges comprises ?", answer: "Oui, le loyer CC inclut une provision pour charges locatives." },
       { question: "Comment calculer le loyer HC ?", answer: "Loyer HC = Loyer CC − Provisions sur charges mensuelles." },
       { question: "Le dépôt se calcule sur le CC ou le HC ?", answer: "Sur le loyer hors charges uniquement." },
@@ -2548,6 +2455,5 @@ export const immobilierContent: ContentRegistry = {
       { question: "Faut-il indiquer le CC dans l'annonce ?", answer: "Oui, c'est obligatoire. Le loyer HC doit aussi être mentionné dans le bail." },
       { question: "Les charges peuvent-elles augmenter ?", answer: "Oui, via la régularisation annuelle si les charges réelles dépassent les provisions." },
       { question: "Comment fixer le montant des provisions ?", answer: "Sur la base des charges récupérables de l'année précédente ou d'une estimation raisonnable." },
-    ]),
-  },
+  ]),
 };
