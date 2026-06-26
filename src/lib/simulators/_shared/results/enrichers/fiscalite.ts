@@ -9,6 +9,7 @@ import {
   getImpotLiberatoireTaux,
 } from "@/lib/config/fiscalite";
 import { getMicroEntrepreneurTaux } from "@/lib/config/urssaf";
+import { IFI_SEUIL } from "@/data/regulations/ifi";
 import { formatNumber } from "@/lib/utils/format";
 import type { ResultComparison, ResultInterpretation } from "../../../types";
 import {
@@ -636,11 +637,11 @@ const enrichIfi: Enricher = (input, result) => {
   const brut = num(input.patrimoineBrut);
   const rp = num(input.valeurRP);
 
-  if (ifi <= 0 || net <= 1300000) {
+  if (ifi <= 0 || net <= IFI_SEUIL) {
     return enrich(result, {
       primary: { label: "IFI annuel", value: fmtEur(0) },
       narrative: `Patrimoine net taxable ${fmtEur(net)} — sous le seuil de 1,3 M€, aucun IFI dû.`,
-      interpretation: interpretationFavorable("Hors IFI", `Marge de ${fmtEur(1300000 - net)} avant le seuil — abattement RP 30 % déjà appliqué sur ${fmtEur(rp)}.`),
+      interpretation: interpretationFavorable("Hors IFI", `Marge de ${fmtEur(IFI_SEUIL - net)} avant le seuil — abattement RP 30 % déjà appliqué sur ${fmtEur(rp)}.`),
       advice: adviceItems("Surveiller le seuil", [
         "Le seuil est calculé au 1er janvier — plus-values latentes comptent",
         "Dettes d'acquisition immobilière déductibles",

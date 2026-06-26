@@ -2,6 +2,7 @@ import { capaciteEmprunt } from "../../../capacite-emprunt";
 import type { CapaciteEmpruntInput } from "../../../capacite-emprunt";
 import { mensualitePret } from "../../../mensualite-pret";
 import type { MensualitePretInput } from "../../../mensualite-pret";
+import { IFI_SEUIL } from "@/data/regulations/ifi";
 import type {
   ResultAdvice,
   ResultComparison,
@@ -1574,7 +1575,7 @@ function enrichIfi(input: EnricherInput, result: SimulatorResult): SimulatorResu
   const rp = num(input.valeurRP);
   const ifi = findNumber(result, "IFI") ?? 0;
   const net = findNumber(result, "net taxable") ?? 0;
-  const sousSeuil = net <= 1300000;
+  const sousSeuil = net <= IFI_SEUIL;
 
   const narrative = sousSeuil
     ? `Avec ${formatCurrency(brut)} de patrimoine brut, ${formatCurrency(dettes)} de dettes et ${formatCurrency(rp)} de résidence principale (abattement 30 %), le patrimoine net taxable (${formatCurrency(net)}) reste sous le seuil de 1,3 M€ — pas d'IFI.`

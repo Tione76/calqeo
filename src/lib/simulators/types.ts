@@ -133,6 +133,10 @@ export interface SimulatorDefinition<TInput = Record<string, number | string>> {
   defaultValues?: Record<string, number | string>;
   calculate: (input: TInput) => SimulatorResult;
   relatedSlugs?: string[];
+  /** Identifiants des modules src/data/regulations/ utilisés (ex. "impot", "rsa"). */
+  regulationIds?: string[];
+  /** Brouillon : non indexé tant que non activé via drafts/activation.ts */
+  publicationStatus?: "published" | "draft";
 }
 
 /** Verticales principales du site. */
@@ -144,7 +148,8 @@ export type SiteDomain =
   | "fiscalite"
   | "travaux"
   | "sante"
-  | "quotidien";
+  | "quotidien"
+  | "aides-sociales";
 
 export type SimulatorCategory =
   | "financement"
@@ -186,6 +191,7 @@ export const DOMAIN_LABELS: Record<SiteDomain, string> = {
   travaux: "Travaux & habitat",
   sante: "Santé",
   quotidien: "Calculs du quotidien",
+  "aides-sociales": "Aides sociales",
 };
 
 export const DOMAIN_ORDER: SiteDomain[] = [
@@ -197,6 +203,7 @@ export const DOMAIN_ORDER: SiteDomain[] = [
   "travaux",
   "sante",
   "quotidien",
+  "aides-sociales",
 ];
 
 export const DOMAIN_ANCHORS: Record<SiteDomain, string> = {
@@ -208,6 +215,7 @@ export const DOMAIN_ANCHORS: Record<SiteDomain, string> = {
   travaux: "travaux",
   sante: "sante",
   quotidien: "quotidien",
+  "aides-sociales": "aides-sociales",
 };
 
 export const CATEGORY_LABELS: Record<SimulatorCategory, string> = {

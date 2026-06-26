@@ -50,4 +50,10 @@ export const FEATURED_SLUGS: Record<SiteDomain, string[]> = {
     "regle-de-trois",
     "calculateur-age",
   ],
+  "aides-sociales": [
+    "simulateur-rsa",
+    "simulateur-apl",
+    "simulateur-prime-activite",
+    "simulateur-aah",
+  ],
 };

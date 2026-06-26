@@ -1,6 +1,8 @@
 import type { SimulatorDefinition } from "../types";
 import { formatCurrency, formatPercent } from "@/lib/utils/format";
 import { buildContent, buildFaq, hl, p } from "../_shared/content-builder";
+import { calculerIfi, IFI_ABATTEMENT_RP, IFI_SEUIL } from "@/data/regulations/ifi";
+import { calculerDroitsMutation } from "@/data/regulations/donation";
 import {
   MICRO_FONCIER_ABATTEMENT,
   MICRO_MEUBLE_ABATTEMENT,
@@ -269,7 +271,7 @@ export const donationSuccession: SimulatorDefinition = {
       };
     }
     const base = Math.max(0, valeur - abattement);
-    const droits = base <= 8072 ? base * 0.05 : base <= 12109 ? base * 0.1 : base <= 15932 ? base * 0.15 : base <= 552324 ? base * 0.2 : base * 0.3;
+    const droits = calculerDroitsMutation(base);
     return {
       summary: `Droits estimés : ${formatCurrency(droits)} (base taxable : ${formatCurrency(base)}).`,
       lines: [
@@ -372,34 +374,19 @@ export const ifiFortuneImmobiliere: SimulatorDefinition = {
   calculate(input) {
     const brut = num(input.patrimoineBrut);
     const rp = num(input.valeurRP);
-    const abattementRP = rp * 0.3;
+    const abattementRP = rp * IFI_ABATTEMENT_RP;
     const net = brut - abattementRP - num(input.dettes);
-    if (net <= 1300000) {
+    if (net <= IFI_SEUIL) {
       return {
         summary: "Patrimoine net sous le seuil de 1,3 M€ — IFI non dû.",
         lines: [
           { label: "IFI estimé", value: formatCurrency(0), highlight: true },
           { label: "Patrimoine net taxable", value: formatCurrency(Math.max(0, net)) },
-          { label: "Seuil IFI", value: formatCurrency(1300000) },
+          { label: "Seuil IFI", value: formatCurrency(IFI_SEUIL) },
         ],
       };
     }
-    const tranches = [
-      { max: 800000, t: 0.005 },
-      { max: 300000, t: 0.006 },
-      { max: 500000, t: 0.007 },
-      { max: 1000000, t: 0.008 },
-      { max: 3000000, t: 0.009 },
-      { max: Infinity, t: 0.01 },
-    ];
-    let reste = net - 800000;
-    let ifi = 800000 * 0.005;
-    for (const tr of tranches.slice(1)) {
-      const tranche = Math.min(reste, tr.max);
-      ifi += tranche * tr.t;
-      reste -= tranche;
-      if (reste <= 0) break;
-    }
+    const ifi = calculerIfi(net);
     return {
       summary: `IFI estimé : ${formatCurrency(ifi)}/an.`,
       lines: [

@@ -12,6 +12,7 @@ import { SimulatorHeader } from "@/components/simulator/SimulatorHeader";
 import { SimulatorContent } from "@/components/simulator/SimulatorContent";
 import { SimulatorFAQ } from "@/components/simulator/SimulatorFAQ";
 import { RelatedSimulators } from "@/components/simulator/RelatedSimulators";
+import { RegulatorySourcesNotice } from "@/components/simulator/RegulatorySourcesNotice";
 import { AdSlot } from "@/components/ads/AdSlot";
 
 interface PageProps {
@@ -93,6 +94,12 @@ export default async function SimulatorPage({ params }: PageProps) {
         <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start lg:gap-8">
           <div className="min-w-0">
             <FormComponent />
+
+            {simulator.regulationIds && simulator.regulationIds.length > 0 && (
+              <div className="mt-10">
+                <RegulatorySourcesNotice regulationIds={simulator.regulationIds} />
+              </div>
+            )}
 
             <div className="mt-16 space-y-16">
               <SimulatorContent content={simulator.content} />

@@ -4,6 +4,7 @@ import {
   formatPercent,
   monthlyPaymentFromLoan,
 } from "@/lib/utils/format";
+import { estimerPtz } from "@/data/regulations/ptz";
 import { buildContent, buildFaq, hl, p } from "../_shared/content-builder";
 
 const num = (v: number | string) =>
@@ -108,11 +109,12 @@ export const pretPtz: SimulatorDefinition = {
     const revenu = num(input.revenuFiscal);
     const prix = num(input.prixBien);
     const zone = String(input.zone);
-    const plafonds: Record<string, number> = { A: 49000, Abis: 49000, B1: 42000, B2: 34500, C: 31500 };
-    const plafond = plafonds[zone] ?? 42000;
-    const eligible = revenu <= plafond * Math.max(1, num(input.nbPersonnes) * 0.5);
-    const quotite = zone === "A" || zone === "Abis" ? 0.4 : zone === "B1" ? 0.4 : zone === "B2" ? 0.2 : 0.2;
-    const montantPtz = eligible ? Math.min(prix * quotite, 100000) : 0;
+    const { eligible, montant: montantPtz, plafond, quotite } = estimerPtz({
+      revenuFiscal: revenu,
+      prixBien: prix,
+      zone,
+      nbPersonnes: num(input.nbPersonnes),
+    });
     return {
       summary: eligible
         ? `PTZ estimé : ${formatCurrency(montantPtz)} (sous conditions d'éligibilité).`

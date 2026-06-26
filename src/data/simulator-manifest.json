@@ -1637,6 +1637,15 @@
           "domainLabel": "Calculs du quotidien"
         }
       ]
+    },
+    {
+      "domain": "aides-sociales",
+      "label": "Aides sociales",
+      "anchor": "aides-sociales",
+      "count": 0,
+      "featured": [],
+      "preview": [],
+      "all": []
     }
   ],
   "genericFormSlugs": [

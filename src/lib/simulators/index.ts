@@ -6,13 +6,16 @@ import { generalSimulators } from "./general";
 import { getSimulatorDomain, DOMAIN_LABELS, type SimulatorDefinition } from "./types";
 import { applyContentEnrichment } from "./_shared/content";
 import { applySeoEnrichment } from "./_shared/seo";
+import { getSimulatorRegulationIds } from "./regulation-ids";
+import { ACTIVATED_DRAFTS } from "./drafts/activation";
 
 /**
- * Registre central des simulateurs.
+ * Registre central des simulateurs publiés.
  * Pour ajouter un simulateur : créez un dossier dans src/lib/simulators/
  * puis importez-le et ajoutez-le à ce tableau.
+ * Pour publier un brouillon : ajoutez son slug dans drafts/activation.ts.
  */
-const rawSimulators = [
+const rawPublishedSimulators = [
   capaciteEmprunt,
   rendementLocatif,
   mensualitePret,
@@ -20,8 +23,17 @@ const rawSimulators = [
   ...generalSimulators,
 ] as const;
 
+const activatedDrafts = ACTIVATED_DRAFTS.map((sim) => ({
+  ...sim,
+  publicationStatus: "published" as const,
+}));
+
+const rawSimulators = [...rawPublishedSimulators, ...activatedDrafts] as const;
+
 function enrichSimulator(sim: SimulatorDefinition): SimulatorDefinition {
-  return applySeoEnrichment(applyContentEnrichment(sim));
+  const regulationIds = sim.regulationIds ?? getSimulatorRegulationIds(sim.slug);
+  const enriched = applySeoEnrichment(applyContentEnrichment(sim));
+  return regulationIds ? { ...enriched, regulationIds } : enriched;
 }
 
 export const simulators = rawSimulators.map((sim) =>
@@ -39,6 +51,10 @@ export function getSimulatorBySlug(
 export function getAllSimulatorSlugs(): string[] {
   return simulators.map((s) => s.slug);
 }
+
+/** Bibliothèque de brouillons — import direct depuis ./drafts (hors bundle production). */
+export { ACTIVATE_DRAFT_SLUGS, ACTIVATED_DRAFTS } from "./drafts/activation";
+export { REJECTED_DRAFT_IDEAS, getRejectedDraftCount } from "./drafts/catalog";
 
 export function getRelatedSimulators(
   currentSlug: string,

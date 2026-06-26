@@ -352,6 +352,7 @@ const DOMAIN_APPLICATION_CATEGORY: Record<SiteDomain, string> = {
   travaux: "UtilitiesApplication",
   sante: "HealthApplication",
   quotidien: "UtilitiesApplication",
+  "aides-sociales": "GovernmentApplication",
 };
 
 export function jsonLdSoftwareApplication(
