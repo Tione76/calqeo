@@ -28,6 +28,48 @@ export function parseNumber(value: string): number {
   return isNaN(parsed) ? 0 : parsed;
 }
 
+/** Autorise les saisies numériques incomplètes (ex. « - », « 3. », « 3,5 »). */
+export function isPartialNumericInput(value: string): boolean {
+  return /^-?$|^-?\d*[.,]?\d*$/.test(value);
+}
+
+/** Supprime les zéros en tête inutiles tout en préservant les décimales partielles. */
+export function sanitizeNumericInput(raw: string): string {
+  if (raw === "" || raw === "-") return raw;
+  if (raw.endsWith(".") || raw.endsWith(",")) return raw;
+
+  const negative = raw.startsWith("-");
+  const unsigned = negative ? raw.slice(1) : raw;
+  const sepIndex = Math.max(unsigned.indexOf("."), unsigned.indexOf(","));
+
+  if (sepIndex >= 0) {
+    const intPart = unsigned.slice(0, sepIndex);
+    const sep = unsigned[sepIndex];
+    const fracPart = unsigned.slice(sepIndex + 1);
+    const cleanInt = intPart.replace(/^0+(?=\d)/, "") || "0";
+    return `${negative ? "-" : ""}${cleanInt}${sep}${fracPart}`;
+  }
+
+  const cleanInt = unsigned.replace(/^0+(?=\d)/, "") || "0";
+  return `${negative ? "-" : ""}${cleanInt}`;
+}
+
+export function clampNumber(value: number, min?: number, max?: number): number {
+  let result = value;
+  if (min !== undefined && !Number.isNaN(min)) {
+    result = Math.max(min, result);
+  }
+  if (max !== undefined && !Number.isNaN(max)) {
+    result = Math.min(max, result);
+  }
+  return result;
+}
+
+export function formatNumericInputValue(value: number): string {
+  if (!Number.isFinite(value)) return "0";
+  return String(value);
+}
+
 export function monthlyPaymentFromLoan(
   principal: number,
   annualRate: number,

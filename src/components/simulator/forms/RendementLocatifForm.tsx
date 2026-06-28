@@ -36,6 +36,7 @@ export function RendementLocatifForm() {
 
   return (
     <SimulatorFormGrid
+      isResultReady={!!result}
       form={
       <Card>
         <h2 className="font-display text-xl font-semibold text-brand-900">
@@ -49,7 +50,7 @@ export function RendementLocatifForm() {
           className="mt-6 space-y-5"
           onSubmit={(e) => {
             e.preventDefault();
-            setSubmitted(values);
+            setSubmitted({ ...values });
           }}
         >
           <Input
