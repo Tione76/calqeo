@@ -82,6 +82,7 @@ export interface ResultCallout {
   variant: "info" | "tip" | "warning" | "note";
   title: string;
   text: string;
+  link?: { href: string; label: string };
 }
 
 export interface SimulatorResult {

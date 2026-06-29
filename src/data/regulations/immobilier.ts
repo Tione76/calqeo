@@ -1,11 +1,13 @@
 import type { RegulationModule } from "./types";
 import type { MicroActivite } from "./urssaf";
+import { CALQEO_DATA_LAST_VERIFIED } from "./constants";
 
 export const IMMOBILIER_REGULATION: RegulationModule = {
   meta: {
     id: "immobilier",
     label: "Règles immobilières et crédit (HCSF, notaire)",
-    lastUpdated: "2025-01-01",
+    lastUpdated: CALQEO_DATA_LAST_VERIFIED,
+    effectiveFrom: "2025-01-01",
     referencePeriod: "2025",
     sources: [
       { name: "HCSF", url: "https://www.hcsf.finances.gouv.fr" },

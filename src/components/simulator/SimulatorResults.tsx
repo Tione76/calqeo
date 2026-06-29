@@ -1,5 +1,7 @@
 import type { SimulatorResult } from "@/lib/simulators/types";
 
+import Link from "next/link";
+
 import { Card } from "@/components/ui/Card";
 
 import { ResultInterpretationBlock } from "./results/ResultInterpretationBlock";
@@ -221,6 +223,26 @@ export function SimulatorResults({
               {c.text}
 
             </p>
+
+            {c.link && (
+
+              <p className="mt-2">
+
+                <Link
+
+                  href={c.link.href}
+
+                  className="text-sm font-medium text-brand-700 underline decoration-brand-200 underline-offset-2 hover:text-brand-900"
+
+                >
+
+                  {c.link.label}
+
+                </Link>
+
+              </p>
+
+            )}
 
           </div>
 

@@ -9,9 +9,11 @@ export type {
 export {
   REGULATION_MODULES,
   REGULATIONS_GLOBAL,
+  formatRegulationDate,
   getRegulationMeta,
   getRegulatoryNotice,
 } from "./registry";
+export { CALQEO_DATA_LAST_VERIFIED } from "./constants";
 
 export * from "./smic";
 export * from "./urssaf";

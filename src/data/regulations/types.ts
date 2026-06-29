@@ -22,8 +22,10 @@ export interface RegulationMeta {
   /** Identifiant stable référencé par les simulateurs (ex. "impot", "rsa") */
   id: string;
   label: string;
-  /** Date ISO de dernière mise à jour manuelle des constantes */
+  /** Date ISO de dernière mise à jour des constantes dans Calqeo */
   lastUpdated: string;
+  /** Date ISO d'entrée en vigueur officielle du barème (si différente) */
+  effectiveFrom?: string;
   /** Année ou période de référence affichée (ex. "2025") */
   referencePeriod: string;
   sources: RegulationSource[];
@@ -37,6 +39,7 @@ export interface RegulationModule {
 /** Données agrégées pour l'encadré « sources officielles » des simulateurs. */
 export interface RegulatoryNotice {
   lastUpdated: string;
+  effectiveFromDates: string[];
   sources: RegulationSource[];
   referencePeriods: string[];
 }

@@ -3,6 +3,9 @@ import type { CapaciteEmpruntInput } from "../../../capacite-emprunt";
 import { mensualitePret } from "../../../mensualite-pret";
 import type { MensualitePretInput } from "../../../mensualite-pret";
 import { IFI_SEUIL } from "@/data/regulations/ifi";
+import {
+  FRAIS_NOTAIRE_NEUF_POURCENT,
+} from "@/data/regulations/immobilier";
 import type {
   ResultAdvice,
   ResultComparison,
@@ -120,15 +123,41 @@ const endettementAdvice: ResultAdvice = {
   ],
 };
 
-const capaciteAdvice: ResultAdvice = {
-  title: "Pour augmenter votre capacité d'emprunt",
-  items: [
-    "Augmenter votre apport personnel",
-    "Réduire vos charges de crédit actuelles",
-    "Allonger la durée du prêt",
-    "Améliorer vos revenus pris en compte par la banque",
-  ],
-};
+function buildCapacitePersonalizedAdvice(
+  input: CapaciteEmpruntInput,
+  tauxReel: number | null,
+  budgetAchat: number
+): string[] {
+  const items: string[] = [];
+
+  if (tauxReel != null && tauxReel >= HCSF_TAUX_ENDETTEMENT_MAX - 2) {
+    items.push(
+      "Réduire ou solder un crédit en cours peut augmenter votre capacité d'emprunt."
+    );
+  }
+
+  if (input.dureeAnnees < 25) {
+    items.push(
+      "Allonger légèrement la durée peut augmenter le montant empruntable, mais augmente aussi le coût total du crédit."
+    );
+  }
+
+  const apport = Math.max(0, input.apportPersonnel);
+  const partApport = budgetAchat > 0 ? (apport / budgetAchat) * 100 : 0;
+  if (partApport < 10) {
+    items.push(
+      "Un apport plus élevé peut faciliter l'acceptation du dossier et augmenter le budget total du projet."
+    );
+  }
+
+  if (items.length < 4) {
+    items.push(
+      "Comparer l'assurance emprunteur peut réduire le coût global du crédit."
+    );
+  }
+
+  return items.slice(0, 4);
+}
 
 const rendementAdvice: ResultAdvice = {
   title: "Pour améliorer votre rendement locatif",
@@ -152,49 +181,30 @@ function enrichCapaciteEmprunt(input: EnricherInput, result: SimulatorResult): S
   const tauxReel = parsePercent(
     full.lines.find((l) => l.label.includes("réel"))?.value ?? ""
   );
-  const budgetAchat = parseFormattedNumber(
-    full.lines.find((l) => l.label.includes("Budget d'achat"))?.value ?? ""
-  );
+  const budgetAchat =
+    parseFormattedNumber(
+      full.lines.find((l) => l.label.includes("Budget d'achat"))?.value ?? ""
+    ) ?? 0;
   const prixBien = parseFormattedNumber(
     full.lines.find((l) => l.label.includes("Prix du bien"))?.value ?? ""
   );
 
+  const apport = Math.max(0, typed.apportPersonnel);
+  const fraisNotaireMin = budgetAchat * (FRAIS_NOTAIRE_NEUF_POURCENT / 100);
+  const fraisNotaireMaxHaut = budgetAchat * 0.08;
+
   const apportLabel =
-    typed.apportPersonnel > 0
-      ? ` Votre apport de ${formatCurrency(typed.apportPersonnel)} porte le budget d'achat total à ${budgetAchat ? formatCurrency(budgetAchat) : "—"}.`
+    apport > 0
+      ? ` Votre apport de ${formatCurrency(apport)} porte le budget total estimé à ${budgetAchat ? formatCurrency(budgetAchat) : "—"}.`
       : " Sans apport, seul le montant empruntable limite votre projet.";
 
   const narrative = `Sur ${typed.dureeAnnees} ans à ${formatPercent(typed.tauxInteret, 2)}, avec ${formatCurrency(typed.revenusMensuels)} de revenus et ${formatCurrency(typed.chargesMensuelles)} de charges, la banque pourrait financer jusqu'à ${formatCurrency(capacite)} — soit un bien d'environ ${prixBien ? formatCurrency(prixBien) : "—"} hors frais de notaire.${apportLabel}`;
 
-  const comparisons: ResultComparison[] = [];
-  if (typed.dureeAnnees < 30) {
-    const alt = capaciteEmprunt.calculate({ ...typed, dureeAnnees: typed.dureeAnnees + 5 });
-    const altCap =
-      parseFormattedNumber(
-        alt.lines.find((l) => l.label.toLowerCase().includes("capacité"))?.value ?? ""
-      ) ?? 0;
-    comparisons.push({
-      scenario: `Si la durée passait à ${typed.dureeAnnees + 5} ans`,
-      value: formatCurrency(altCap),
-      detail: `+${formatCurrency(altCap - capacite)} vs. ${typed.dureeAnnees} ans`,
-    });
-  }
-  if (typed.apportPersonnel > 0) {
-    const alt = capaciteEmprunt.calculate({
-      ...typed,
-      apportPersonnel: typed.apportPersonnel * 2,
-    });
-    const altBudget = parseFormattedNumber(
-      alt.lines.find((l) => l.label.includes("Budget d'achat"))?.value ?? ""
-    );
-    if (altBudget) {
-      comparisons.push({
-        scenario: "Si votre apport était doublé",
-        value: formatCurrency(altBudget),
-        detail: "Budget d'achat total (crédit + apport)",
-      });
-    }
-  }
+  const personalizedAdvice = buildCapacitePersonalizedAdvice(
+    typed,
+    tauxReel,
+    budgetAchat
+  );
 
   return mergeResult(result, {
     lines: full.lines,
@@ -208,9 +218,50 @@ function enrichCapaciteEmprunt(input: EnricherInput, result: SimulatorResult): S
             title: "Estimation réalisée",
             message: "Votre capacité dépend de vos revenus, charges et paramètres de crédit.",
           },
-    advice: capaciteAdvice,
-    comparisons: comparisons.length ? comparisons : undefined,
+    advice: {
+      title: "Recommandations pour votre projet",
+      items: personalizedAdvice,
+    },
+    comparisons: budgetAchat
+      ? [
+          {
+            scenario: "Capacité d'emprunt estimée",
+            value: formatCurrency(capacite),
+          },
+          {
+            scenario: "Apport personnel",
+            value: formatCurrency(apport),
+          },
+          {
+            scenario: "Budget total estimé",
+            value: formatCurrency(budgetAchat),
+            detail: "Capacité d'emprunt + apport personnel",
+          },
+        ]
+      : undefined,
     callouts: [
+      ...(budgetAchat
+        ? [
+            {
+              variant: "tip" as const,
+              title: "Budget total du projet",
+              text: `${formatCurrency(capacite)} (capacité d'emprunt) + ${formatCurrency(apport)} (apport personnel) = ${formatCurrency(budgetAchat)} de budget total estimé.`,
+            },
+          ]
+        : []),
+      ...(budgetAchat
+        ? [
+            {
+              variant: "note" as const,
+              title: "Frais de notaire estimés",
+              text: `Environ ${formatCurrency(fraisNotaireMin)} à ${formatCurrency(fraisNotaireMaxHaut)} (neuf : 2 à 3 %, ancien : 7 à 8 % du budget total). Cette estimation est indicative. Les frais réels dépendent notamment du type de bien, de sa localisation et des frais annexes.`,
+              link: {
+                href: "/simulateurs/frais-de-notaire",
+                label: "Simulateur frais de notaire",
+              },
+            },
+          ]
+        : []),
       {
         variant: "note",
         title: "À savoir",

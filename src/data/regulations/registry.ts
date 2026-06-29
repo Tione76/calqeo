@@ -36,9 +36,10 @@ export function getRegulationMeta(id: string): RegulationMeta | undefined {
   return REGULATION_MODULES[id]?.meta;
 }
 
-/** Agrège sources et date pour un ou plusieurs modules réglementaires. */
+/** Agrège sources et dates pour un ou plusieurs modules réglementaires. */
 export function getRegulatoryNotice(regulationIds: string[]): {
   lastUpdated: string;
+  effectiveFromDates: string[];
   sources: RegulationSource[];
   referencePeriods: string[];
 } {
@@ -47,13 +48,21 @@ export function getRegulatoryNotice(regulationIds: string[]): {
     .filter((m): m is RegulationMeta => !!m);
 
   if (metas.length === 0) {
-    return { lastUpdated: "", sources: [], referencePeriods: [] };
+    return { lastUpdated: "", effectiveFromDates: [], sources: [], referencePeriods: [] };
   }
 
   const lastUpdated = metas
     .map((m) => m.lastUpdated)
     .sort()
     .reverse()[0];
+
+  const effectiveFromDates = [
+    ...new Set(
+      metas
+        .map((m) => m.effectiveFrom)
+        .filter((d): d is string => !!d)
+    ),
+  ].sort();
 
   const sourcesMap = new Map<string, RegulationSource>();
   for (const meta of metas) {
@@ -66,14 +75,26 @@ export function getRegulatoryNotice(regulationIds: string[]): {
 
   return {
     lastUpdated,
+    effectiveFromDates,
     sources: [...sourcesMap.values()],
     referencePeriods,
   };
 }
 
+/** Formate une date ISO en libellé français long (ex. « 28 juin 2026 »). */
+export function formatRegulationDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(y, m - 1, d));
+}
+
 /** Référence globale affichée sur le site (année courante des barèmes). */
 export const REGULATIONS_GLOBAL = {
   annee: 2025,
-  derniereMiseAJour: "2025-04-01",
+  derniereMiseAJour: "2026-06-28",
   prochaineRevision: "2026-01-01",
 } as const;

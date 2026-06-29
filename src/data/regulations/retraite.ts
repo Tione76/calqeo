@@ -1,10 +1,12 @@
 import type { RegulationModule } from "./types";
+import { CALQEO_DATA_LAST_VERIFIED } from "./constants";
 
 export const RETRAITE_REGULATION: RegulationModule = {
   meta: {
     id: "retraite",
     label: "Épargne retraite et produits réglementés",
-    lastUpdated: "2025-01-01",
+    lastUpdated: CALQEO_DATA_LAST_VERIFIED,
+    effectiveFrom: "2025-01-01",
     referencePeriod: "2025",
     sources: [
       { name: "Service-Public.fr — Retraite", url: "https://www.service-public.fr/particuliers/vosdroits/N381" },

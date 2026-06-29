@@ -1,10 +1,12 @@
 import type { RegulationModule } from "./types";
+import { CALQEO_DATA_LAST_VERIFIED } from "./constants";
 
 export const PTZ_REGULATION: RegulationModule = {
   meta: {
     id: "ptz",
     label: "Prêt à taux zéro (PTZ)",
-    lastUpdated: "2025-01-01",
+    lastUpdated: CALQEO_DATA_LAST_VERIFIED,
+    effectiveFrom: "2025-01-01",
     referencePeriod: "2025",
     sources: [
       { name: "Service-Public.fr — PTZ", url: "https://www.service-public.fr/particuliers/vosdroits/F10793" },

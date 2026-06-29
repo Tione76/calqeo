@@ -1,19 +1,20 @@
-import { getRegulatoryNotice } from "@/data/regulations/registry";
+import {
+  formatRegulationDate,
+  getRegulatoryNotice,
+} from "@/data/regulations/registry";
 import type { RegulationSource } from "@/data/regulations/types";
 
 interface RegulatorySourcesNoticeProps {
   regulationIds: string[];
 }
 
-function formatDate(iso: string): string {
-  const [y, m, d] = iso.split("-");
-  if (!y || !m || !d) return iso;
-  return `${d}/${m}/${y}`;
-}
-
 export function RegulatorySourcesNotice({ regulationIds }: RegulatorySourcesNoticeProps) {
   const notice = getRegulatoryNotice(regulationIds);
   if (!notice.lastUpdated || notice.sources.length === 0) return null;
+
+  const effectiveDates = notice.effectiveFromDates.filter(
+    (date) => date !== notice.lastUpdated
+  );
 
   return (
     <aside
@@ -21,14 +22,27 @@ export function RegulatorySourcesNotice({ regulationIds }: RegulatorySourcesNoti
       aria-label="Sources officielles et date de mise à jour"
     >
       <p>
-        <span className="font-semibold text-slate-900">Dernière mise à jour des données :</span>{" "}
-        {formatDate(notice.lastUpdated)}
+        <span className="font-semibold text-slate-900">
+          Dernière mise à jour des données dans Calqeo :
+        </span>{" "}
+        {formatRegulationDate(notice.lastUpdated)}
         {notice.referencePeriods.length > 0 && (
-          <span className="text-slate-500"> ({notice.referencePeriods.join(", ")})</span>
+          <span className="text-slate-500">
+            {" "}
+            (période de référence : {notice.referencePeriods.join(", ")})
+          </span>
         )}
       </p>
+      {effectiveDates.length > 0 && (
+        <p className="mt-2">
+          <span className="font-semibold text-slate-900">
+            Barème applicable depuis :
+          </span>{" "}
+          {effectiveDates.map(formatRegulationDate).join(", ")}
+        </p>
+      )}
       <p className="mt-2">
-        <span className="font-semibold text-slate-900">Sources officielles utilisées :</span>{" "}
+        <span className="font-semibold text-slate-900">Sources officielles :</span>{" "}
         <SourceList sources={notice.sources} />
       </p>
     </aside>

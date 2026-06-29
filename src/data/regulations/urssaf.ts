@@ -1,5 +1,6 @@
 import type { RegulationModule } from "./types";
 import { SMIC_JOURNALIER } from "./smic";
+import { CALQEO_DATA_LAST_VERIFIED } from "./constants";
 
 export type MicroActivite = "vente" | "bic" | "bnc";
 
@@ -7,7 +8,8 @@ export const URSSAF_REGULATION: RegulationModule = {
   meta: {
     id: "urssaf",
     label: "Cotisations URSSAF et droit du travail",
-    lastUpdated: "2025-01-01",
+    lastUpdated: CALQEO_DATA_LAST_VERIFIED,
+    effectiveFrom: "2025-01-01",
     referencePeriod: "2025",
     sources: [
       { name: "URSSAF", url: "https://www.urssaf.fr" },

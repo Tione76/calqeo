@@ -5,6 +5,7 @@ export const IMPOT_REGULATION: RegulationModule = {
     id: "impot",
     label: "Impôt sur le revenu — barème progressif",
     lastUpdated: "2025-04-01",
+    effectiveFrom: "2025-04-01",
     referencePeriod: "Revenus 2025 (barème 2026)",
     sources: [
       { name: "impots.gouv.fr", url: "https://www.impots.gouv.fr" },

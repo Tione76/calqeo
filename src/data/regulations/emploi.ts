@@ -1,10 +1,12 @@
 import type { RegulationModule } from "./types";
+import { CALQEO_DATA_LAST_VERIFIED } from "./constants";
 
 export const EMPLOI_REGULATION: RegulationModule = {
   meta: {
     id: "emploi",
     label: "Droit du travail et avantages salariaux",
-    lastUpdated: "2025-01-01",
+    lastUpdated: CALQEO_DATA_LAST_VERIFIED,
+    effectiveFrom: "2025-01-01",
     referencePeriod: "2025",
     sources: [
       { name: "Service-Public.fr — Travail", url: "https://www.service-public.fr/particuliers/vosdroits/N19871" },

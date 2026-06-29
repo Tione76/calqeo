@@ -5,6 +5,7 @@ export const RSA_REGULATION: RegulationModule = {
     id: "rsa",
     label: "Revenu de solidarité active (RSA)",
     lastUpdated: "2025-04-01",
+    effectiveFrom: "2025-04-01",
     referencePeriod: "2025",
     sources: [
       { name: "CAF.fr — RSA", url: "https://www.caf.fr/allocataires/aides-et-demarches/droits-et-prestations/le-revenu-de-solidarite-active-rsa" },

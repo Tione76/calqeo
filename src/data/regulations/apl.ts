@@ -5,6 +5,7 @@ export const APL_REGULATION: RegulationModule = {
     id: "apl",
     label: "Aide personnalisée au logement (APL)",
     lastUpdated: "2025-04-01",
+    effectiveFrom: "2025-04-01",
     referencePeriod: "2025",
     sources: [
       { name: "CAF.fr — APL", url: "https://www.caf.fr/allocataires/aides-et-demarches/droits-et-prestations/logement/les-aides-personnalisees-au-logement-apl-als-alf" },

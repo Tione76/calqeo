@@ -1,10 +1,12 @@
 import type { RegulationModule } from "./types";
+import { CALQEO_DATA_LAST_VERIFIED } from "./constants";
 
 export const IFI_REGULATION: RegulationModule = {
   meta: {
     id: "ifi",
     label: "Impôt sur la fortune immobilière (IFI)",
-    lastUpdated: "2025-01-01",
+    lastUpdated: CALQEO_DATA_LAST_VERIFIED,
+    effectiveFrom: "2025-01-01",
     referencePeriod: "2025",
     sources: [
       { name: "impots.gouv.fr — IFI", url: "https://www.impots.gouv.fr/particulier/impots-et-fortune-immobiliere-ifi" },

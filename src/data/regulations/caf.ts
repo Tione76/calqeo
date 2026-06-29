@@ -5,6 +5,7 @@ export const CAF_REGULATION: RegulationModule = {
     id: "caf",
     label: "CAF — prestations familiales et sociales",
     lastUpdated: "2025-04-01",
+    effectiveFrom: "2025-04-01",
     referencePeriod: "2025",
     sources: [
       { name: "CAF.fr", url: "https://www.caf.fr" },
