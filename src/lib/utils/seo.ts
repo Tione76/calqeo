@@ -7,6 +7,25 @@ import { blocksToPlainText } from "@/lib/utils/content";
 import { SITE } from "@/lib/site/config";
 import manifest from "@/data/simulator-manifest.json";
 
+/** Icônes favicon — glyphe « C » Calqeo (Inter Bold), fichiers dans /public. */
+export const SITE_ICONS: Metadata["icons"] = {
+  icon: [
+    { url: "/favicon.ico", sizes: "48x48" },
+    { url: "/favicon.svg", type: "image/svg+xml" },
+    { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+  ],
+  apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  other: [
+    {
+      rel: "manifest",
+      url: "/site.webmanifest",
+    },
+  ],
+};
+
+export const SITE_MANIFEST = "/site.webmanifest";
+
 export function getSiteUrl(): string {
   return SITE.url;
 }
@@ -81,6 +100,8 @@ export function createHomeMetadata(): Metadata {
     alternates: {
       canonical: "/",
     },
+    icons: SITE_ICONS,
+    manifest: SITE_MANIFEST,
     openGraph: {
       title: defaultTitle,
       description: ogDescription,
