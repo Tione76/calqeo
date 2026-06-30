@@ -109,22 +109,50 @@ export const pretPtz: SimulatorDefinition = {
     const revenu = num(input.revenuFiscal);
     const prix = num(input.prixBien);
     const zone = String(input.zone);
-    const { eligible, montant: montantPtz, plafond, quotite } = estimerPtz({
+    const {
+      eligible,
+      montant: montantPtz,
+      plafond,
+      plafondRevenuEffectif,
+      quotite,
+      prixRetenu,
+    } = estimerPtz({
       revenuFiscal: revenu,
       prixBien: prix,
       zone,
       nbPersonnes: num(input.nbPersonnes),
     });
+    const resteAFinancer = Math.max(0, prix - montantPtz);
+
     return {
       summary: eligible
-        ? `PTZ estimé : ${formatCurrency(montantPtz)} (sous conditions d'éligibilité).`
-        : "Revenus au-dessus du plafond estimé — PTZ probablement non éligible.",
+        ? `PTZ estimé : ${formatCurrency(montantPtz)} — reste à financer : ${formatCurrency(resteAFinancer)}.`
+        : `Revenus au-dessus du plafond estimé (${formatCurrency(plafondRevenuEffectif)}) — PTZ non éligible.`,
       lines: [
         { label: "Montant PTZ estimé", value: formatCurrency(montantPtz), highlight: true },
+        {
+          label: "Reste à financer",
+          value: formatCurrency(resteAFinancer),
+          highlight: true,
+          description: "Prix du logement − PTZ",
+        },
         { label: "Éligibilité estimée", value: eligible ? "Oui" : "Non" },
-        { label: "Plafond revenu (estimation)", value: formatCurrency(plafond) },
+        {
+          label: "Plafond revenu (estimation)",
+          value: formatCurrency(plafondRevenuEffectif),
+          description: `Base zone ${zone} : ${formatCurrency(plafond)}`,
+        },
         { label: "Quotité appliquée", value: formatPercent(quotite * 100, 0) },
         { label: "Prix du logement", value: formatCurrency(prix) },
+        ...(prix > prixRetenu
+          ? [
+              {
+                label: "Prix retenu pour le calcul",
+                value: formatCurrency(prixRetenu),
+                description: "Plafond réglementaire",
+              },
+            ]
+          : []),
       ],
     };
   },

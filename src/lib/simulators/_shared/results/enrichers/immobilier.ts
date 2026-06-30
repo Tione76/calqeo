@@ -2,9 +2,22 @@ import { capaciteEmprunt } from "../../../capacite-emprunt";
 import type { CapaciteEmpruntInput } from "../../../capacite-emprunt";
 import { mensualitePret } from "../../../mensualite-pret";
 import type { MensualitePretInput } from "../../../mensualite-pret";
+import { coutTotalCredit, tableauAmortissement } from "../../../additional/financement-1";
+import { pretRelais, rachatCredit, remboursementAnticipe, pretPtz, fraisAgence } from "../../../additional/financement-2";
+import {
+  fraisGarantieEmprunt,
+  effortEpargneImmobilier,
+  simulerEpargneObjectif,
+  impactHausseTaux,
+  creditTravaux,
+} from "../../../additional/financement-3";
+import { plusValueImmobiliere } from "../../../additional/investissement";
+import { monthlyPaymentFromLoan } from "@/lib/utils/format";
 import { IFI_SEUIL } from "@/data/regulations/ifi";
+import { estimerPtz } from "@/data/regulations/ptz";
 import {
   FRAIS_NOTAIRE_NEUF_POURCENT,
+  getFraisNotaireTaux,
 } from "@/data/regulations/immobilier";
 import type {
   ResultAdvice,
@@ -122,6 +135,81 @@ const endettementAdvice: ResultAdvice = {
     "Revoir le montant ou le prix du projet",
   ],
 };
+
+function tauxEndettementRateMessage(taux: number): string {
+  if (taux > HCSF_TAUX_ENDETTEMENT_MAX) {
+    return "Votre taux dépasse le plafond généralement retenu par le HCSF : le risque de refus est plus élevé, sans qu'un refus soit automatique.";
+  }
+  if (taux >= 34.5) {
+    return "Vous êtes au niveau du plafond généralement retenu par le HCSF. Certaines banques peuvent encore étudier le dossier, mais la marge est limitée si la mensualité augmente ou si les revenus baissent.";
+  }
+  if (taux >= 30) {
+    return "Votre taux d'endettement reste dans une fourchette correcte, mais à surveiller à l'approche du plafond de 35 %.";
+  }
+  return "Votre taux d'endettement laisse une marge confortable sous le plafond de 35 % — cela facilite généralement l'étude du dossier, sans garantir l'acceptation.";
+}
+
+function resteAVivreMessage(reste: number): string {
+  if (reste < 800) {
+    return "Votre reste à vivre est très faible ou négatif. Le projet semble fragile et une réduction de la mensualité ou des crédits en cours paraît nécessaire.";
+  }
+  if (reste < 1500) {
+    return "Votre reste à vivre paraît limité après remboursement des crédits. Même si le taux d'endettement est acceptable, la banque peut examiner plus strictement votre dossier.";
+  }
+  if (reste < 2500) {
+    return "Votre reste à vivre reste correct, mais il faut conserver une marge suffisante pour les dépenses courantes, imprévus et charges du foyer.";
+  }
+  return "Votre reste à vivre semble confortable après remboursement des crédits. Le taux d'endettement reste toutefois à surveiller selon les critères de la banque.";
+}
+
+function tauxEndettementSimulatorInterpretation(
+  taux: number,
+  reste: number,
+  revenus: number
+): ResultInterpretation {
+  if (revenus <= 0) {
+    return {
+      level: "warning",
+      badge: "Données manquantes",
+      title: "Revenus requis",
+      message:
+        "Les revenus mensuels nets doivent être supérieurs à 0 pour estimer le taux d'endettement.",
+    };
+  }
+
+  const message = `${tauxEndettementRateMessage(taux)} ${resteAVivreMessage(reste)}`;
+
+  if (taux > HCSF_TAUX_ENDETTEMENT_MAX || reste < 800) {
+    return {
+      level: "warning",
+      badge: taux > HCSF_TAUX_ENDETTEMENT_MAX ? "Au-dessus du plafond" : "Reste à vivre faible",
+      title: taux > HCSF_TAUX_ENDETTEMENT_MAX ? "Endettement élevé" : "Situation fragile",
+      message,
+    };
+  }
+  if (taux >= 34.5) {
+    return {
+      level: "intermediate",
+      badge: "Plafond HCSF",
+      title: "Plafond atteint",
+      message,
+    };
+  }
+  if (taux >= 30 || reste < 1500) {
+    return {
+      level: "intermediate",
+      badge: "À surveiller",
+      title: "Situation correcte",
+      message,
+    };
+  }
+  return {
+    level: "favorable",
+    badge: "Confortable",
+    title: "Situation favorable",
+    message,
+  };
+}
 
 function buildCapacitePersonalizedAdvice(
   input: CapaciteEmpruntInput,
@@ -276,21 +364,32 @@ function enrichTauxEndettement(input: EnricherInput, result: SimulatorResult): S
   const chargesActuelles = num(input.chargesMensuelles);
   const mensualiteProjet = num(input.mensualiteProjet);
   const charges = chargesActuelles + mensualiteProjet;
+  const resteAVivre = revenus - chargesActuelles - mensualiteProjet;
   const taux = revenus > 0 ? (charges / revenus) * 100 : 0;
-  const marge = Math.max(0, HCSF_TAUX_ENDETTEMENT_MAX - taux);
+  const marge = revenus > 0 ? Math.max(0, HCSF_TAUX_ENDETTEMENT_MAX - taux) : 0;
 
-  const narrative = `Entre vos ${formatCurrency(chargesActuelles)} de crédits en cours et ${formatCurrency(mensualiteProjet)} de mensualité projetée (assurance incluse), ${formatCurrency(charges)} partent chaque mois en remboursements — soit ${formatPercent(taux, 1)} de vos ${formatCurrency(revenus)} de revenus nets, avec ${formatPercent(marge, 1)} de marge avant le plafond HCSF.`;
+  const resteLine =
+    lineText(result, "reste à vivre") ||
+    (result.lines.find((l) => /reste à vivre/i.test(l.label))?.value ?? "");
+
+  const narrative =
+    revenus <= 0
+      ? `Sans revenus mensuels renseignés, le taux d'endettement ne peut pas être estimé. Vérifiez vos ${formatCurrency(charges)} de charges mensuelles de crédit.`
+      : `Entre vos ${formatCurrency(chargesActuelles)} de crédits en cours et ${formatCurrency(mensualiteProjet)} de mensualité projetée (assurance incluse), ${formatCurrency(charges)} partent chaque mois en remboursements — soit ${formatPercent(taux, 1)} de vos ${formatCurrency(revenus)} de revenus nets, avec ${formatPercent(marge, 1)} de marge avant le plafond HCSF. Reste à vivre estimé : ${resteLine || `${formatCurrency(resteAVivre)}/mois`}.`;
 
   return mergeResult(result, {
-    primary: { label: "Votre taux d'endettement", value: formatPercent(taux, 1) },
+    primary: {
+      label: "Votre taux d'endettement",
+      value: revenus > 0 ? formatPercent(taux, 1) : "—",
+    },
     narrative,
-    interpretation: endettementInterpretation(taux),
-    advice: endettementAdvice,
+    interpretation: tauxEndettementSimulatorInterpretation(taux, resteAVivre, revenus),
+    advice: revenus > 0 ? endettementAdvice : undefined,
     callouts: [
       {
         variant: "info",
         title: "Bon à savoir",
-        text: `Le HCSF recommande un maximum de ${HCSF_TAUX_ENDETTEMENT_MAX} % des revenus nets, assurance incluse.`,
+        text: `Le HCSF recommande un maximum de ${HCSF_TAUX_ENDETTEMENT_MAX} % des revenus nets, assurance incluse. Le reste à vivre est aussi examiné par les banques, sans règle unique.`,
       },
     ],
   });
@@ -298,12 +397,17 @@ function enrichTauxEndettement(input: EnricherInput, result: SimulatorResult): S
 
 function enrichRendementLocatif(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const netPct = findPercent(result, "rendement net") ?? 0;
-  const brutPct = findPercent(result, "rendement brut") ?? 0;
+  const brutPct =
+    findPercent(result, "rendement brut") ??
+    (result.primary && /rendement brut/i.test(result.primary.label)
+      ? parsePercent(result.primary.value)
+      : null) ??
+    0;
   const invest = findNumber(result, "investissement");
-  const cashFlow = findNumber(result, "cash-flow");
+  const revenuMensuel = findNumber(result, "revenu net mensuel");
   const vacance = num(input.vacanceLocative);
 
-  const narrative = `En intégrant ${formatCurrency(num(input.prixAchat))} d'achat, ${formatCurrency(num(input.fraisNotaire))} de notaire, ${formatCurrency(num(input.travaux))} de travaux et ${formatPercent(vacance, 0)} de vacance, un loyer de ${formatCurrency(num(input.loyerMensuel))}/mois donne un brut de ${formatPercent(brutPct, 2)} et un net de ${formatPercent(netPct, 2)}${cashFlow != null ? ` — soit ${formatCurrency(cashFlow)}/mois de cash-flow` : ""}.`;
+  const narrative = `En intégrant ${formatCurrency(num(input.prixAchat))} d'achat, ${formatCurrency(num(input.fraisNotaire))} de notaire, ${formatCurrency(num(input.travaux))} de travaux et ${formatPercent(vacance, 0)} de vacance, un loyer de ${formatCurrency(num(input.loyerMensuel))}/mois donne un brut de ${formatPercent(brutPct, 2)} et un net de ${formatPercent(netPct, 2)}${revenuMensuel != null ? ` — soit ${formatCurrency(revenuMensuel)}/mois de revenu net avant financement` : ""}.`;
 
   return mergeResult(result, {
     primary: { label: "Rendement net", value: formatPercent(netPct, 2) },
@@ -324,11 +428,15 @@ function enrichRendementLocatif(input: EnricherInput, result: SimulatorResult): 
 
 function enrichMensualitePret(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const typed = input as unknown as MensualitePretInput;
-  const mensualiteTotale = lineText(result, "mensualité totale");
+  const mensualiteTotale =
+    lineText(result, "mensualité totale") ||
+    (result.primary && /mensualité totale/i.test(result.primary.label)
+      ? result.primary.value
+      : "");
   const interets = findNumber(result, "intérêts") ?? findNumber(result, "Coût total des intérêts");
   const coutTotal = findNumber(result, "Coût total du crédit");
 
-  const narrative = `Emprunter ${formatCurrency(typed.montantEmprunt)} sur ${typed.dureeAnnees} ans à ${formatPercent(typed.tauxInteret, 2)} (assurance ${formatPercent(typed.tauxAssurance, 2)}/an) représente ${mensualiteTotale}/mois — ${interets ? `dont ${formatCurrency(interets)} d'intérêts` : "avec un coût du crédit à estimer"} sur toute la durée${coutTotal ? ` pour un total de ${formatCurrency(coutTotal)} remboursé` : ""}.`;
+  const narrative = `Emprunter ${formatCurrency(typed.montantEmprunt)} sur ${typed.dureeAnnees} ans à ${formatPercent(typed.tauxInteret, 2)} (assurance ${formatPercent(typed.tauxAssurance, 2)}/an) représente une mensualité totale de ${mensualiteTotale}/mois${interets ? `, dont ${formatCurrency(interets)} d'intérêts sur toute la durée` : ", avec un coût du crédit à estimer"}${coutTotal ? `, pour un total de ${formatCurrency(coutTotal)} remboursé` : ""}.`;
 
   const comparisons: ResultComparison[] = [];
   if (typed.dureeAnnees >= 10 && typed.dureeAnnees < 30) {
@@ -387,8 +495,14 @@ function enrichMensualitePret(input: EnricherInput, result: SimulatorResult): Si
 function enrichFraisNotaire(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const prix = num(input.prixAchat);
   const typeBien = String(input.typeBien) === "neuf" ? "neuf" : "ancien";
-  const frais = findNumber(result, "frais de notaire") ?? 0;
-  const taux = findPercent(result, "taux") ?? 0;
+  const tauxApplique = getFraisNotaireTaux(typeBien);
+  const frais =
+    findNumber(result, "frais de notaire") ??
+    (result.primary && /frais de notaire/i.test(result.primary.label)
+      ? parseFormattedNumber(result.primary.value)
+      : null) ??
+    (prix > 0 ? prix * (tauxApplique / 100) : 0);
+  const taux = findPercent(result, "taux") ?? tauxApplique;
   const total = prix + frais;
 
   const narrative = `Pour un bien ${typeBien === "neuf" ? "neuf (VEFA)" : "dans l'ancien"} à ${formatCurrency(prix)}, comptez environ ${formatCurrency(frais)} de frais de notaire (${formatPercent(taux, 1)}) — un budget acquisition réaliste tourne autour de ${formatCurrency(total)}.`;
@@ -402,8 +516,8 @@ function enrichFraisNotaire(input: EnricherInput, result: SimulatorResult): Simu
       title: typeBien === "neuf" ? "Frais réduits" : "Frais standard",
       message:
         typeBien === "neuf"
-          ? "Le neuf bénéficie de droits de mutation réduits (~2,5 %)."
-          : "Dans l'ancien, prévoyez 7 à 8 % du prix en trésorerie ou apport.",
+          ? "Dans le neuf, les frais de notaire sont réduits. Cela peut libérer davantage de budget pour l'achat ou les finitions."
+          : "Dans l'ancien, les frais sont plus élevés. Il est important de les intégrer dès le départ dans votre plan de financement.",
     },
     advice: {
       title: "Pour anticiper les frais de notaire",
@@ -416,9 +530,9 @@ function enrichFraisNotaire(input: EnricherInput, result: SimulatorResult): Simu
     },
     callouts: [
       {
-        variant: "note",
-        title: "À savoir",
-        text: "Les émoluments du notaire sont encadrés par la loi — seuls certains actes annexes peuvent varier.",
+        variant: "tip",
+        title: "Budget total à prévoir",
+        text: `Prix du bien : ${formatCurrency(prix)}. Frais de notaire estimés : ${formatCurrency(frais)}. Budget total à prévoir : ${formatCurrency(total)} (${formatCurrency(prix)} + ${formatCurrency(frais)}).`,
       },
     ],
   });
@@ -428,14 +542,43 @@ function enrichCoutTotalCredit(input: EnricherInput, result: SimulatorResult): S
   const montant = num(input.montant);
   const duree = num(input.duree);
   const taux = num(input.taux);
-  const total = findNumber(result, "coût total") ?? 0;
-  const interets = findNumber(result, "intérêts") ?? 0;
+  const tauxAssurance = num(input.tauxAssurance);
+
+  const computed = coutTotalCredit.calculate({
+    montant,
+    taux,
+    duree,
+    tauxAssurance,
+  });
+  const interets =
+    findNumber(computed, "intérêts") ??
+    findNumber(result, "intérêts") ??
+    0;
+  const assurance =
+    findNumber(computed, "assurance") ??
+    findNumber(result, "assurance") ??
+    0;
+  const coutCredit =
+    findNumber(computed, "coût total du crédit") ??
+    (result.primary && /coût total du crédit/i.test(result.primary.label)
+      ? parseFormattedNumber(result.primary.value)
+      : null) ??
+    interets + assurance;
+  const totalRembourse =
+    findNumber(computed, "montant total remboursé") ??
+    (result.primary && /montant total remboursé/i.test(result.primary.label)
+      ? parseFormattedNumber(result.primary.value)
+      : null) ??
+    montant + coutCredit;
   const ratioInterets = montant > 0 ? (interets / montant) * 100 : 0;
 
-  const narrative = `Sur ${duree} ans à ${formatPercent(taux, 2)}, emprunter ${formatCurrency(montant)} coûte ${formatCurrency(total)} au total — les intérêts représentent ${formatCurrency(interets)}, soit ${formatPercent(ratioInterets, 0)} du capital emprunté.`;
+  const narrative = `Emprunter ${formatCurrency(montant)} sur ${duree} ans à ${formatPercent(taux, 2)} avec une assurance de ${formatPercent(tauxAssurance, 2)} représente : • ${formatCurrency(interets)} d'intérêts • ${formatCurrency(assurance)} d'assurance • ${formatCurrency(coutCredit)} de coût total du crédit • ${formatCurrency(totalRembourse)} remboursés au total.`;
 
   return mergeResult(result, {
-    primary: { label: "Coût total du crédit", value: formatCurrency(total) },
+    primary: {
+      label: "Montant total remboursé",
+      value: formatCurrency(totalRembourse),
+    },
     narrative,
     interpretation:
       ratioInterets > 40
@@ -469,9 +612,9 @@ function enrichCoutTotalCredit(input: EnricherInput, result: SimulatorResult): S
     },
     callouts: [
       {
-        variant: "info",
-        title: "Bon à savoir",
-        text: "Le TAEG inclut aussi les frais de dossier et de garantie — ce simulateur se concentre sur intérêts et assurance.",
+        variant: "tip",
+        title: "Répartition du coût du crédit",
+        text: `Capital emprunté : ${formatCurrency(montant)}. Intérêts : ${formatCurrency(interets)}. Assurance : ${formatCurrency(assurance)}. Total remboursé : ${formatCurrency(totalRembourse)}.`,
       },
     ],
   });
@@ -481,10 +624,23 @@ function enrichTableauAmortissement(input: EnricherInput, result: SimulatorResul
   const montant = num(input.montant);
   const duree = num(input.duree);
   const taux = num(input.taux);
-  const mensualite = lineText(result, "mensualité");
-  const interets = findNumber(result, "intérêts") ?? 0;
 
-  const narrative = `Pour ${formatCurrency(montant)} empruntés sur ${duree} ans à ${formatPercent(taux, 2)}, chaque échéance est de ${mensualite} — les intérêts cumulés atteignent ${formatCurrency(interets)}, concentrés surtout les premières années du prêt.`;
+  const computed = tableauAmortissement.calculate({ montant, taux, duree });
+  const mensualiteBrute =
+    lineText(result, "mensualité") ||
+    (result.primary && /mensualité/i.test(result.primary.label)
+      ? result.primary.value
+      : "") ||
+    findLine(computed, "mensualité")?.value ||
+    "";
+  const mensualite =
+    mensualiteBrute && !mensualiteBrute.includes("/mois")
+      ? `${mensualiteBrute}/mois`
+      : mensualiteBrute;
+  const interets =
+    findNumber(computed, "intérêts") ?? findNumber(result, "intérêts") ?? 0;
+
+  const narrative = `Pour ${formatCurrency(montant)} empruntés sur ${duree} ans à ${formatPercent(taux, 2)}, chaque mensualité est de ${mensualite}. Les intérêts cumulés atteignent ${formatCurrency(interets)}, principalement durant les premières années du prêt.`;
 
   return mergeResult(result, {
     primary: { label: "Mensualité constante", value: mensualite },
@@ -507,8 +663,8 @@ function enrichTableauAmortissement(input: EnricherInput, result: SimulatorResul
     callouts: [
       {
         variant: "note",
-        title: "À savoir",
-        text: "Un remboursement anticipé recalcule les échéances futures — le tableau affiché ici est une projection standard.",
+        title: "Méthode de calcul",
+        text: "Calcul basé sur la formule standard d'un prêt amortissable à mensualités constantes utilisée par les établissements bancaires français.",
       },
     ],
   });
@@ -516,40 +672,76 @@ function enrichTableauAmortissement(input: EnricherInput, result: SimulatorResul
 
 // ─── Financement (part 2) ──────────────────────────────────────────
 
+function remboursementAnticipeInterpretation(gain: number): ResultInterpretation {
+  let message: string;
+  let level: ResultInterpretation["level"];
+  let badge: string;
+  let title: string;
+
+  if (gain <= 0) {
+    message =
+      "Les indemnités IRA réduisent fortement l'intérêt financier du remboursement anticipé.";
+    level = gain < 0 ? "warning" : "intermediate";
+    badge = gain < 0 ? "Défavorable" : "Neutre";
+    title = gain < 0 ? "Gain négatif" : "Gain nul";
+  } else if (gain < 1000) {
+    message = "Le remboursement reste rentable mais le gain demeure limité.";
+    level = "intermediate";
+    badge = "Gain modeste";
+    title = "Gain faible";
+  } else if (gain < 5000) {
+    message = "Les économies d'intérêts compensent largement les indemnités.";
+    level = "favorable";
+    badge = "Rentable";
+    title = "Gain intéressant";
+  } else {
+    message =
+      "Le remboursement anticipé permet une économie significative malgré les indemnités IRA.";
+    level = "favorable";
+    badge = "Gain important";
+    title = "Opération avantageuse";
+  }
+
+  const synthesis =
+    gain > 0
+      ? ` Vous économisez environ ${formatCurrency(gain)} nets grâce à ce remboursement anticipé.`
+      : ` Le gain net estimé est de ${formatCurrency(gain)}.`;
+
+  return { level, badge, title, message: message + synthesis };
+}
+
 function enrichRemboursementAnticipe(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const montant = num(input.montantRembourse);
   const crd = num(input.capitalRestant);
   const mois = num(input.moisRestants);
-  const gain = findNumber(result, "gain net") ?? 0;
-  const ira = findNumber(result, "IRA") ?? 0;
-  const eco = findNumber(result, "économie") ?? 0;
 
-  const narrative = `En remboursant ${formatCurrency(montant)} par anticipation sur un CRD de ${formatCurrency(crd)} (${mois} mois restants), vous économisez environ ${eco ? formatCurrency(eco) : "—"} d'intérêts, moins ${formatCurrency(ira)} d'IRA — soit un gain net de ${formatCurrency(gain)}.`;
+  const computed = remboursementAnticipe.calculate({
+    capitalRestant: crd,
+    montantRembourse: montant,
+    taux: num(input.taux),
+    moisRestants: mois,
+    tauxIra: num(input.tauxIra),
+  });
+
+  const gain =
+    findNumber(computed, "gain net") ??
+    (result.primary && /gain net/i.test(result.primary.label)
+      ? parseFormattedNumber(result.primary.value)
+      : null) ??
+    0;
+  const ira = findNumber(computed, "IRA") ?? findNumber(result, "IRA") ?? 0;
+  const eco = findNumber(computed, "économie") ?? findNumber(result, "économie") ?? 0;
+  const nouveauCrd =
+    findNumber(computed, "CRD") ??
+    findNumber(result, "CRD") ??
+    Math.max(0, crd - Math.min(montant, crd));
+
+  const narrative = `En remboursant ${formatCurrency(montant)} par anticipation sur un CRD de ${formatCurrency(crd)} (${mois} mois restants), vous économisez environ ${formatCurrency(eco)} d'intérêts, moins ${formatCurrency(ira)} d'IRA — soit un gain net de ${formatCurrency(gain)}. Votre capital restant dû passe de ${formatCurrency(crd)} à ${formatCurrency(nouveauCrd)}.`;
 
   return mergeResult(result, {
     primary: { label: "Gain net estimé", value: formatCurrency(gain) },
     narrative,
-    interpretation:
-      gain > 0
-        ? {
-            level: "favorable",
-            badge: "Rentable",
-            title: "Opération avantageuse",
-            message: "L'économie d'intérêts dépasse les indemnités de remboursement anticipé.",
-          }
-        : gain === 0
-          ? {
-              level: "intermediate",
-              badge: "Neutre",
-              title: "Gain nul",
-              message: "Les IRA absorbent l'économie d'intérêts — vérifiez les exemptions possibles.",
-            }
-          : {
-              level: "warning",
-              badge: "Défavorable",
-              title: "Gain négatif",
-              message: "Les IRA dépassent l'économie estimée — le remboursement anticipé n'est pas rentable ici.",
-            },
+    interpretation: remboursementAnticipeInterpretation(gain),
     advice: {
       title: "Avant un remboursement anticipé",
       items: [
@@ -574,12 +766,51 @@ function enrichPretPtz(input: EnricherInput, result: SimulatorResult): Simulator
   const prix = num(input.prixBien);
   const zone = String(input.zone);
   const nb = num(input.nbPersonnes);
-  const montant = findNumber(result, "PTZ") ?? 0;
-  const eligible = lineText(result, "éligibilité").toLowerCase().includes("oui");
+
+  const computed = pretPtz.calculate({
+    revenuFiscal: revenu,
+    prixBien: prix,
+    zone,
+    nbPersonnes: nb,
+  });
+  const est = estimerPtz({
+    revenuFiscal: revenu,
+    prixBien: prix,
+    zone,
+    nbPersonnes: nb,
+  });
+
+  const montant =
+    findNumber(computed, "PTZ") ??
+    (result.primary && /PTZ/i.test(result.primary.label)
+      ? parseFormattedNumber(result.primary.value)
+      : null) ??
+    est.montant;
+  const eligible = est.eligible;
+  const plafondRevenuEffectif = est.plafondRevenuEffectif;
+  const prixRetenu = est.prixRetenu;
+  const quotite = est.quotite;
+  const resteAFinancer = Math.max(0, prix - montant);
+  const pctCoutRetenu = prixRetenu > 0 ? (montant / prixRetenu) * 100 : 0;
 
   const narrative = eligible
-    ? `En zone ${zone} pour un foyer de ${nb} personne${nb > 1 ? "s" : ""} (revenu fiscal ${formatCurrency(revenu)}), le PTZ pourrait financer jusqu'à ${formatCurrency(montant)} sur un bien à ${formatCurrency(prix)} — sans intérêts, en complément d'un prêt principal.`
-    : `Avec ${formatCurrency(revenu)} de revenu fiscal en zone ${zone}, vous dépassez probablement les plafonds PTZ — le dispositif ne semble pas accessible pour ce projet à ${formatCurrency(prix)}.`;
+    ? `Vous êtes éligible à un PTZ estimé de ${formatCurrency(montant)}, soit environ ${formatPercent(pctCoutRetenu, 0)} du coût retenu de votre projet immobilier. Reste à financer : ${formatCurrency(resteAFinancer)} (${formatCurrency(prix)} − ${formatCurrency(montant)}).`
+    : `Avec un revenu fiscal de ${formatCurrency(revenu)}, vous dépassez le plafond estimé de ${formatCurrency(plafondRevenuEffectif)} pour votre situation. Aucun PTZ ne peut être accordé sur ce projet.`;
+
+  const calculPtzText = [
+    `Prix du logement : ${formatCurrency(prix)}`,
+    ...(prix > prixRetenu
+      ? [
+          `Prix retenu pour le calcul : ${formatCurrency(prixRetenu)} (plafond réglementaire)`,
+        ]
+      : []),
+    `Quotité appliquée : ${formatPercent(quotite * 100, 0)}`,
+    `Montant PTZ estimé : ${formatCurrency(montant)}`,
+    `Reste à financer : ${formatCurrency(resteAFinancer)}`,
+  ].join(". ") + ".";
+
+  const differeMessage =
+    "Le PTZ est un prêt sans intérêts et peut bénéficier d'un différé de remboursement selon vos revenus et votre profil.";
 
   return mergeResult(result, {
     primary: { label: "Montant PTZ estimé", value: formatCurrency(montant) },
@@ -589,60 +820,132 @@ function enrichPretPtz(input: EnricherInput, result: SimulatorResult): Simulator
           level: "favorable",
           badge: "Éligible",
           title: "Aide potentielle",
-          message: "Le PTZ peut réduire votre effort d'emprunt principal — sous réserve d'instruction.",
+          message: `Le PTZ peut réduire votre effort d'emprunt principal — sous réserve d'instruction. ${differeMessage}`,
         }
       : {
           level: "warning",
           badge: "Non éligible",
           title: "Plafond dépassé",
-          message: "Vérifiez les plafonds officiels ou d'autres dispositifs (Action Logement, prêt accession…).",
+          message:
+            "Votre revenu fiscal dépasse le plafond estimé pour votre zone et votre foyer. Explorez d'autres dispositifs (PAS, Action Logement…).",
         },
-    advice: {
-      title: "Pour optimiser le PTZ",
-      items: [
-        "Confirmez l'éligibilité primo-accédant et la nature du bien (neuf, ancien avec travaux)",
-        "Le PTZ ne finance pas les frais de notaire — prévoyez-les dans l'apport",
-        "Combinez-le avec la capacité d'emprunt classique pour dimensionner le projet",
-        "Consultez les plafonds à jour sur service-public.fr selon votre zone",
-      ],
-    },
+    advice: eligible
+      ? {
+          title: "Si vous êtes éligible au PTZ",
+          items: [
+            "Vérifiez que vous êtes bien primo-accédant",
+            "Intégrez le PTZ dans votre plan de financement",
+            "Simulez votre mensualité avec et sans PTZ",
+            "Vérifiez la durée de différé applicable",
+          ],
+        }
+      : {
+          title: "Si vous n'êtes pas éligible au PTZ",
+          items: [
+            "Vérifiez les plafonds officiels",
+            "Contrôlez votre revenu fiscal de référence",
+            "Regardez les aides complémentaires (PAS, Action Logement…)",
+            "Vérifiez si un autre projet pourrait devenir éligible",
+          ],
+        },
     callouts: [
       {
-        variant: "note",
-        title: "À savoir",
-        text: "Le PTZ est remboursé sans intérêts, avec un différé possible selon vos revenus.",
+        variant: eligible ? "tip" : "note",
+        title: "Calcul du PTZ",
+        text: eligible
+          ? calculPtzText
+          : `Revenu fiscal : ${formatCurrency(revenu)} — plafond estimé pour votre situation : ${formatCurrency(plafondRevenuEffectif)}.`,
       },
     ],
   });
+}
+
+function pretRelaisInterpretation(
+  montant: number,
+  duree: number,
+  interets: number,
+  interetsMensuels: number
+): ResultInterpretation {
+  const coutPhrase = `Pendant ${duree} mois, le coût estimé du prêt relais est d'environ ${formatCurrency(interets)}, soit environ ${formatCurrency(interetsMensuels)}/mois, hors assurance et frais éventuels.`;
+
+  if (montant > 200_000) {
+    return {
+      level: "favorable",
+      badge: "Relais important",
+      title: "Relais important",
+      message: `Le prêt relais peut couvrir une part importante de votre nouveau projet. ${coutPhrase}`,
+    };
+  }
+  if (montant >= 100_000) {
+    return {
+      level: "intermediate",
+      badge: "Relais significatif",
+      title: "Relais significatif",
+      message: `Le prêt relais constitue un apport important, mais il devra probablement être complété par un crédit immobilier. ${coutPhrase}`,
+    };
+  }
+  if (montant >= 20_000) {
+    return {
+      level: "intermediate",
+      badge: "Relais limité",
+      title: "Relais limité",
+      message: `Le montant mobilisable reste limité. Vérifiez si le projet reste finançable. ${coutPhrase}`,
+    };
+  }
+  return {
+    level: "warning",
+    badge: "Avance insuffisante",
+    title: "Avance insuffisante",
+    message: `Le capital restant dû absorbe une grande partie de l'avance bancaire. Une vente préalable ou davantage d'apport peut être préférable.${montant > 0 ? ` ${coutPhrase}` : ""}`,
+  };
 }
 
 function enrichPretRelais(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const valeur = num(input.valeurBien);
   const crd = num(input.crd);
   const pct = num(input.pctAvance);
+  const taux = num(input.taux);
   const duree = num(input.dureeMois);
-  const montant = findNumber(result, "prêt relais") ?? 0;
-  const interets = findNumber(result, "intérêts") ?? 0;
 
-  const narrative = `Sur un bien à vendre estimé ${formatCurrency(valeur)}, une avance bancaire de ${formatPercent(pct, 0)} (${formatCurrency(valeur * pct / 100)}) moins ${formatCurrency(crd)} de CRD laisse ${formatCurrency(montant)} finançables en relais sur ${duree} mois — coût des intérêts : ${formatCurrency(interets)}.`;
+  const computed = pretRelais.calculate({
+    valeurBien: valeur,
+    crd,
+    pctAvance: pct,
+    taux,
+    dureeMois: duree,
+  });
+
+  const avance =
+    findNumber(computed, "avance") ?? valeur * (pct / 100);
+  const montant =
+    findNumber(computed, "prêt relais") ??
+    (result.primary && /prêt relais/i.test(result.primary.label)
+      ? parseFormattedNumber(result.primary.value)
+      : null) ??
+    Math.max(0, avance - crd);
+  const interets =
+    findNumber(computed, "intérêts") ??
+    montant * (taux / 100) * (duree / 12);
+  const interetsMensuels = duree > 0 ? interets / duree : 0;
+  const valeurNette = Math.max(0, valeur - crd);
+
+  const narrative = `Sur un bien estimé à ${formatCurrency(valeur)}, une avance bancaire de ${formatPercent(pct, 0)} représente ${formatCurrency(avance)}. Après déduction du capital restant dû de ${formatCurrency(crd)}, le montant de prêt relais disponible est estimé à ${formatCurrency(montant)}. Sur ${duree} mois à ${formatPercent(taux, 1)}, le coût des intérêts est d'environ ${formatCurrency(interets)}.`;
+
+  const calculRelaisText = [
+    `Valeur estimée du bien : ${formatCurrency(valeur)}`,
+    `Avance bancaire retenue : ${formatPercent(pct, 0)}`,
+    `Avance sur valeur : ${formatCurrency(avance)}`,
+    `Capital restant dû déduit : ${formatCurrency(crd)}`,
+    `Montant du prêt relais estimé : ${formatCurrency(montant)}`,
+    `Intérêts estimés sur la durée : ${formatCurrency(interets)}`,
+    `Coût moyen des intérêts : ${formatCurrency(interetsMensuels)}/mois`,
+    `Valeur nette disponible après remboursement du prêt actuel : ${formatCurrency(valeurNette)} (${formatCurrency(valeur)} − ${formatCurrency(crd)})`,
+  ].join(" · ");
 
   return mergeResult(result, {
-    primary: { label: "Montant prêt relais", value: formatCurrency(montant) },
+    primary: { label: "Montant prêt relais estimé", value: formatCurrency(montant) },
     narrative,
-    interpretation:
-      montant > 0
-        ? {
-            level: "intermediate",
-            badge: "Relais",
-            title: "Financement transitoire",
-            message: "Le relais comble l'écart entre vente et achat — les taux sont généralement plus élevés qu'un crédit amortissable.",
-          }
-        : {
-            level: "warning",
-            badge: "Insuffisant",
-            title: "Avance insuffisante",
-            message: "Le CRD actuel absorbe l'avance bancaire — revoyez la valeur de revente ou le pourcentage d'avance.",
-          },
+    interpretation: pretRelaisInterpretation(montant, duree, interets, interetsMensuels),
     advice: {
       title: "Pour sécuriser un prêt relais",
       items: [
@@ -652,53 +955,144 @@ function enrichPretRelais(input: EnricherInput, result: SimulatorResult): Simula
         "Anticipez le coût des intérêts sur toute la durée du relais",
       ],
     },
+    lines: [
+      ...result.lines,
+      {
+        label: "Valeur nette disponible après remboursement du prêt actuel",
+        value: formatCurrency(valeurNette),
+        description: `${formatCurrency(valeur)} − ${formatCurrency(crd)}`,
+      },
+    ],
     callouts: [
       {
-        variant: "warning",
-        title: "Attention",
-        text: "Si le bien ne se vend pas dans les délais, vous devrez renégocier ou convertir le relais en crédit classique.",
+        variant: "note",
+        title: "Comment est calculé votre prêt relais ?",
+        text: calculRelaisText,
       },
     ],
   });
+}
+
+function rachatCreditInterpretation(
+  gainNet: number,
+  delaiAmortissement: number | null
+): ResultInterpretation {
+  const delaiPhrase =
+    delaiAmortissement !== null
+      ? ` Les frais seraient amortis en environ ${Math.round(delaiAmortissement)} mois.`
+      : " Les frais ne sont pas amortissables avec cette offre.";
+
+  if (gainNet > 15_000) {
+    return {
+      level: "favorable",
+      badge: "Rachat très avantageux",
+      title: "Rachat très avantageux",
+      message: `Le rachat peut générer une économie importante sur la durée restante.${delaiPhrase}`,
+    };
+  }
+  if (gainNet >= 5_000) {
+    return {
+      level: "favorable",
+      badge: "Rachat intéressant",
+      title: "Rachat intéressant",
+      message: `Le rachat semble rentable, sous réserve de confirmation des frais et conditions bancaires.${delaiPhrase}`,
+    };
+  }
+  if (gainNet >= 1_000) {
+    return {
+      level: "intermediate",
+      badge: "Gain limité",
+      title: "Gain limité",
+      message: `Le rachat peut être utile mais l'économie reste modérée.${delaiPhrase}`,
+    };
+  }
+  return {
+    level: "warning",
+    badge: "Rachat peu avantageux",
+    title: "Rachat peu avantageux",
+    message: `Les frais et le nouveau taux ne génèrent pas d'économie nette.${delaiAmortissement !== null ? delaiPhrase : ""}`,
+  };
 }
 
 function enrichRachatCredit(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const crd = num(input.crd);
   const tauxActuel = num(input.tauxActuel);
   const tauxNouveau = num(input.tauxNouveau);
-  const ecoMensuelle = findNumber(result, "économie mensuelle") ?? 0;
-  const ecoPositive = ecoMensuelle > 0;
+  const mois = num(input.moisRestants);
+  const frais = num(input.fraisRachat);
 
-  const narrative = `Sur ${formatCurrency(crd)} restants dus, passer de ${formatPercent(tauxActuel, 2)} à ${formatPercent(tauxNouveau, 2)} ${ecoPositive ? "libère" : "coûte"} ${formatCurrency(Math.abs(ecoMensuelle))}/mois — intégrez les ${formatCurrency(num(input.fraisRachat))} de frais de rachat pour juger du gain réel.`;
+  const computed = rachatCredit.calculate({
+    crd,
+    tauxActuel,
+    tauxNouveau,
+    moisRestants: mois,
+    fraisRachat: frais,
+  });
+
+  const ecoMensuelle =
+    findNumber(computed, "économie mensuelle") ??
+    (result.primary && /économie mensuelle/i.test(result.primary.label)
+      ? parseFormattedNumber(result.primary.value)
+      : null) ??
+    0;
+  const mActuel =
+    findNumber(computed, "Mensualité actuelle") ??
+    findNumber(result, "Mensualité actuelle") ??
+    0;
+  const mNouveau =
+    findNumber(computed, "Nouvelle mensualité") ??
+    findNumber(result, "Nouvelle mensualité") ??
+    0;
+  const totalActuel =
+    findNumber(computed, "Coût total restant actuel") ??
+    findNumber(result, "Coût total restant actuel") ??
+    0;
+  const totalNouveau =
+    findNumber(computed, "Coût total avec rachat") ??
+    findNumber(result, "Coût total avec rachat") ??
+    0;
+  const gainBrut = totalActuel - totalNouveau;
+  const gainNet = gainBrut - frais;
+  const delaiAmortissement = ecoMensuelle > 0 ? frais / ecoMensuelle : null;
+  const delaiLine =
+    delaiAmortissement !== null
+      ? `Les frais seraient amortis en environ ${Math.round(delaiAmortissement)} mois.`
+      : "Les frais ne sont pas amortissables avec cette offre.";
+
+  const narrative = `Sur ${formatCurrency(crd)} restants dus, passer de ${formatPercent(tauxActuel, 2)} à ${formatPercent(tauxNouveau, 2)} ferait passer votre mensualité d'environ ${formatCurrency(mActuel)} à ${formatCurrency(mNouveau)}, soit une économie de ${formatCurrency(ecoMensuelle)}/mois. Après prise en compte de ${formatCurrency(frais)} de frais, le gain net estimé sur la durée restante est d'environ ${formatCurrency(gainNet)}.`;
+
+  const calculGainText = [
+    `Mensualité actuelle : ${formatCurrency(mActuel)}`,
+    `Nouvelle mensualité : ${formatCurrency(mNouveau)}`,
+    `Économie mensuelle : ${formatCurrency(ecoMensuelle)}`,
+    `Coût total restant actuel : ${formatCurrency(totalActuel)}`,
+    `Coût total avec rachat : ${formatCurrency(totalNouveau)}`,
+    `Gain brut avant frais : ${formatCurrency(gainBrut)}`,
+    `Frais de rachat : ${formatCurrency(frais)}`,
+    `Gain net estimé : ${formatCurrency(gainNet)}`,
+    `Délai d'amortissement : ${delaiAmortissement !== null ? `${Math.round(delaiAmortissement)} mois` : "—"}`,
+  ].join(" · ");
 
   const comparisons: ResultComparison[] = [
     {
       scenario: "Mensualité actuelle",
-      value: lineText(result, "Mensualité actuelle"),
+      value: formatCurrency(mActuel),
     },
     {
       scenario: "Nouvelle mensualité",
-      value: lineText(result, "Nouvelle mensualité"),
-      detail: lineText(result, "Coût total avec rachat"),
+      value: formatCurrency(mNouveau),
+    },
+    {
+      scenario: "Gain net estimé",
+      value: formatCurrency(gainNet),
+      detail: `Gain brut : ${formatCurrency(gainBrut)} · Frais : ${formatCurrency(frais)}`,
     },
   ];
 
   return mergeResult(result, {
     primary: { label: "Économie mensuelle", value: formatCurrency(ecoMensuelle) },
     narrative,
-    interpretation: ecoPositive
-      ? {
-          level: "favorable",
-          badge: "Gain",
-          title: "Rachat intéressant",
-          message: "La baisse de taux compense les frais sur la durée restante.",
-        }
-      : {
-          level: "warning",
-          badge: "Surcoût",
-          title: "Rachat peu avantageux",
-          message: "Les frais et le nouveau taux ne génèrent pas d'économie nette — comparez d'autres offres.",
-        },
+    interpretation: rachatCreditInterpretation(gainNet, delaiAmortissement),
     advice: {
       title: "Avant un rachat de crédit",
       items: [
@@ -708,6 +1102,26 @@ function enrichRachatCredit(input: EnricherInput, result: SimulatorResult): Simu
         "Renégociez aussi l'assurance emprunteur en parallèle",
       ],
     },
+    lines: [
+      ...result.lines,
+      { label: "Gain brut avant frais", value: formatCurrency(gainBrut) },
+      { label: "Gain net estimé", value: formatCurrency(gainNet) },
+      {
+        label: "Délai d'amortissement des frais",
+        value:
+          delaiAmortissement !== null
+            ? `${Math.round(delaiAmortissement)} mois`
+            : "Non amortissable",
+        description: delaiLine,
+      },
+    ],
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculé votre gain ?",
+        text: `${calculGainText} · ${delaiLine}`,
+      },
+    ],
     comparisons,
   });
 }
@@ -767,26 +1181,57 @@ function enrichAssuranceEmprunteur(input: EnricherInput, result: SimulatorResult
 function enrichFraisAgence(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const prix = num(input.prix);
   const taux = num(input.tauxAgence);
-  const charge = String(input.charge) === "acquereur" ? "acquéreur" : "vendeur";
-  const honoraires = findNumber(result, "honoraires") ?? 0;
+  const chargeAcquereur = String(input.charge) === "acquereur";
+  const chargeLabel = chargeAcquereur ? "acquéreur" : "vendeur";
 
-  const narrative =
-    charge === "acquéreur"
-      ? `Sur un bien affiché à ${formatCurrency(prix)}, ${formatPercent(taux, 1)} d'honoraires (${formatCurrency(honoraires)}) sont à votre charge — à ajouter au prix et aux frais de notaire dans votre budget acquéreur.`
-      : `Les honoraires de ${formatCurrency(honoraires)} (${formatPercent(taux, 1)}) sont pris en charge par le vendeur sur ce bien à ${formatCurrency(prix)} — le prix affiché reste votre référence budgétaire.`;
+  const computed = fraisAgence.calculate({
+    prix,
+    tauxAgence: taux,
+    charge: String(input.charge),
+  });
+
+  const honoraires =
+    findNumber(computed, "honoraires") ??
+    (result.primary && /honoraires/i.test(result.primary.label)
+      ? parseFormattedNumber(result.primary.value)
+      : null) ??
+    prix * (taux / 100);
+  const prixNetVendeur = Math.max(0, prix - honoraires);
+  const prixFai = prix;
+  const baseNotaire = chargeAcquereur ? prixNetVendeur : prixFai;
+
+  const narrative = chargeAcquereur
+    ? `Pour un bien affiché à ${formatCurrency(prix)}, les honoraires d'agence représentent ${formatCurrency(honoraires)} à la charge de l'acquéreur. Le prix net vendeur estimé est de ${formatCurrency(prixNetVendeur)} et le prix payé par l'acquéreur reste de ${formatCurrency(prixFai)}, hors frais de notaire. Les frais de notaire sont généralement calculés sur le prix net vendeur, soit ${formatCurrency(baseNotaire)} dans cet exemple.`
+    : `Pour un bien affiché à ${formatCurrency(prix)}, les honoraires d'agence représentent ${formatCurrency(honoraires)} à la charge du vendeur. Le prix net vendeur estimé est de ${formatCurrency(prixNetVendeur)} et le prix FAI reste de ${formatCurrency(prixFai)}. Les frais de notaire sont généralement calculés sur le prix total affiché / FAI, soit ${formatCurrency(baseNotaire)}.`;
+
+  const calculHonorairesText = [
+    `Prix affiché : ${formatCurrency(prix)}`,
+    `Taux d'honoraires : ${formatPercent(taux, 1)}`,
+    `Honoraires d'agence : ${formatCurrency(honoraires)}`,
+    `Prix net vendeur : ${formatCurrency(prixNetVendeur)}`,
+    `Prix FAI / payé acquéreur : ${formatCurrency(prixFai)}`,
+    `Honoraires à la charge de : ${chargeLabel}`,
+    `Base indicative des frais de notaire : ${formatCurrency(baseNotaire)}`,
+  ].join(" · ");
 
   return mergeResult(result, {
     primary: { label: "Honoraires d'agence", value: formatCurrency(honoraires) },
     narrative,
-    interpretation: {
-      level: charge === "acquéreur" ? "intermediate" : "favorable",
-      badge: charge === "acquéreur" ? "Acquéreur" : "Vendeur",
-      title: charge === "acquéreur" ? "Coût additionnel" : "Honoraires vendeur",
-      message:
-        charge === "acquéreur"
-          ? "Vérifiez si le prix est FAI (Frais d'Agence Inclus) ou hors honoraires."
-          : "Les honoraires vendeur n'impactent pas directement votre budget d'acquisition.",
-    },
+    interpretation: chargeAcquereur
+      ? {
+          level: "intermediate",
+          badge: "Acquéreur",
+          title: "Coût à prévoir côté acquéreur",
+          message:
+            "Les honoraires sont supportés par l'acquéreur. Vérifiez si le prix affiché est bien FAI et tenez compte de la base de calcul des frais de notaire.",
+        }
+      : {
+          level: "favorable",
+          badge: "Vendeur",
+          title: "Honoraires déduits du prix vendeur",
+          message:
+            "Les honoraires sont supportés par le vendeur. Le prix net vendeur correspond au prix affiché diminué de la commission d'agence.",
+        },
     advice: {
       title: "Pour maîtriser les honoraires d'agence",
       items: [
@@ -796,47 +1241,146 @@ function enrichFraisAgence(input: EnricherInput, result: SimulatorResult): Simul
         "Intégrez-les dans le simulateur de capacité d'emprunt si à votre charge",
       ],
     },
+    lines: [
+      ...result.lines,
+      { label: "Prix net vendeur", value: formatCurrency(prixNetVendeur) },
+      { label: "Prix FAI / payé acquéreur", value: formatCurrency(prixFai) },
+      {
+        label: "Base indicative des frais de notaire",
+        value: formatCurrency(baseNotaire),
+        description: chargeAcquereur
+          ? "Généralement calculés sur le prix net vendeur"
+          : "Généralement calculés sur le prix total affiché / FAI",
+      },
+    ],
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment sont calculés les honoraires ?",
+        text: calculHonorairesText,
+      },
+    ],
   });
 }
 
 // ─── Financement (part 3) ──────────────────────────────────────────
 
+function coutGarantieHypotheque(capital: number): number {
+  return capital * 0.015 + capital * 0.005;
+}
+
+function coutGarantieCaution(capital: number, duree: number): number {
+  return capital * 0.01 + capital * 0.003 * Math.min(duree, 8);
+}
+
+function formatEcartGarantie(
+  isCaution: boolean,
+  coutChoisi: number,
+  coutAlt: number
+): string {
+  const ecart = Math.abs(coutChoisi - coutAlt);
+  if (ecart < 1) return "Coûts équivalents";
+  const typeLabel = isCaution ? "caution" : "hypothèque";
+  if (coutChoisi > coutAlt) {
+    return `${typeLabel} plus chère de ${formatCurrency(ecart)}`;
+  }
+  return `${typeLabel} moins chère de ${formatCurrency(ecart)}`;
+}
+
+function fraisGarantieInterpretation(
+  pctCapital: number,
+  isCaution: boolean,
+  coutCaution: number,
+  coutHypotheque: number
+): ResultInterpretation {
+  const baseMessage =
+    pctCapital <= 2.5
+      ? "Le coût reste raisonnable par rapport au capital emprunté, mais il doit être intégré au budget global du prêt."
+      : "Le coût de garantie représente une part importante du budget. Comparez la caution et l'hypothèque avec votre banque.";
+
+  let comparisonNote = "";
+  if (Math.abs(coutCaution - coutHypotheque) >= 1) {
+    comparisonNote =
+      coutCaution < coutHypotheque
+        ? " La caution semble moins coûteuse dans cette estimation."
+        : " L'hypothèque semble moins coûteuse dans cette estimation, mais elle peut entraîner des frais de mainlevée en cas de revente anticipée.";
+  }
+
+  return {
+    level: pctCapital <= 2.5 ? "favorable" : "intermediate",
+    badge: isCaution ? "Caution" : "Hypothèque",
+    title: pctCapital <= 2.5 ? "Garantie maîtrisée" : "Garantie coûteuse",
+    message: baseMessage + comparisonNote,
+  };
+}
+
 function enrichFraisGarantie(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const capital = num(input.capital);
   const duree = num(input.duree);
-  const type = String(input.typeGarantie) === "hypotheque" ? "hypothèque" : "caution";
-  const cout = findNumber(result, "coût total") ?? 0;
-  const pctCapital = capital > 0 ? (cout / capital) * 100 : 0;
+  const isCaution = String(input.typeGarantie) === "caution";
+  const typeGarantie = String(input.typeGarantie);
 
-  const narrative = `Pour garantir ${formatCurrency(capital)} sur ${duree} ans via une ${type}, le coût estimé est de ${formatCurrency(cout)} (${formatPercent(pctCapital, 2)} du capital) — à intégrer au budget global dès la simulation de prêt.`;
-
-  const comparisons: ResultComparison[] = [];
-  const altType = type === "hypothèque" ? "caution" : "hypotheque";
-  const altCout =
-    altType === "hypotheque"
-      ? capital * 0.015 + capital * 0.005
-      : capital * 0.01 + capital * 0.003 * Math.min(duree, 8);
-  comparisons.push({
-    scenario: `Alternative : ${altType === "hypotheque" ? "hypothèque" : "caution"}`,
-    value: formatCurrency(altCout),
-    detail:
-      altCout < cout
-        ? `Économie estimée : ${formatCurrency(cout - altCout)}`
-        : `Surcoût estimé : ${formatCurrency(altCout - cout)}`,
+  const computed = fraisGarantieEmprunt.calculate({
+    capital,
+    typeGarantie,
+    duree,
   });
+
+  const cout =
+    findNumber(computed, "coût total") ??
+    (result.primary && /coût total/i.test(result.primary.label)
+      ? parseFormattedNumber(result.primary.value)
+      : null) ??
+    (isCaution ? coutGarantieCaution(capital, duree) : coutGarantieHypotheque(capital));
+  const pctCapital =
+    findPercent(computed, "% du capital") ??
+    (capital > 0 ? (cout / capital) * 100 : 0);
+  const coutHypotheque = coutGarantieHypotheque(capital);
+  const coutCaution = coutGarantieCaution(capital, duree);
+  const coutAlt = isCaution ? coutHypotheque : coutCaution;
+  const ecartText = formatEcartGarantie(isCaution, cout, coutAlt);
+  const typeLabelLong = isCaution ? "caution Crédit Logement" : "hypothèque";
+  const typeLabelCourt = isCaution ? "Caution Crédit Logement" : "Hypothèque";
+
+  const narrative = `Pour garantir ${formatCurrency(capital)} sur ${duree} ans avec une ${typeLabelLong}, le coût estimé est d'environ ${formatCurrency(cout)}, soit ${formatPercent(pctCapital, 2)} du capital emprunté. Ce montant est à intégrer dans le budget global du prêt.`;
+
+  const calculGarantieText = isCaution
+    ? [
+        `Capital emprunté : ${formatCurrency(capital)}`,
+        `Type de garantie : ${typeLabelCourt}`,
+        `Durée du prêt : ${duree} ans`,
+        `Coût en % du capital : ${formatPercent(pctCapital, 2)}`,
+        `Coût total estimé : ${formatCurrency(cout)}`,
+        `Alternative hypothèque estimée : ${formatCurrency(coutHypotheque)}`,
+      ].join(" · ")
+    : [
+        `Capital emprunté : ${formatCurrency(capital)}`,
+        `Type de garantie : ${typeLabelCourt}`,
+        `Durée du prêt : ${duree} ans`,
+        `Coût en % du capital : ${formatPercent(pctCapital, 2)}`,
+        `Coût hypothèque estimé : ${formatCurrency(cout)}`,
+        `Alternative caution estimée : ${formatCurrency(coutCaution)}`,
+      ].join(" · ");
+
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: `Garantie choisie : ${isCaution ? "caution" : "hypothèque"}`,
+      value: formatCurrency(cout),
+    },
+    {
+      scenario: isCaution ? "Coût hypothèque estimé" : "Coût caution estimé",
+      value: formatCurrency(coutAlt),
+    },
+    {
+      scenario: "Écart",
+      value: ecartText,
+    },
+  ];
 
   return mergeResult(result, {
     primary: { label: "Coût total estimé", value: formatCurrency(cout) },
     narrative,
-    interpretation: {
-      level: pctCapital <= 1.5 ? "favorable" : "intermediate",
-      badge: type === "caution" ? "Caution" : "Hypothèque",
-      title: type === "caution" ? "Garantie légère" : "Garantie lourde",
-      message:
-        type === "caution"
-          ? "La caution est souvent moins chère, sans frais de notaire pour la garantie."
-          : "L'hypothèque implique des frais de mainlevée à la fin du prêt.",
-    },
+    interpretation: fraisGarantieInterpretation(pctCapital, isCaution, coutCaution, coutHypotheque),
     advice: {
       title: "Pour choisir votre garantie",
       items: [
@@ -846,109 +1390,398 @@ function enrichFraisGarantie(input: EnricherInput, result: SimulatorResult): Sim
         "Ces frais peuvent parfois être financés dans le montant emprunté",
       ],
     },
+    lines: [
+      ...result.lines,
+      { label: "Coût total estimé", value: formatCurrency(cout) },
+      {
+        label: isCaution ? "Alternative hypothèque estimée" : "Alternative caution estimée",
+        value: formatCurrency(coutAlt),
+      },
+      { label: "Écart entre les deux garanties", value: ecartText },
+    ],
     comparisons,
     callouts: [
       {
         variant: "note",
-        title: "À savoir",
-        text: "Tarifs moyens — demandez un devis bancaire pour le montant exact avant signature.",
+        title: "Comment est calculé le coût de garantie ?",
+        text: calculGarantieText,
       },
     ],
   });
+}
+
+function formatDureeAnneesMois(mois: number): string {
+  const annees = Math.floor(mois / 12);
+  const resteMois = mois % 12;
+  const parts: string[] = [];
+  if (annees > 0) parts.push(`${annees} an${annees > 1 ? "s" : ""}`);
+  if (resteMois > 0) parts.push(`${resteMois} mois`);
+  return parts.length ? parts.join(" et ") : "0 mois";
+}
+
+function parseDureeMoisFromResult(
+  result: SimulatorResult,
+  computed: SimulatorResult
+): number | null {
+  const fromComputed = findNumber(computed, "durée");
+  if (fromComputed !== null) return fromComputed;
+  if (result.primary && /durée/i.test(result.primary.label)) {
+    const parsed = parseFormattedNumber(result.primary.value);
+    if (parsed !== null) return parsed;
+  }
+  return null;
+}
+
+function effortEpargneInterpretation(
+  dureeMois: number,
+  rendement: number,
+  interets: number
+): ResultInterpretation {
+  const gainPhrase =
+    interets > 0
+      ? ` Le rendement de ${formatPercent(rendement, 1)} génère environ ${formatCurrency(interets)} d'intérêts sur la période.`
+      : rendement > 0
+        ? ` Le rendement de ${formatPercent(rendement, 1)} reste modeste sur cette durée.`
+        : "";
+  const dureePhrase = ` Sur ${dureeMois} mois (${formatDureeAnneesMois(dureeMois)}),`;
+
+  if (dureeMois < 24) {
+    return {
+      level: "favorable",
+      badge: "Horizon court",
+      title: "Horizon court",
+      message: `Objectif rapidement atteignable.${dureePhrase} vous pouvez projeter un achat proche.${gainPhrase}`,
+    };
+  }
+  if (dureeMois < 72) {
+    return {
+      level: "intermediate",
+      badge: "Horizon moyen",
+      title: "Horizon moyen",
+      message: `Constitution progressive de l'apport.${dureePhrase} prévoyez un placement régulier adapté.${gainPhrase}`,
+    };
+  }
+  if (dureeMois < 120) {
+    return {
+      level: "intermediate",
+      badge: "Horizon long",
+      title: "Horizon long",
+      message: `L'objectif demandera plusieurs années d'épargne.${dureePhrase} réévaluez régulièrement votre progression.${gainPhrase}`,
+    };
+  }
+  return {
+    level: "warning",
+    badge: "Horizon très long",
+    title: "Horizon très long",
+    message: `Il peut être utile d'augmenter l'épargne mensuelle ou de revoir l'objectif d'apport.${dureePhrase} le rendement peine à raccourcir sensiblement la durée.${gainPhrase}`,
+  };
+}
+
+function effortEpargneAdvice(dureeMois: number): ResultAdvice {
+  if (dureeMois < 24) {
+    return {
+      title: "Pour un horizon court",
+      items: [
+        "Conservez l'effort d'épargne actuel",
+        "Sécurisez l'épargne sur un support sans risque (livret, compte épargne)",
+        "Intégrez les frais de notaire dans l'objectif si non financés",
+        "Préparez la simulation de capacité d'emprunt dès que l'apport est réuni",
+      ],
+    };
+  }
+  if (dureeMois < 72) {
+    return {
+      title: "Pour un horizon moyen",
+      items: [
+        "Automatisez les versements mensuels",
+        "Utilisez un PEL ou un livret adapté à votre horizon",
+        "Réévaluez votre objectif d'apport une fois par an",
+        "Évitez le risque sur un horizon encore court à moyen",
+      ],
+    };
+  }
+  if (dureeMois < 120) {
+    return {
+      title: "Pour un horizon long",
+      items: [
+        "Augmentez progressivement votre épargne mensuelle si possible",
+        "Revoyez votre budget et les postes compressibles",
+        "Automatisez les versements pour tenir l'effort dans la durée",
+        "Comparez régulièrement les prix du marché pendant la constitution",
+      ],
+    };
+  }
+  return {
+    title: "Pour un horizon très long",
+    items: [
+      "Augmentez progressivement l'épargne mensuelle si votre budget le permet",
+      "Revoyez le budget global et l'objectif d'apport",
+      "Recherchez des aides ou un apport familial si pertinent",
+      "Envisagez un bien moins cher ou une zone différente pour réduire l'apport nécessaire",
+    ],
+  };
 }
 
 function enrichEffortEpargne(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const objectif = num(input.objectifApport);
   const actuelle = num(input.epargneActuelle);
   const mensuelle = num(input.epargneMensuelle);
+  const rendement = num(input.rendement);
   const reste = Math.max(0, objectif - actuelle);
-  const dureeMois = findNumber(result, "durée") ?? (mensuelle > 0 ? Math.ceil(reste / mensuelle) : null);
   const atteint = reste <= 0;
 
-  const narrative = atteint
-    ? `Votre épargne de ${formatCurrency(actuelle)} couvre déjà l'objectif de ${formatCurrency(objectif)} — vous pouvez lancer la simulation de capacité d'emprunt.`
-    : mensuelle <= 0
-      ? `Il reste ${formatCurrency(reste)} à constituer pour atteindre ${formatCurrency(objectif)}, mais sans épargne mensuelle le délai est indéterminé.`
-      : `Pour passer de ${formatCurrency(actuelle)} à ${formatCurrency(objectif)} en épargnant ${formatCurrency(mensuelle)}/mois, comptez environ ${dureeMois} mois (${Math.floor((dureeMois ?? 0) / 12)} ans et ${(dureeMois ?? 0) % 12} mois).`;
+  const computed = effortEpargneImmobilier.calculate({
+    objectifApport: objectif,
+    epargneActuelle: actuelle,
+    epargneMensuelle: mensuelle,
+    rendement,
+  });
+
+  if (atteint) {
+    const narrative = `Votre épargne de ${formatCurrency(actuelle)} couvre déjà l'apport cible de ${formatCurrency(objectif)}. Vous pouvez lancer la simulation de capacité d'emprunt.`;
+    return mergeResult(result, {
+      primary: { label: "Statut", value: "Objectif atteint" },
+      narrative,
+      interpretation: {
+        level: "favorable",
+        badge: "Apport disponible",
+        title: "Apport disponible",
+        message:
+          "L'objectif d'apport est déjà atteint. Vous pouvez avancer sur la recherche de bien et la demande de prêt.",
+      },
+      advice: {
+        title: "Prochaines étapes",
+        items: [
+          "Simulez votre capacité d'emprunt avec cet apport",
+          "Intégrez les frais de notaire dans votre budget global",
+          "Comparez les offres bancaires et les assurances emprunteur",
+          "Conservez une épargne de précaution en parallèle",
+        ],
+      },
+      lines: [
+        ...result.lines,
+        { label: "Rendement annuel", value: formatPercent(rendement, 1) },
+        { label: "Reste à épargner", value: formatCurrency(0) },
+      ],
+      callouts: [
+        {
+          variant: "note",
+          title: "Comment est calculée votre durée d'épargne ?",
+          text: `Apport cible : ${formatCurrency(objectif)} · Épargne actuelle : ${formatCurrency(actuelle)} · Reste à épargner : ${formatCurrency(0)} · Objectif déjà atteint.`,
+        },
+      ],
+    });
+  }
+
+  if (mensuelle <= 0) {
+    const narrative = `Il reste ${formatCurrency(reste)} à constituer pour atteindre un apport de ${formatCurrency(objectif)}, avec ${formatCurrency(actuelle)} déjà disponibles. Sans épargne mensuelle, la durée reste indéterminée.`;
+    return mergeResult(result, {
+      primary: { label: "Reste à épargner", value: formatCurrency(reste) },
+      narrative,
+      interpretation: {
+        level: "warning",
+        badge: "Blocage",
+        title: "Épargne insuffisante",
+        message:
+          "Augmentez votre capacité d'épargne mensuelle ou ajustez l'objectif d'apport pour estimer une durée.",
+      },
+      advice: {
+        title: "Pour relancer l'épargne",
+        items: [
+          "Fixez un versement mensuel, même modeste, pour rendre l'objectif mesurable",
+          "Revoyez votre budget pour libérer une épargne régulière",
+          "Automatisez un virement dès réception des revenus",
+          "Ajustez l'objectif d'apport si nécessaire",
+        ],
+      },
+      lines: [
+        ...result.lines,
+        { label: "Rendement annuel", value: formatPercent(rendement, 1) },
+        { label: "Apport cible", value: formatCurrency(objectif) },
+        { label: "Épargne actuelle", value: formatCurrency(actuelle) },
+      ],
+      callouts: [
+        {
+          variant: "note",
+          title: "Comment est calculée votre durée d'épargne ?",
+          text: `Apport cible : ${formatCurrency(objectif)} · Épargne actuelle : ${formatCurrency(actuelle)} · Reste à épargner : ${formatCurrency(reste)} · Épargne mensuelle : ${formatCurrency(mensuelle)} · Durée non calculable sans versement mensuel.`,
+        },
+      ],
+    });
+  }
+
+  const simulation = simulerEpargneObjectif(objectif, actuelle, mensuelle, rendement);
+  const dureeMois =
+    parseDureeMoisFromResult(result, computed) ?? simulation.mois;
+  const capitalVerse =
+    findNumber(computed, "Capital versé") ?? simulation.capitalVerse;
+  const interets =
+    findNumber(computed, "Intérêts") ??
+    findNumber(computed, "intérêts") ??
+    simulation.interets;
+  const capitalFinal =
+    findNumber(computed, "Capital final") ?? simulation.capitalFinal;
+  const dureeTexte = formatDureeAnneesMois(dureeMois);
+
+  const narrative = `Pour constituer un apport de ${formatCurrency(objectif)}, en partant de ${formatCurrency(actuelle)} déjà disponibles et en épargnant ${formatCurrency(mensuelle)}/mois avec un rendement annuel estimé de ${formatPercent(rendement, 1)}, il faudra environ ${dureeMois} mois (${dureeTexte}). Il reste ${formatCurrency(reste)} à épargner${interets > 0 ? ` ; le rendement pourrait générer environ ${formatCurrency(interets)} d'intérêts sur la période` : ""}.`;
+
+  const calculEpargneText = [
+    `Apport cible : ${formatCurrency(objectif)}`,
+    `Épargne actuelle : ${formatCurrency(actuelle)}`,
+    `Reste à épargner : ${formatCurrency(reste)}`,
+    `Épargne mensuelle : ${formatCurrency(mensuelle)}`,
+    `Rendement annuel utilisé : ${formatPercent(rendement, 1)}`,
+    `Capital versé : ${formatCurrency(capitalVerse)}`,
+    `Intérêts générés : ${formatCurrency(interets)}`,
+    `Capital final estimé : ${formatCurrency(capitalFinal)}`,
+    `Durée totale : ${dureeMois} mois (${dureeTexte})`,
+  ].join(" · ");
 
   return mergeResult(result, {
-    primary: {
-      label: atteint ? "Statut" : "Durée estimée",
-      value: atteint ? "Objectif atteint" : dureeMois ? `${dureeMois} mois` : "—",
-    },
+    primary: { label: "Durée estimée", value: `${dureeMois} mois` },
     narrative,
-    interpretation: atteint
-      ? {
-          level: "favorable",
-          badge: "Prêt",
-          title: "Apport disponible",
-          message: "Vous pouvez avancer sur la recherche de bien et la demande de prêt.",
-        }
-      : mensuelle <= 0
-        ? {
-            level: "warning",
-            badge: "Blocage",
-            title: "Épargne insuffisante",
-            message: "Augmentez votre capacité d'épargne mensuelle ou ajustez l'objectif d'apport.",
-          }
-        : (dureeMois ?? 0) <= 36
-          ? {
-              level: "favorable",
-              badge: "< 3 ans",
-              title: "Horizon court",
-              message: "Un apport constitué en moins de 3 ans permet de projeter un achat proche.",
-            }
-          : {
-              level: "intermediate",
-              badge: "Patience",
-              title: "Horizon moyen",
-              message: "Constituez l'apport progressivement — réévaluez les prix du marché en parallèle.",
-            },
-    advice: {
-      title: "Pour constituer votre apport",
-      items: [
-        "Automatisez un virement mensuel vers un livret ou PEL",
-        "Intégrez les frais de notaire dans l'objectif si non financés",
-        "Évitez le risque sur un horizon court (actions, crypto…)",
-        "Envisagez un apport familial ou une donation si pertinent",
-      ],
-    },
+    interpretation: effortEpargneInterpretation(dureeMois, rendement, interets),
+    advice: effortEpargneAdvice(dureeMois),
+    lines: [
+      ...result.lines,
+      {
+        label: "Gain procuré par le rendement",
+        value: formatCurrency(interets),
+        description: "Différence entre capital final et épargne sans rendement",
+      },
+      {
+        label: "Durée totale",
+        value: `${dureeMois} mois (${dureeTexte})`,
+      },
+    ],
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculée votre durée d'épargne ?",
+        text: calculEpargneText,
+      },
+    ],
   });
+}
+
+function impactHausseTauxInterpretation(
+  delta: number,
+  endNouveau: number
+): ResultInterpretation {
+  const deltaPhrase = `La hausse de taux ajoute ${formatCurrency(Math.abs(delta))}/mois`;
+  const endPhrase = ` et fait passer votre endettement à ${formatPercent(endNouveau, 1)}.`;
+
+  if (delta <= 0) {
+    return {
+      level: delta < 0 ? "favorable" : "neutral",
+      badge: delta < 0 ? "Baisse" : "Stable",
+      title: delta < 0 ? "Mensualité en baisse" : "Pas de hausse",
+      message:
+        delta < 0
+          ? `Le nouveau taux réduirait votre mensualité d'environ ${formatCurrency(Math.abs(delta))}/mois. Endettement estimé : ${formatPercent(endNouveau, 1)}.`
+          : `Le nouveau taux n'augmente pas votre mensualité. Endettement estimé : ${formatPercent(endNouveau, 1)}.`,
+    };
+  }
+
+  if (endNouveau > 35) {
+    return {
+      level: "warning",
+      badge: "Plafond dépassé",
+      title: "Endettement critique",
+      message: `${deltaPhrase}${endPhrase} Le seuil de 35 % est dépassé, ce qui peut fragiliser le financement.`,
+    };
+  }
+  if (endNouveau >= 30) {
+    return {
+      level: "intermediate",
+      badge: "À surveiller",
+      title: "Marge limitée",
+      message: `${deltaPhrase}${endPhrase} Vérifiez le reste à vivre.`,
+    };
+  }
+  return {
+    level: "favorable",
+    badge: "Confortable",
+    title: "Impact maîtrisé",
+    message: `La hausse de taux reste absorbable dans votre budget, avec un endettement estimé à ${formatPercent(endNouveau, 1)}.`,
+  };
 }
 
 function enrichImpactHausseTaux(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const capital = num(input.capital);
   const tauxActuel = num(input.tauxActuel);
   const tauxNouveau = num(input.tauxNouveau);
-  const delta = findNumber(result, "hausse mensualité") ?? 0;
-  const endNouveau = findPercent(result, "endettement après") ?? 0;
-  const endActuel = findPercent(result, "endettement actuel") ?? 0;
+  const duree = num(input.dureeAnnees);
+  const revenus = num(input.revenus);
+  const charges = num(input.charges);
 
-  const narrative = `Sur ${formatCurrency(capital)} restants, une hausse de ${formatPercent(tauxActuel, 2)} à ${formatPercent(tauxNouveau, 2)} ajoute ${formatCurrency(delta)}/mois à l'échéance — votre taux d'endettement passerait de ${formatPercent(endActuel, 1)} à ${formatPercent(endNouveau, 1)}.`;
+  const computed = impactHausseTaux.calculate({
+    capital,
+    tauxActuel,
+    tauxNouveau,
+    dureeAnnees: duree,
+    revenus,
+    charges,
+  });
+
+  const delta =
+    findNumber(computed, "hausse mensualité") ??
+    findNumber(computed, "Hausse mensualité") ??
+    (result.primary && /hausse mensualité/i.test(result.primary.label)
+      ? parseFormattedNumber(result.primary.value)
+      : null) ??
+    0;
+  const mActuel =
+    findNumber(computed, "Mensualité actuelle") ??
+    findNumber(result, "Mensualité actuelle") ??
+    0;
+  const mNouveau =
+    findNumber(computed, "Nouvelle mensualité") ??
+    findNumber(result, "Nouvelle mensualité") ??
+    0;
+  const endNouveau =
+    findPercent(computed, "endettement après") ??
+    findPercent(result, "endettement après") ??
+    0;
+  const endActuel =
+    findPercent(computed, "endettement actuel") ??
+    findPercent(result, "endettement actuel") ??
+    0;
+  const hausseEndettement = endNouveau - endActuel;
+  const surcoutAnnuel = delta * 12;
+  const surcoutTotal = delta * duree * 12;
+  const hausseEndettementLabel = `${hausseEndettement >= 0 ? "+" : ""}${hausseEndettement.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} points`;
+
+  const narrative =
+    delta > 0
+      ? `Sur ${formatCurrency(capital)} restants, une hausse de taux de ${formatPercent(tauxActuel, 2)} à ${formatPercent(tauxNouveau, 2)} ferait passer votre mensualité d'environ ${formatCurrency(mActuel)} à ${formatCurrency(mNouveau)}, soit +${formatCurrency(delta)}/mois. Votre taux d'endettement passerait de ${formatPercent(endActuel, 1)} à ${formatPercent(endNouveau, 1)}.`
+      : delta < 0
+        ? `Sur ${formatCurrency(capital)} restants, le passage de ${formatPercent(tauxActuel, 2)} à ${formatPercent(tauxNouveau, 2)} ferait baisser votre mensualité d'environ ${formatCurrency(mActuel)} à ${formatCurrency(mNouveau)}, soit ${formatCurrency(delta)}/mois. Votre taux d'endettement passerait de ${formatPercent(endActuel, 1)} à ${formatPercent(endNouveau, 1)}.`
+        : `Sur ${formatCurrency(capital)} restants, le taux passerait de ${formatPercent(tauxActuel, 2)} à ${formatPercent(tauxNouveau, 2)} sans hausse de mensualité (${formatCurrency(mActuel)}). Votre taux d'endettement resterait à ${formatPercent(endActuel, 1)}.`;
+
+  const calculImpactText = [
+    `Capital concerné : ${formatCurrency(capital)}`,
+    `Durée restante : ${duree} ans`,
+    `Taux actuel : ${formatPercent(tauxActuel, 2)}`,
+    `Nouveau taux : ${formatPercent(tauxNouveau, 2)}`,
+    `Mensualité actuelle : ${formatCurrency(mActuel)}`,
+    `Nouvelle mensualité : ${formatCurrency(mNouveau)}`,
+    `Hausse mensuelle : ${formatCurrency(delta)}`,
+    delta > 0
+      ? `Surcoût annuel : ${formatCurrency(surcoutAnnuel)}`
+      : `Surcoût annuel : ${formatCurrency(0)}`,
+    delta > 0
+      ? `Surcoût total estimé : ${formatCurrency(surcoutTotal)}`
+      : `Surcoût total estimé : ${formatCurrency(0)}`,
+    `Taux d'endettement actuel : ${formatPercent(endActuel, 1)}`,
+    `Taux d'endettement après hausse : ${formatPercent(endNouveau, 1)}`,
+    `Hausse d'endettement : ${hausseEndettementLabel}`,
+  ].join(" · ");
 
   return mergeResult(result, {
     primary: { label: "Hausse mensualité", value: formatCurrency(delta) },
     narrative,
-    interpretation: endNouveau > HCSF_TAUX_ENDETTEMENT_MAX
-      ? {
-          level: "warning",
-          badge: "Plafond dépassé",
-          title: "Endettement critique",
-          message: `La hausse vous ferait dépasser ${HCSF_TAUX_ENDETTEMENT_MAX} % — risque de refus en cas de renégociation.`,
-        }
-      : endNouveau > HCSF_TAUX_ENDETTEMENT_MAX - 3
-        ? {
-            level: "intermediate",
-            badge: "Limite",
-            title: "Marge réduite",
-            message: "Vous approchez du plafond HCSF — anticipez une marge de sécurité de 1 à 2 points.",
-          }
-        : {
-            level: "favorable",
-            badge: "Absorbable",
-            title: "Impact maîtrisé",
-            message: "La hausse reste compatible avec le plafond d'endettement recommandé.",
-          },
+    interpretation: impactHausseTauxInterpretation(delta, endNouveau),
     advice: {
       title: "Face à une hausse de taux",
       items: [
@@ -959,51 +1792,191 @@ function enrichImpactHausseTaux(input: EnricherInput, result: SimulatorResult): 
       ],
     },
     comparisons: [
-      { scenario: "Mensualité actuelle", value: lineText(result, "Mensualité actuelle") },
-      { scenario: "Nouvelle mensualité", value: lineText(result, "Nouvelle mensualité") },
+      { scenario: "Mensualité actuelle", value: formatCurrency(mActuel) },
+      { scenario: "Nouvelle mensualité", value: formatCurrency(mNouveau) },
+      {
+        scenario: "Surcoût total estimé",
+        value: delta > 0 ? formatCurrency(surcoutTotal) : formatCurrency(0),
+        detail:
+          delta > 0
+            ? `${formatCurrency(surcoutAnnuel)}/an sur ${duree} ans`
+            : "Aucun surcoût mensuel",
+      },
+    ],
+    lines: [
+      ...result.lines,
+      { label: "Hausse mensuelle", value: formatCurrency(delta) },
+      {
+        label: "Surcoût annuel",
+        value: delta > 0 ? formatCurrency(surcoutAnnuel) : formatCurrency(0),
+      },
+      {
+        label: "Surcoût total",
+        value: delta > 0 ? formatCurrency(surcoutTotal) : formatCurrency(0),
+        description: delta > 0 ? `${formatCurrency(delta)}/mois × ${duree} ans` : undefined,
+      },
+      { label: "Hausse d'endettement", value: hausseEndettementLabel },
+      { label: "Taux actuel", value: formatPercent(tauxActuel, 2) },
+      { label: "Nouveau taux", value: formatPercent(tauxNouveau, 2) },
+      { label: "Capital concerné", value: formatCurrency(capital) },
+      { label: "Durée restante", value: `${duree} ans` },
     ],
     callouts: [
       {
-        variant: "warning",
-        title: "Attention",
-        text: "Les emprunteurs en taux variable ou en fin de période fixe sont les plus exposés aux hausses.",
+        variant: "note",
+        title: "Comment est calculé l'impact de la hausse ?",
+        text: calculImpactText,
       },
     ],
   });
+}
+
+function breakdownCreditTravaux(
+  montant: number,
+  taux: number,
+  duree: number,
+  tauxAssurance: number
+) {
+  const mensualiteHorsAss = monthlyPaymentFromLoan(montant, taux, duree);
+  const assuranceMensuelle = (montant * (tauxAssurance / 100)) / 12;
+  const mensualiteTotale = mensualiteHorsAss + assuranceMensuelle;
+  const coutTotal = mensualiteTotale * duree * 12;
+  const coutAssuranceTotal = assuranceMensuelle * duree * 12;
+  const interets = mensualiteHorsAss * duree * 12 - montant;
+  return {
+    mensualiteHorsAss,
+    assuranceMensuelle,
+    mensualiteTotale,
+    coutTotal,
+    coutAssuranceTotal,
+    interets,
+  };
+}
+
+function creditTravauxInterpretation(
+  montant: number,
+  coutTotal: number
+): ResultInterpretation {
+  const surcoutRatio = montant > 0 ? (coutTotal - montant) / montant : 0;
+  const aidesPhrase =
+    " Comparez les banques, négociez le taux et l'assurance emprunteur, et vérifiez les aides type MaPrimeRénov' ou éco-PTZ.";
+
+  if (surcoutRatio <= 0.15) {
+    return {
+      level: "favorable",
+      badge: "Coût maîtrisé",
+      title: "Coût maîtrisé",
+      message: `Le coût reste raisonnable par rapport aux ${formatCurrency(montant)} financés.${aidesPhrase}`,
+    };
+  }
+  if (surcoutRatio <= 0.3) {
+    return {
+      level: "intermediate",
+      badge: "Coût modéré",
+      title: "Coût modéré",
+      message: `Le crédit est utile mais les intérêts et l'assurance doivent être intégrés au budget.${aidesPhrase}`,
+    };
+  }
+  return {
+    level: "warning",
+    badge: "Coût élevé",
+    title: "Coût élevé",
+    message: `Comparez plusieurs offres et vérifiez les aides avant de vous engager.${aidesPhrase}`,
+  };
 }
 
 function enrichCreditTravaux(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const montant = num(input.montantTravaux);
   const duree = num(input.duree);
   const taux = num(input.taux);
-  const mensualite = lineText(result, "mensualité totale");
-  const total = findNumber(result, "coût total") ?? 0;
+  const tauxAssurance = num(input.tauxAssurance);
 
-  const narrative = `Financer ${formatCurrency(montant)} de travaux sur ${duree} ans à ${formatPercent(taux, 2)} représente ${mensualite}/mois (assurance incluse), pour un coût total estimé de ${formatCurrency(total)} — à comparer avec vos aides (MaPrimeRénov', éco-PTZ).`;
+  const computed = creditTravaux.calculate({
+    montantTravaux: montant,
+    taux,
+    duree,
+    tauxAssurance,
+  });
+  const current = breakdownCreditTravaux(montant, taux, duree, tauxAssurance);
+
+  const mensualiteTotale =
+    findNumber(computed, "totale") ??
+    (result.primary && /mensualité totale/i.test(result.primary.label)
+      ? parseFormattedNumber(result.primary.value)
+      : null) ??
+    current.mensualiteTotale;
+  const mensualiteHorsAss =
+    findNumber(computed, "hors assurance") ?? current.mensualiteHorsAss;
+  const coutTotal =
+    findNumber(computed, "coût total") ?? current.coutTotal;
+  const assuranceMensuelle = current.assuranceMensuelle;
+  const interets = current.interets;
+  const coutAssuranceTotal = current.coutAssuranceTotal;
+  const mensualiteTotaleAffichage = `${formatCurrency(mensualiteTotale)}/mois`;
+
+  const narrative = `Pour financer ${formatCurrency(montant)} de travaux sur ${duree} ans à ${formatPercent(taux, 1)}, votre mensualité est estimée à ${mensualiteTotaleAffichage} assurance incluse. Le coût total du crédit est d'environ ${formatCurrency(coutTotal)}, dont ${formatCurrency(interets)} d'intérêts et ${formatCurrency(coutAssuranceTotal)} d'assurance.`;
+
+  const calculMensualiteText = [
+    `Montant financé : ${formatCurrency(montant)}`,
+    `Taux d'intérêt : ${formatPercent(taux, 1)}`,
+    `Durée : ${duree} ans`,
+    `Assurance annuelle : ${formatPercent(tauxAssurance, 2)}`,
+    `Mensualité hors assurance : ${formatCurrency(mensualiteHorsAss)}`,
+    `Assurance mensuelle : ${formatCurrency(assuranceMensuelle)}`,
+    `Mensualité totale : ${mensualiteTotaleAffichage}`,
+    `Intérêts estimés : ${formatCurrency(interets)}`,
+    `Coût total estimé : ${formatCurrency(coutTotal)}`,
+  ].join(" · ");
+
+  const altDuree = duree >= 10 ? Math.max(2, duree - 3) : 10;
+  const alt = breakdownCreditTravaux(montant, taux, altDuree, tauxAssurance);
+  const ecartMensualite = alt.mensualiteTotale - mensualiteTotale;
+  const ecartCoutTotal = alt.coutTotal - coutTotal;
+
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: `Mensualité sur ${duree} ans`,
+      value: mensualiteTotaleAffichage,
+      detail: `Coût total : ${formatCurrency(coutTotal)}`,
+    },
+    {
+      scenario: `Si vous empruntiez sur ${altDuree} ans`,
+      value: `${formatCurrency(alt.mensualiteTotale)}/mois`,
+      detail: `Coût total : ${formatCurrency(alt.coutTotal)}`,
+    },
+    {
+      scenario: "Écart estimé",
+      value: `${ecartMensualite >= 0 ? "+" : ""}${formatCurrency(ecartMensualite)}/mois`,
+      detail: `Écart de coût total : ${formatCurrency(ecartCoutTotal)}`,
+    },
+  ];
 
   return mergeResult(result, {
-    primary: { label: "Mensualité totale", value: mensualite },
+    primary: { label: "Mensualité totale", value: mensualiteTotaleAffichage },
     narrative,
-    interpretation: {
-      level: "neutral",
-      badge: "Financement",
-      title: "Crédit travaux",
-      message: "Comparez ce financement avec un intégration au crédit immobilier ou un prêt à taux bonifié.",
-    },
+    interpretation: creditTravauxInterpretation(montant, coutTotal),
     advice: {
       title: "Pour financer vos travaux",
       items: [
         "Demandez 3 devis avant d'emprunter — le montant doit correspondre aux factures",
-        "Vérifiez les aides publiques avant de souscrire un crédit classique",
-        "Comparez crédit travaux et crédit consommation (taux et justificatifs)",
-        "Intégrez la mensualité dans votre taux d'endettement global",
+        "Comparez plusieurs banques et négociez le taux proposé",
+        "Comparez l'assurance emprunteur via une délégation si possible",
+        "Vérifiez les aides publiques (MaPrimeRénov', éco-PTZ) avant un crédit classique",
       ],
     },
+    lines: [
+      ...result.lines,
+      { label: "Assurance mensuelle", value: formatCurrency(assuranceMensuelle) },
+      { label: "Intérêts payés", value: formatCurrency(interets) },
+      { label: "Coût total de l'assurance", value: formatCurrency(coutAssuranceTotal) },
+      { label: "Coût total du crédit", value: formatCurrency(coutTotal) },
+    ],
+    comparisons,
     callouts: [
       {
-        variant: "info",
-        title: "Bon à savoir",
-        text: "Un crédit travaux dédié est souvent moins cher qu'un crédit consommation, mais nécessite des justificatifs.",
+        variant: "note",
+        title: "Comment est calculée votre mensualité ?",
+        text: calculMensualiteText,
       },
     ],
   });
@@ -1011,63 +1984,180 @@ function enrichCreditTravaux(input: EnricherInput, result: SimulatorResult): Sim
 
 // ─── Investissement ────────────────────────────────────────────────
 
-function enrichPlusValue(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const plusValue = findNumber(result, "plus-value brute") ?? 0;
-  const impot = findNumber(result, "impôt") ?? 0;
-  const annees = num(input.anneesDetention);
-  const achat =
-    num(input.prixAchat) + num(input.fraisAcquisition) + num(input.travaux);
-  const vente = num(input.prixVente);
+function plusValueInterpretation(
+  plusValueBrute: number,
+  impotTotal: number
+): ResultInterpretation {
+  if (plusValueBrute <= 0) {
+    return {
+      level: "neutral",
+      badge: "Nulle",
+      title: "Pas de plus-value",
+      message: "Le prix de vente ne dépasse pas le coût d'acquisition corrigé.",
+    };
+  }
+  if (impotTotal <= 0) {
+    return {
+      level: "favorable",
+      badge: "Exonération",
+      title: "Exonération",
+      message: "Aucune imposition estimée sur cette plus-value.",
+    };
+  }
+  const ratio = impotTotal / plusValueBrute;
+  if (ratio <= 0.15) {
+    return {
+      level: "favorable",
+      badge: "Fiscalité faible",
+      title: "Fiscalité faible",
+      message: "Impôt limité grâce aux abattements liés à la durée de détention.",
+    };
+  }
+  if (ratio <= 0.3) {
+    return {
+      level: "intermediate",
+      badge: "Fiscalité modérée",
+      title: "Fiscalité modérée",
+      message: "Une partie importante de la plus-value reste imposable.",
+    };
+  }
+  return {
+    level: "warning",
+    badge: "Fiscalité élevée",
+    title: "Fiscalité élevée",
+    message: "La plus-value reste largement taxable malgré les abattements.",
+  };
+}
 
-  const narrative = `Acquis pour ${formatCurrency(achat)} et revendu ${formatCurrency(vente)} après ${annees} ans, la plus-value brute est de ${formatCurrency(plusValue)} — l'impôt estimé s'élève à ${formatCurrency(impot)} selon les abattements simplifiés appliqués.`;
+function plusValueAdvice(
+  input: EnricherInput,
+  anneesRestantesIR: number,
+  anneesRestantesPS: number,
+  annees: number
+): ResultAdvice {
+  const items: string[] = [];
+  if (num(input.travaux) > 0) {
+    items.push("Conservez les justificatifs des travaux.");
+  }
+  if (num(input.fraisAcquisition) > 0) {
+    items.push("Les frais d'acquisition augmentent votre prix d'achat fiscal.");
+  }
+  if (anneesRestantesIR > 0 && annees < 22) {
+    items.push(
+      `Attendre ${anneesRestantesIR} année${anneesRestantesIR > 1 ? "s" : ""} supplémentaire${anneesRestantesIR > 1 ? "s" : ""} peut exonérer l'impôt sur le revenu (22 ans de détention).`
+    );
+  } else if (anneesRestantesPS > 0) {
+    items.push(
+      `Attendre ${anneesRestantesPS} année${anneesRestantesPS > 1 ? "s" : ""} supplémentaire${anneesRestantesPS > 1 ? "s" : ""} peut exonérer totalement les prélèvements sociaux (30 ans).`
+    );
+  }
+  items.push(
+    "Vérifiez si vous bénéficiez d'une exonération (résidence principale, première cession, etc.)."
+  );
+  items.push("Consultez un notaire avant la vente.");
+  return { title: "Pour optimiser votre sortie", items };
+}
+
+function enrichPlusValue(input: EnricherInput, result: SimulatorResult): SimulatorResult {
+  const computed = plusValueImmobiliere.calculate({
+    prixAchat: num(input.prixAchat),
+    fraisAcquisition: num(input.fraisAcquisition),
+    travaux: num(input.travaux),
+    prixVente: num(input.prixVente),
+    anneesDetention: num(input.anneesDetention),
+  });
+
+  const readAmount = (pattern: string): number =>
+    findNumber(computed, pattern) ??
+    (result.primary && new RegExp(pattern, "i").test(result.primary.label)
+      ? parseFormattedNumber(result.primary.value)
+      : null) ??
+    findNumber(result, pattern) ??
+    0;
+
+  const prixAchat = num(input.prixAchat);
+  const fraisAcquisition = num(input.fraisAcquisition);
+  const travaux = num(input.travaux);
+  const fraisEtTravaux = fraisAcquisition + travaux;
+  const prixVente = num(input.prixVente);
+  const annees = num(input.anneesDetention);
+
+  const plusValueBrute = readAmount("plus-value brute");
+  const abattementIR = readAmount("abattement ir");
+  const abattementPS = readAmount("abattement prélèvements");
+  const pvImposableIR = readAmount("imposable ir");
+  const pvImposablePS = readAmount("imposable ps");
+  const impotRevenu = readAmount("impôt sur le revenu");
+  const prelevementsSociaux = readAmount("prélèvements sociaux");
+  const surtaxe = readAmount("surtaxe");
+  const impotTotal = readAmount("impôt total");
+  const plusValueNette = readAmount("plus-value nette");
+  const anneesRestantesIR = readAmount("exonération ir");
+  const anneesRestantesPS = readAmount("exonération ps");
+  const economieFiscale = readAmount("économie fiscale");
+  const impactFraisTravaux = fraisEtTravaux > 0 ? fraisEtTravaux : 0;
+
+  const narrative = `Votre bien acheté ${formatCurrency(prixAchat)}${fraisEtTravaux > 0 ? `, majoré de ${formatCurrency(fraisEtTravaux)} de frais et travaux` : ""}, est revendu ${formatCurrency(prixVente)}, soit une plus-value brute de ${formatCurrency(plusValueBrute)}. Après application des abattements liés à une détention de ${annees} ans, l'impôt estimé est de ${formatCurrency(impotTotal)} et la plus-value nette est de ${formatCurrency(plusValueNette)}.`;
+
+  const calculPlusValueText = [
+    `Prix de vente : ${formatCurrency(prixVente)}`,
+    `− Prix d'achat : ${formatCurrency(prixAchat)}`,
+    fraisAcquisition > 0 ? `− Frais d'acquisition : ${formatCurrency(fraisAcquisition)}` : null,
+    travaux > 0 ? `− Travaux : ${formatCurrency(travaux)}` : null,
+    `→ Plus-value brute : ${formatCurrency(plusValueBrute)}`,
+    `→ Abattement IR (${formatPercent((abattementIR / plusValueBrute) * 100 || 0, 0)} sur ${annees} ans) : ${formatCurrency(abattementIR)}`,
+    `→ Abattement prélèvements sociaux (${formatPercent((abattementPS / plusValueBrute) * 100 || 0, 0)}) : ${formatCurrency(abattementPS)}`,
+    `→ Plus-value imposable IR : ${formatCurrency(pvImposableIR)} · IR 19 % : ${formatCurrency(impotRevenu)}`,
+    `→ Plus-value imposable PS : ${formatCurrency(pvImposablePS)} · PS 17,2 % : ${formatCurrency(prelevementsSociaux)}`,
+    surtaxe > 0 ? `→ Surtaxe : ${formatCurrency(surtaxe)}` : null,
+    `→ Impôt total : ${formatCurrency(impotTotal)}`,
+    `→ Plus-value nette : ${formatCurrency(plusValueNette)}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const callouts: SimulatorResult["callouts"] = [
+    {
+      variant: "note",
+      title: "Comment est calculée votre plus-value ?",
+      text: calculPlusValueText,
+    },
+    {
+      variant: "note",
+      title: "À savoir",
+      text: "Estimation selon les barèmes IR (19 %) et prélèvements sociaux (17,2 %) avec abattements progressifs — exonérations particulières non modélisées. Le notaire établit le calcul définitif.",
+    },
+  ];
+
+  if (anneesRestantesIR > 0) {
+    callouts.push({
+      variant: "info",
+      title: "Exonération IR",
+      text: `Il reste ${anneesRestantesIR} année${anneesRestantesIR > 1 ? "s" : ""} avant l'exonération totale de l'impôt sur le revenu (22 ans de détention).`,
+    });
+  }
+  if (anneesRestantesPS > 0) {
+    callouts.push({
+      variant: "info",
+      title: "Exonération prélèvements sociaux",
+      text: `Il reste ${anneesRestantesPS} année${anneesRestantesPS > 1 ? "s" : ""} avant l'exonération totale des prélèvements sociaux (30 ans de détention).`,
+    });
+  }
+  if (impactFraisTravaux > 0) {
+    callouts.push({
+      variant: "info",
+      title: "Impact des frais et travaux",
+      text: `Les frais et travaux réduisent la plus-value brute de ${formatCurrency(impactFraisTravaux)}${economieFiscale > 0 ? ` et l'économie fiscale estimée est de ${formatCurrency(economieFiscale)}` : ""}.`,
+    });
+  }
 
   return mergeResult(result, {
-    primary: { label: "Plus-value brute", value: formatCurrency(plusValue) },
+    primary: { label: "Plus-value brute", value: formatCurrency(plusValueBrute) },
     narrative,
-    interpretation:
-      plusValue === 0
-        ? {
-            level: "neutral",
-            badge: "Nulle",
-            title: "Pas de plus-value",
-            message: "Le prix de vente ne dépasse pas le coût d'acquisition corrigé.",
-          }
-        : annees >= 22
-          ? {
-              level: "favorable",
-              badge: "Abattement max",
-              title: "Fiscalité allégée",
-              message: "Après 22 ans de détention, les abattements réduisent fortement l'impôt.",
-            }
-          : impot / plusValue > 0.25
-            ? {
-                level: "warning",
-                badge: "Imposition",
-                title: "Impôt significatif",
-                message: "Anticipez l'impôt dans votre stratégie de sortie — consultez un notaire.",
-              }
-            : {
-                level: "intermediate",
-                badge: "Modéré",
-                title: "Plus-value taxable",
-                message: "Des abattements partiels s'appliquent selon la durée de détention.",
-              },
-    advice: {
-      title: "Pour optimiser la plus-value",
-      items: [
-        "Conservez tous les justificatifs de travaux et frais d'acquisition",
-        "La résidence principale est exonérée sous conditions — vérifiez votre situation",
-        "Consultez un notaire pour le calcul définitif des abattements",
-        "Planifiez la durée de détention pour bénéficier des abattements progressifs",
-      ],
-    },
-    callouts: [
-      {
-        variant: "note",
-        title: "À savoir",
-        text: "Estimation simplifiée — le notaire calculera IR (19 %) et prélèvements sociaux (17,2 %) avec les abattements exacts.",
-      },
-    ],
+    interpretation: plusValueInterpretation(plusValueBrute, impotTotal),
+    advice: plusValueAdvice(input, anneesRestantesIR, anneesRestantesPS, annees),
+    lines: computed.lines.filter((line) => !line.highlight),
+    callouts,
   });
 }
 

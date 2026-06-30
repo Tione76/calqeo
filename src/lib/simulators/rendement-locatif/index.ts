@@ -46,9 +46,7 @@ export const rendementLocatif: SimulatorDefinition<RendementLocatifInput> = {
     const revenuNetAnnuel = loyerAnnuelEffectif - chargesAnnuelles;
 
     const rendementBrut =
-      investissementTotal > 0
-        ? (loyerAnnuelBrut / investissementTotal) * 100
-        : 0;
+      input.prixAchat > 0 ? (loyerAnnuelBrut / input.prixAchat) * 100 : 0;
     const rendementNet =
       investissementTotal > 0
         ? (revenuNetAnnuel / investissementTotal) * 100
@@ -62,7 +60,7 @@ export const rendementLocatif: SimulatorDefinition<RendementLocatifInput> = {
           label: "Rendement brut",
           value: formatPercent(rendementBrut, 2),
           highlight: true,
-          description: "Loyers annuels / investissement total",
+          description: "Loyers annuels hors charges / prix d'achat",
         },
         {
           label: "Rendement net",
@@ -93,9 +91,10 @@ export const rendementLocatif: SimulatorDefinition<RendementLocatifInput> = {
           value: formatCurrency(revenuNetAnnuel),
         },
         {
-          label: "Cash-flow mensuel net",
+          label: "Revenu net mensuel (avant financement)",
           value: formatCurrency(cashFlowMensuel),
-          description: "Revenus locatifs − charges, par mois",
+          description:
+            "Loyers effectifs − charges, par mois — hors crédit, impôts et assurance",
         },
       ],
     };

@@ -68,7 +68,7 @@ export const fraisNotaire: SimulatorDefinition = {
         { label: "Frais de notaire", value: formatCurrency(frais), highlight: true },
         { label: "Prix d'achat", value: formatCurrency(prix) },
         { label: "Taux appliqué", value: formatPercent(taux, 1) },
-        { label: "Budget total acquisition", value: formatCurrency(prix + frais), description: "Prix + frais de notaire" },
+        { label: "Budget total à prévoir", value: formatCurrency(prix + frais), description: "Prix + frais de notaire" },
       ],
     };
   },
@@ -108,14 +108,46 @@ export const tauxEndettement: SimulatorDefinition = {
   ]),
   calculate(input) {
     const revenus = num(input.revenusMensuels);
-    const charges = num(input.chargesMensuelles) + num(input.mensualiteProjet);
-    const taux = revenus > 0 ? (charges / revenus) * 100 : 0;
+    const chargesActuelles = num(input.chargesMensuelles);
+    const mensualiteProjet = num(input.mensualiteProjet);
+    const charges = chargesActuelles + mensualiteProjet;
+    const resteAVivre = revenus - chargesActuelles - mensualiteProjet;
+
+    if (revenus <= 0) {
+      return {
+        summary:
+          "Renseignez des revenus mensuels nets supérieurs à 0 pour estimer le taux d'endettement.",
+        lines: [
+          {
+            label: "Taux d'endettement",
+            value: "—",
+            highlight: true,
+            description: "Calcul impossible sans revenus",
+          },
+          {
+            label: "Reste à vivre estimé",
+            value: `${formatCurrency(resteAVivre)}/mois`,
+            description: "Estimation indicative",
+          },
+          { label: "Total charges mensuelles", value: formatCurrency(charges) },
+          { label: "Revenus mensuels", value: formatCurrency(revenus) },
+        ],
+      };
+    }
+
+    const taux = (charges / revenus) * 100;
     const marge = Math.max(0, HCSF_TAUX_ENDETTEMENT_MAX - taux);
     const ok = taux <= HCSF_TAUX_ENDETTEMENT_MAX;
     return {
-      summary: `Taux d'endettement : ${formatPercent(taux, 1)} — ${ok ? `dans la limite des ${HCSF_TAUX_ENDETTEMENT_MAX} %` : "au-dessus du plafond recommandé"}.`,
+      summary: `Taux d'endettement : ${formatPercent(taux, 1)} — ${ok ? `dans la limite des ${HCSF_TAUX_ENDETTEMENT_MAX} %` : "au-dessus du plafond recommandé"}. Reste à vivre estimé : ${formatCurrency(resteAVivre)}/mois.`,
       lines: [
         { label: "Taux d'endettement", value: formatPercent(taux, 1), highlight: true },
+        {
+          label: "Reste à vivre estimé",
+          value: `${formatCurrency(resteAVivre)}/mois`,
+          highlight: true,
+          description: "Revenus − crédits en cours − mensualité projet",
+        },
         { label: "Plafond recommandé", value: `${HCSF_TAUX_ENDETTEMENT_MAX} %` },
         { label: "Marge disponible", value: formatPercent(marge, 1), description: `Avant d'atteindre ${HCSF_TAUX_ENDETTEMENT_MAX} %` },
         { label: "Total charges mensuelles", value: formatCurrency(charges) },
@@ -161,14 +193,27 @@ export const coutTotalCredit: SimulatorDefinition = {
     const mensualite = monthlyPaymentFromLoan(montant, num(input.taux), duree);
     const interets = totalInterest(mensualite, duree, montant);
     const assurance = (montant * (num(input.tauxAssurance) / 100)) * duree;
-    const total = montant + interets + assurance;
+    const coutCredit = interets + assurance;
+    const totalRembourse = montant + coutCredit;
+
     return {
-      summary: `Coût total estimé : ${formatCurrency(total)} (dont ${formatCurrency(interets)} d'intérêts).`,
+      summary: `Montant total remboursé : ${formatCurrency(totalRembourse)} (coût du crédit : ${formatCurrency(coutCredit)}, dont ${formatCurrency(interets)} d'intérêts).`,
       lines: [
-        { label: "Coût total du crédit", value: formatCurrency(total), highlight: true },
+        {
+          label: "Montant total remboursé",
+          value: formatCurrency(totalRembourse),
+          highlight: true,
+          description: "Capital + intérêts + assurance",
+        },
+        {
+          label: "Coût total du crédit",
+          value: formatCurrency(coutCredit),
+          highlight: true,
+          description: "Intérêts + assurance emprunteur",
+        },
         { label: "Capital emprunté", value: formatCurrency(montant) },
-        { label: "Total des intérêts", value: formatCurrency(interets) },
-        { label: "Total assurance", value: formatCurrency(assurance) },
+        { label: "Intérêts", value: formatCurrency(interets) },
+        { label: "Assurance", value: formatCurrency(assurance) },
         { label: "Mensualité hors assurance", value: formatCurrency(mensualite) },
       ],
     };

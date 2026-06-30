@@ -1,7 +1,7 @@
 import type { SimulatorDefinition } from "../types";
 import { formatCurrency, formatPercent } from "@/lib/utils/format";
 import { buildContent, buildFaq, hl, p } from "../_shared/content-builder";
-import { PLUS_VALUE_IMMO_TAUX_SIMPLIFIE, MICRO_MEUBLE_ABATTEMENT } from "@/lib/config/fiscalite";
+import { MICRO_MEUBLE_ABATTEMENT, calculerPlusValueImmobiliere } from "@/lib/config/fiscalite";
 
 const num = (v: number | string) =>
   typeof v === "number" ? v : parseFloat(String(v)) || 0;
@@ -32,7 +32,7 @@ export const plusValueImmobiliere: SimulatorDefinition = {
     intro: "La plus-value est la différence entre le prix de vente et le prix d'acquisition corrigé des frais et travaux.",
     howItWorks: [{ title: "Calcul", blocks: [p("Plus-value = prix de vente − (prix d'achat + frais + travaux). Des abattements s'appliquent selon la durée de détention."), hl("Résidence principale", "Exonération totale sous conditions de résidence effective.")] }],
     conseils: ["Conservez tous les justificatifs de travaux.", "Consultez un notaire pour le calcul définitif."],
-    limites: ["Estimation simplifiée de l'impôt.", "Abattements détaillés non modélisés ligne par ligne."],
+    limites: ["Estimation pédagogique — le notaire applique le calcul définitif.", "Exonérations particulières (résidence principale, première cession…) non modélisées."],
   }),
   faq: buildFaq([
     { question: "La résidence principale est-elle exonérée ?", answer: "Oui, sous conditions de résidence effective au jour de la vente." },
@@ -41,21 +41,33 @@ export const plusValueImmobiliere: SimulatorDefinition = {
     { question: "Plus-value locative ?", answer: "En principe taxable à la revente, sauf exceptions." },
   ]),
   calculate(input) {
-    const achat = num(input.prixAchat) + num(input.fraisAcquisition) + num(input.travaux);
-    const vente = num(input.prixVente);
-    const plusValue = Math.max(0, vente - achat);
-    const annees = num(input.anneesDetention);
-    const abattement = annees >= 22 ? 1 : annees >= 6 ? 0.6 : 0;
-    const plusValueImposable = plusValue * (1 - abattement);
-    const impotEstime = plusValueImposable * PLUS_VALUE_IMMO_TAUX_SIMPLIFIE;
+    const calc = calculerPlusValueImmobiliere({
+      prixAchat: num(input.prixAchat),
+      fraisAcquisition: num(input.fraisAcquisition),
+      travaux: num(input.travaux),
+      prixVente: num(input.prixVente),
+      anneesDetention: num(input.anneesDetention),
+    });
+
     return {
-      summary: `Plus-value brute : ${formatCurrency(plusValue)} — Impôt estimé : ${formatCurrency(impotEstime)}.`,
+      summary: `Plus-value brute : ${formatCurrency(calc.plusValueBrute)} — Impôt total estimé : ${formatCurrency(calc.impotTotal)} (IR ${formatCurrency(calc.impotRevenu)} + PS ${formatCurrency(calc.prelevementsSociaux)}${calc.surtaxe > 0 ? ` + surtaxe ${formatCurrency(calc.surtaxe)}` : ""}).`,
       lines: [
-        { label: "Plus-value brute", value: formatCurrency(plusValue), highlight: true },
-        { label: "Impôt estimé", value: formatCurrency(impotEstime), highlight: true },
-        { label: "Prix de vente", value: formatCurrency(vente) },
-        { label: "Prix d'acquisition corrigé", value: formatCurrency(achat) },
-        { label: "Durée de détention", value: `${annees} ans` },
+        { label: "Plus-value brute", value: formatCurrency(calc.plusValueBrute), highlight: true },
+        { label: "Impôt total", value: formatCurrency(calc.impotTotal), highlight: true },
+        { label: "Prix de vente", value: formatCurrency(calc.prixVente) },
+        { label: "Prix d'acquisition corrigé", value: formatCurrency(calc.prixAcquisitionCorrige) },
+        { label: "Abattement IR", value: formatCurrency(calc.abattementIRMontant) },
+        { label: "Abattement prélèvements sociaux", value: formatCurrency(calc.abattementPSMontant) },
+        { label: "Plus-value imposable IR", value: formatCurrency(calc.plusValueImposableIR) },
+        { label: "Plus-value imposable PS", value: formatCurrency(calc.plusValueImposablePS) },
+        { label: "Impôt sur le revenu", value: formatCurrency(calc.impotRevenu) },
+        { label: "Prélèvements sociaux", value: formatCurrency(calc.prelevementsSociaux) },
+        { label: "Surtaxe éventuelle", value: formatCurrency(calc.surtaxe) },
+        { label: "Plus-value nette après fiscalité", value: formatCurrency(calc.plusValueNette) },
+        { label: "Durée de détention", value: `${calc.anneesDetention} ans` },
+        { label: "Années restantes exonération IR", value: `${calc.anneesRestantesExonerationIR} ans` },
+        { label: "Années restantes exonération PS", value: `${calc.anneesRestantesExonerationPS} ans` },
+        { label: "Économie fiscale frais et travaux", value: formatCurrency(calc.economieFiscaleFraisTravaux) },
       ],
     };
   },

@@ -9,9 +9,8 @@ export const PTZ_REGULATION: RegulationModule = {
     effectiveFrom: "2025-01-01",
     referencePeriod: "2025",
     sources: [
-      { name: "Service-Public.fr — PTZ", url: "https://www.service-public.fr/particuliers/vosdroits/F10793" },
-      { name: "Action Logement", url: "https://www.actionlogement.fr" },
-      { name: "anil.org", url: "https://www.anil.org" },
+      { name: "Service-Public.fr", url: "https://www.service-public.fr/particuliers/vosdroits/F10793" },
+      { name: "ANIL", url: "https://www.anil.org" },
     ],
   },
 };
@@ -47,16 +46,48 @@ export function getPtzQuotite(zone: string): number {
   return PTZ_QUOTITES[zone as PtzZone] ?? PTZ_QUOTITES.B1;
 }
 
+/** Plafond de coût de l'opération retenu pour le calcul (€, estimation simplifiée). */
+export const PTZ_PLAFONDS_COUT: Record<PtzZone, number> = {
+  A: 265_000,
+  Abis: 265_000,
+  B1: 250_000,
+  B2: 225_000,
+  C: 200_000,
+};
+
+export function getPtzPlafondCout(zone: string): number {
+  return PTZ_PLAFONDS_COUT[zone as PtzZone] ?? PTZ_PLAFONDS_COUT.B1;
+}
+
 export function estimerPtz(params: {
   revenuFiscal: number;
   prixBien: number;
   zone: string;
   nbPersonnes?: number;
-}): { eligible: boolean; montant: number; plafond: number; quotite: number } {
+}): {
+  eligible: boolean;
+  montant: number;
+  plafond: number;
+  plafondRevenuEffectif: number;
+  quotite: number;
+  prixRetenu: number;
+  plafondCout: number;
+} {
   const { revenuFiscal, prixBien, zone, nbPersonnes = 1 } = params;
   const plafond = getPtzPlafondRevenu(zone);
-  const eligible = revenuFiscal <= plafond * Math.max(1, nbPersonnes * 0.5);
+  const plafondRevenuEffectif = plafond * Math.max(1, nbPersonnes * 0.5);
+  const eligible = revenuFiscal <= plafondRevenuEffectif;
   const quotite = getPtzQuotite(zone);
-  const montant = eligible ? Math.min(prixBien * quotite, PTZ_MONTANT_MAX) : 0;
-  return { eligible, montant, plafond, quotite };
+  const plafondCout = getPtzPlafondCout(zone);
+  const prixRetenu = Math.min(prixBien, plafondCout);
+  const montant = eligible ? Math.min(prixRetenu * quotite, PTZ_MONTANT_MAX) : 0;
+  return {
+    eligible,
+    montant,
+    plafond,
+    plafondRevenuEffectif,
+    quotite,
+    prixRetenu,
+    plafondCout,
+  };
 }

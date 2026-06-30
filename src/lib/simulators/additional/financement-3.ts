@@ -9,6 +9,40 @@ import { buildContent, buildFaq, hl, p } from "../_shared/content-builder";
 const num = (v: number | string) =>
   typeof v === "number" ? v : parseFloat(String(v)) || 0;
 
+/** Capitalisation mensuelle jusqu'à l'apport cible. */
+export function simulerEpargneObjectif(
+  objectif: number,
+  actuelle: number,
+  mensuelle: number,
+  rendementPct: number,
+  maxMois = 600
+): {
+  mois: number;
+  capitalFinal: number;
+  capitalVerse: number;
+  interets: number;
+} {
+  const r = rendementPct / 100 / 12;
+  let capital = actuelle;
+  let mois = 0;
+  while (capital < objectif && mois < maxMois) {
+    capital = capital * (1 + r) + mensuelle;
+    mois++;
+  }
+  const capitalVerse = mensuelle * mois;
+  const interets = Math.max(0, capital - actuelle - capitalVerse);
+  return { mois, capitalFinal: capital, capitalVerse, interets };
+}
+
+function formatDureeSummary(mois: number): string {
+  const annees = Math.floor(mois / 12);
+  const moisRestants = mois % 12;
+  const duree =
+    `${annees > 0 ? `${annees} an${annees > 1 ? "s" : ""}` : ""}${moisRestants > 0 ? ` ${moisRestants} mois` : ""}`.trim() ||
+    "0 mois";
+  return `${duree} (${mois} mois)`;
+}
+
 export const fraisGarantieEmprunt: SimulatorDefinition = {
   slug: "frais-garantie-emprunt",
   title: "Frais de garantie emprunt",
@@ -142,15 +176,23 @@ export const effortEpargneImmobilier: SimulatorDefinition = {
         ],
       };
     }
-    const mois = Math.ceil(reste / mensuelle);
-    const annees = Math.floor(mois / 12);
-    const moisRestants = mois % 12;
+    const rendement = num(input.rendement);
+    const { mois, capitalFinal, capitalVerse, interets } = simulerEpargneObjectif(
+      objectif,
+      actuelle,
+      mensuelle,
+      rendement
+    );
     return {
-      summary: `Délai estimé : ${annees > 0 ? `${annees} an${annees > 1 ? "s" : ""}` : ""}${moisRestants > 0 ? ` ${moisRestants} mois` : ""} (${mois} mois).`,
+      summary: `Délai estimé : ${formatDureeSummary(mois)} avec un rendement annuel de ${formatPercent(rendement, 1)}.`,
       lines: [
         { label: "Durée estimée", value: `${mois} mois`, highlight: true },
         { label: "Reste à épargner", value: formatCurrency(reste) },
         { label: "Épargne mensuelle", value: formatCurrency(mensuelle) },
+        { label: "Rendement annuel", value: formatPercent(rendement, 1) },
+        { label: "Capital versé", value: formatCurrency(capitalVerse) },
+        { label: "Intérêts générés", value: formatCurrency(interets) },
+        { label: "Capital final estimé", value: formatCurrency(capitalFinal) },
         { label: "Apport cible", value: formatCurrency(objectif) },
         { label: "Épargne actuelle", value: formatCurrency(actuelle) },
       ],
