@@ -1,17 +1,23 @@
 import {
-  calculerImpotBareme,
   CREDIT_IMPOT_EMPLOI_DOMICILE,
   DONATION_ABATTEMENTS,
-  PFU_TAUX_GLOBAL,
-  PFU_TAUX_IR,
-  PFU_TAUX_PS,
   QF_PART_PARENT_ISOLE,
-  getImpotLiberatoireTaux,
 } from "@/lib/config/fiscalite";
-import { getMicroEntrepreneurTaux } from "@/lib/config/urssaf";
 import { IFI_SEUIL } from "@/data/regulations/ifi";
 import { formatNumber } from "@/lib/utils/format";
 import type { ResultComparison, ResultInterpretation } from "../../../types";
+import {
+  impotSurLeRevenu,
+  quotientFamilial,
+  prelevementALaSource,
+  flatTax30Pourcent,
+  microEntrepreneurCharges,
+  creditImpotEmploiDomicile,
+  impotDividendes,
+  tauxMarginalImposition,
+  donationNumeraire,
+  cesuCreditImpot,
+} from "../../../general/fiscalite-generale";
 import {
   adviceItems,
   enrich,
@@ -28,6 +34,9 @@ import {
   lineValue,
   num,
   oneCallout,
+  primaryFromComputed,
+  textFromComputed,
+  valueFromComputed,
   type Enricher,
 } from "./helpers";
 
@@ -41,13 +50,15 @@ function partsFromSituation(situation: string, enfants: number): number {
 const enrichImpotSurLeRevenu: Enricher = (input, result) => {
   const revenu = num(input.revenuNet);
   const parts = num(input.parts);
-  const parPart = parts > 0 ? revenu / parts : revenu;
-  const impot = lineAmount(result, /impôt estimé/i) ?? calculerImpotBareme(parPart) * parts;
-  const taux = linePercent(result, /taux effectif/i) ?? (revenu > 0 ? (impot / revenu) * 100 : 0);
+  const computed = impotSurLeRevenu.calculate(input);
+  const impot = valueFromComputed(computed, /impôt estimé/i, result, /impôt/i);
+  const taux = valueFromComputed(computed, /taux effectif/i, result);
+  const parPart = valueFromComputed(computed, /revenu par part/i, result) || (parts > 0 ? revenu / parts : revenu);
 
   const comparisons: ResultComparison[] = [];
   if (parts > 1) {
-    const impotSeul = calculerImpotBareme(revenu);
+    const sansQf = impotSurLeRevenu.calculate({ revenuNet: revenu, parts: 1 });
+    const impotSeul = valueFromComputed(sansQf, /impôt estimé/i, result);
     comparisons.push({
       scenario: "Sans quotient familial (1 part)",
       value: fmtEur(impotSeul),
@@ -56,7 +67,7 @@ const enrichImpotSurLeRevenu: Enricher = (input, result) => {
   }
 
   return enrich(result, {
-    primary: { label: "Impôt estimé", value: fmtEur(impot) },
+    primary: primaryFromComputed(computed, /impôt estimé/i, result),
     narrative: `Sur ${fmtEur(revenu)} nets imposables répartis en ${formatNumber(parts, 1)} part${parts > 1 ? "s" : ""} (${fmtEur(parPart)}/part), vous payez environ ${fmtEur(impot)} d'impôt — soit ${fmtPct(taux)} de taux effectif.`,
     interpretation: interpretationTauxEffectif(taux, revenu),
     advice: adviceItems("Optimiser votre IR", [
@@ -74,13 +85,13 @@ const enrichImpotSurLeRevenu: Enricher = (input, result) => {
 };
 
 const enrichQuotientFamilial: Enricher = (input, result) => {
-  const revenu = num(input.revenuNet);
   const parts = partsFromSituation(String(input.situation), num(input.enfants));
-  const gain = lineAmount(result, /gain fiscal/i) ?? 0;
-  const parPart = parts > 0 ? revenu / parts : revenu;
+  const computed = quotientFamilial.calculate(input);
+  const gain = valueFromComputed(computed, /gain fiscal/i, result);
+  const parPart = valueFromComputed(computed, /revenu par part/i, result, /revenu par part/i);
 
   return enrich(result, {
-    primary: { label: "Revenu par part", value: fmtEur(parPart) },
+    primary: primaryFromComputed(computed, /revenu par part/i, result),
     narrative: `Votre foyer compte ${formatNumber(parts, 1)} parts — le revenu par part tombe à ${fmtEur(parPart)}, soit un gain fiscal d'environ ${fmtEur(gain)} vs. une imposition sans quotient familial.`,
     interpretation:
       gain >= 2000
@@ -99,6 +110,13 @@ const enrichQuotientFamilial: Enricher = (input, result) => {
       "Garde alternée : 0,25 ou 0,5 part selon les cas",
       "Parent isolé : +0,25 part supplémentaire",
     ]),
+    comparisons: [
+      {
+        scenario: "Impôt sans quotient familial",
+        value: fmtEur(valueFromComputed(computed, /impôt sans qf/i, result)),
+        detail: `Gain QF : ${fmtEur(gain)}`,
+      },
+    ],
     callouts: oneCallout({
       variant: "info",
       title: "Plafonnement",
@@ -110,20 +128,13 @@ const enrichQuotientFamilial: Enricher = (input, result) => {
 const enrichPrelevementALaSource: Enricher = (input, result) => {
   const revenu = num(input.revenuNet);
   const mensuel = num(input.revenuMensuel);
-  const taux = linePercent(result, /taux personnalisé/i) ?? 0;
-  const prelevement = lineAmount(result, /prélèvement mensuel/i) ?? mensuel * (taux / 100);
-  const impot = lineAmount(result, /impôt annuel/i) ?? 0;
-
-  const comparisons: ResultComparison[] = [
-    {
-      scenario: "Si votre salaire passait à +10 %",
-      value: fmtEur((mensuel * 1.1) * (taux / 100)),
-      detail: "Prélèvement mensuel estimé (taux inchangé)",
-    },
-  ];
+  const computed = prelevementALaSource.calculate(input);
+  const taux = valueFromComputed(computed, /taux personnalisé/i, result, /taux/i);
+  const prelevement = valueFromComputed(computed, /prélèvement mensuel/i, result, /prélèvement/i);
+  const impot = valueFromComputed(computed, /impôt annuel/i, result);
 
   return enrich(result, {
-    primary: { label: "Prélèvement mensuel", value: fmtEur(prelevement) },
+    primary: primaryFromComputed(computed, /prélèvement mensuel/i, result),
     narrative: `Avec ${fmtEur(mensuel)}/mois de salaire net et ${fmtEur(revenu)} de revenu imposable annuel, votre taux personnalisé est d'environ ${fmtPct(taux)} — soit ${fmtEur(prelevement)} prélevés chaque mois pour ${fmtEur(impot)}/an d'impôt.`,
     interpretation:
       taux <= 8
@@ -136,56 +147,73 @@ const enrichPrelevementALaSource: Enricher = (input, result) => {
       "Taux individualisé possible au sein du couple",
       "Indépendants : acomptes basés sur N-1 ou N-2",
     ]),
-    comparisons,
+    comparisons: [
+      {
+        scenario: "Si votre salaire passait à +10 %",
+        value: fmtEur(mensuel * 1.1 * (taux / 100)),
+        detail: "Prélèvement mensuel estimé (taux inchangé)",
+      },
+    ],
   });
 };
 
 const enrichFlatTax30: Enricher = (input, result) => {
   const capitaux = num(input.revenusCapitaux);
-  const pfu = capitaux * PFU_TAUX_GLOBAL;
-  const netPfu = capitaux - pfu;
   const optionBareme = String(input.optionBareme) === "oui";
+  const computed = flatTax30Pourcent.calculate(input);
+  const pfu = valueFromComputed(computed, /impôt pfu/i, result);
+  const netPfu = valueFromComputed(computed, /net (après )?pfu/i, result);
 
   let interpretation: ResultInterpretation;
   let comparisons: ResultComparison[] | undefined;
-  let primaryValue = fmtEur(pfu);
-  let primaryLabel = "Impôt PFU";
 
   if (optionBareme) {
-    const recommande = lineValue(result, /option recommandée/i);
-    primaryLabel = "Option recommandée";
-    primaryValue = recommande || "PFU 30 %";
+    const recommande = textFromComputed(computed, /option recommandée/i, result, /option/i);
+    const impotBareme = valueFromComputed(computed, /impôt barème/i, result);
+    const netBareme = capitaux - impotBareme;
     interpretation =
       recommande.includes("Barème")
         ? interpretationFavorable("Barème gagnant", "Votre TMI bas rend l'option barème plus avantageuse que le PFU sur ces capitaux.")
         : interpretationIntermediate("PFU gagnant", "Le PFU reste plus intéressant compte tenu de votre TMI et de vos autres revenus.");
     comparisons = [
-      {
-        scenario: "Net au PFU 30 %",
-        value: fmtEur(netPfu),
-        detail: `${fmtEur(pfu)} d'impôt`,
-      },
+      { scenario: "Net au PFU 30 %", value: fmtEur(netPfu), detail: `${fmtEur(pfu)} d'impôt` },
       {
         scenario: "Net au barème (capitaux)",
-        value: lineValue(result, /net barème|impôt barème/i) || "—",
-        detail: "Avec abattements et PS inclus",
+        value: fmtEur(netBareme),
+        detail: `${fmtEur(impotBareme)} d'impôt au barème`,
       },
     ];
-  } else {
-    interpretation = interpretationNeutral(
-      `Le PFU prélève ${fmtEur(capitaux * PFU_TAUX_IR)} d'IR et ${fmtEur(capitaux * PFU_TAUX_PS)} de PS — net ${fmtEur(netPfu)}.`
-    );
-    comparisons = [
-      {
-        scenario: "Si vous optiez pour le barème",
-        value: "Comparer",
-        detail: "Activez « Comparer au barème » avec vos revenus globaux",
-      },
-    ];
+    return enrich(result, {
+      primary: primaryFromComputed(computed, /option recommandée/i, result),
+      narrative: `Sur ${fmtEur(capitaux)} de revenus de capitaux, ${recommande.includes("Barème") ? "le barème progressif" : "le PFU 30 %"} est le plus avantageux — net ${fmtEur(recommande.includes("Barème") ? netBareme : netPfu)}.`,
+      interpretation,
+      advice: adviceItems("Arbitrer PFU / barème", [
+        "Barème avantageux si TMI ≤ 11 % (revenus modestes)",
+        "PEA : exonération d'IR après 5 ans (PS 17,2 % seulement)",
+        "Assurance-vie : abattements après 8 ans sur les retraits",
+      ]),
+      comparisons,
+      callouts: oneCallout({
+        variant: "tip",
+        title: "PEA & AV",
+        text: "Hors PEA/assurance-vie, le PFU s'applique par défaut — l'option barème se choisit à la déclaration.",
+      }),
+    });
   }
 
+  interpretation = interpretationNeutral(
+    `Le PFU prélève ${fmtEur(pfu)} — net ${fmtEur(netPfu)} sur ${fmtEur(capitaux)} de capitaux.`
+  );
+  comparisons = [
+    {
+      scenario: "Si vous optiez pour le barème",
+      value: "Comparer",
+      detail: "Activez « Comparer au barème » avec vos revenus globaux",
+    },
+  ];
+
   return enrich(result, {
-    primary: { label: primaryLabel, value: primaryValue },
+    primary: primaryFromComputed(computed, /impôt pfu/i, result),
     narrative: `Sur ${fmtEur(capitaux)} de revenus de capitaux, le PFU à 30 % prélève ${fmtEur(pfu)} — vous conservez ${fmtEur(netPfu)} net.`,
     interpretation,
     advice: adviceItems("Arbitrer PFU / barème", [
@@ -205,18 +233,19 @@ const enrichFlatTax30: Enricher = (input, result) => {
 const enrichMicroEntrepreneurCharges: Enricher = (input, result) => {
   const ca = num(input.caAnnuel);
   const activite = String(input.activite);
-  const taux = getMicroEntrepreneurTaux(activite);
-  const charges = lineAmount(result, /charges sociales/i) ?? ca * (taux / 100);
-  const net = lineAmount(result, /net après charges/i) ?? 0;
+  const computed = microEntrepreneurCharges.calculate(input);
+  const taux = valueFromComputed(computed, /taux charges/i, result);
+  const charges = valueFromComputed(computed, /charges sociales/i, result);
+  const net = valueFromComputed(computed, /net après charges/i, result, /net/i);
   const avecLiberatoire = String(input.impotLiberatoire) === "oui";
 
   const comparisons: ResultComparison[] = [];
   if (!avecLiberatoire) {
-    const impotLib = ca * getImpotLiberatoireTaux(activite);
+    const avecLib = microEntrepreneurCharges.calculate({ ...input, impotLiberatoire: "oui" });
     comparisons.push({
       scenario: "Avec impôt libératoire",
-      value: fmtEur(ca - charges - impotLib),
-      detail: `Net après charges + IR (${fmtPct(getImpotLiberatoireTaux(activite) * 100, 1)} du CA)`,
+      value: fmtEur(valueFromComputed(avecLib, /net après charges/i, result)),
+      detail: `Net après charges + IR (${fmtEur(valueFromComputed(avecLib, /impôt libératoire/i, result))} de libératoire)`,
     });
   }
 
@@ -227,10 +256,10 @@ const enrichMicroEntrepreneurCharges: Enricher = (input, result) => {
   };
 
   return enrich(result, {
-    primary: { label: "Net après charges", value: fmtEur(net) },
+    primary: primaryFromComputed(computed, /net après charges/i, result),
     narrative: `Sur ${fmtEur(ca)} de CA en ${labels[activite] ?? activite}, vous payez ${fmtEur(charges)} de cotisations (${fmtPct(taux, 1)}) — il reste ${fmtEur(net)} net${avecLiberatoire ? ", impôt libératoire inclus" : " avant IR"}.`,
     interpretation:
-      net / ca >= 0.75
+      ca > 0 && net / ca >= 0.75
         ? interpretationFavorable("Bon reste à vivre", `${fmtPct((net / ca) * 100, 0)} du CA vous revient après charges.`)
         : interpretationIntermediate("Charges significatives", `${fmtPct(taux, 1)} prélevés sur le CA — pensez au régime réel si vos charges réelles dépassent l'abattement forfaitaire.`),
     advice: adviceItems("Micro-entreprise", [
@@ -249,8 +278,9 @@ const enrichMicroEntrepreneurCharges: Enricher = (input, result) => {
 
 const enrichCreditImpotEmploiDomicile: Enricher = (input, result) => {
   const depenses = num(input.depenses);
-  const credit = lineAmount(result, /crédit d'impôt/i) ?? 0;
-  const prisesEnCompte = Math.min(depenses, CREDIT_IMPOT_EMPLOI_DOMICILE.plafondDepenses);
+  const computed = creditImpotEmploiDomicile.calculate(input);
+  const credit = valueFromComputed(computed, /crédit d'impôt/i, result, /crédit/i);
+  const prisesEnCompte = valueFromComputed(computed, /dépenses prises en compte/i, result);
   const plafondAtteint = depenses > CREDIT_IMPOT_EMPLOI_DOMICILE.plafondDepenses;
 
   const services: Record<string, string> = {
@@ -260,7 +290,7 @@ const enrichCreditImpotEmploiDomicile: Enricher = (input, result) => {
   };
 
   return enrich(result, {
-    primary: { label: "Crédit d'impôt", value: fmtEur(credit) },
+    primary: primaryFromComputed(computed, /crédit d'impôt/i, result),
     narrative: `Pour ${fmtEur(depenses)} dépensés en ${services[String(input.typeService)] ?? "services à domicile"}, vous récupérez ${fmtEur(credit)} — soit 50 % des ${fmtEur(prisesEnCompte)} pris en compte.`,
     interpretation:
       credit >= 3000
@@ -271,6 +301,19 @@ const enrichCreditImpotEmploiDomicile: Enricher = (input, result) => {
       "Plafond majorable (+1 500 €/enfant, +750 €/personne âgée)",
       "Les CESU préfinancés réduisent le crédit — voir simulateur CESU",
     ]),
+    comparisons: [
+      {
+        scenario: "Au plafond de dépenses (12 000 €)",
+        value: fmtEur(
+          valueFromComputed(
+            creditImpotEmploiDomicile.calculate({ ...input, depenses: CREDIT_IMPOT_EMPLOI_DOMICILE.plafondDepenses }),
+            /crédit d'impôt/i,
+            result
+          )
+        ),
+        detail: "Crédit maximal estimé",
+      },
+    ],
     callouts: plafondAtteint
       ? oneCallout({
           variant: "warning",
@@ -288,13 +331,15 @@ const enrichCreditImpotEmploiDomicile: Enricher = (input, result) => {
 const enrichImpotDividendes: Enricher = (input, result) => {
   const div = num(input.dividendes);
   const option = String(input.option);
-  const pfu = div * PFU_TAUX_GLOBAL;
-  const netPfu = div - pfu;
+  const computed = impotDividendes.calculate(input);
+  const pfu = valueFromComputed(computed, /impôt pfu/i, result);
+  const netPfu = valueFromComputed(computed, /net pfu|net après pfu/i, result);
 
   if (option === "bareme") {
-    const recommande = lineValue(result, /option recommandée/i);
+    const recommande = textFromComputed(computed, /option recommandée/i, result, /option/i);
+    const netBareme = valueFromComputed(computed, /net barème/i, result);
     return enrich(result, {
-      primary: { label: "Meilleure option", value: recommande || "—" },
+      primary: primaryFromComputed(computed, /option recommandée/i, result, "Meilleure option"),
       narrative: `Sur ${fmtEur(div)} de dividendes bruts, ${recommande.includes("Barème") ? "le barème avec abattement 40 %" : "le PFU 30 %"} est le plus avantageux selon vos ${fmtEur(num(input.revenuAutres))} d'autres revenus.`,
       interpretation: recommande.includes("Barème")
         ? interpretationFavorable("Barème optimal", "L'abattement de 40 % et votre TMI rendent le barème plus intéressant que le PFU.")
@@ -305,14 +350,14 @@ const enrichImpotDividendes: Enricher = (input, result) => {
         "CSG déductible (6,8 %) au barème — non modélisé ici",
       ]),
       comparisons: [
-        { scenario: "Net PFU 30 %", value: fmtEur(netPfu), detail: fmtEur(pfu) + " d'impôt" },
-        { scenario: "Net barème + abattement 40 %", value: lineValue(result, /net barème/i), detail: "IR + PS 17,2 %" },
+        { scenario: "Net PFU 30 %", value: fmtEur(netPfu), detail: `${fmtEur(pfu)} d'impôt` },
+        { scenario: "Net barème + abattement 40 %", value: fmtEur(netBareme), detail: "IR + PS 17,2 %" },
       ],
     });
   }
 
   return enrich(result, {
-    primary: { label: "Net après PFU", value: fmtEur(netPfu) },
+    primary: primaryFromComputed(computed, /net après pfu/i, result, "Net après PFU"),
     narrative: `${fmtEur(div)} de dividendes → ${fmtEur(pfu)} prélevés au PFU (12,8 % IR + 17,2 % PS) — net ${fmtEur(netPfu)}.`,
     interpretation: interpretationNeutral(
       "Le PFU s'applique par défaut. Comparez avec l'option barème si votre TMI est basse."
@@ -335,12 +380,13 @@ const enrichImpotDividendes: Enricher = (input, result) => {
 const enrichTauxMarginalImposition: Enricher = (input, result) => {
   const revenu = num(input.revenuNet);
   const parts = num(input.parts);
-  const parPart = parts > 0 ? revenu / parts : revenu;
-  const tmi = linePercent(result, /^tmi$/i) ?? 0;
-  const effectif = linePercent(result, /taux effectif/i) ?? 0;
+  const computed = tauxMarginalImposition.calculate(input);
+  const tmi = valueFromComputed(computed, /^tmi$/i, result, /tmi/i);
+  const effectif = valueFromComputed(computed, /taux effectif/i, result);
+  const parPart = valueFromComputed(computed, /revenu par part/i, result) || (parts > 0 ? revenu / parts : revenu);
 
   return enrich(result, {
-    primary: { label: "TMI", value: fmtPct(tmi, 0) },
+    primary: primaryFromComputed(computed, /^tmi$/i, result),
     narrative: `Avec ${fmtEur(revenu)} nets et ${formatNumber(parts, 1)} parts (${fmtEur(parPart)}/part), votre dernier euro est taxé à ${fmtPct(tmi, 0)} (TMI) alors que le taux effectif global est ${fmtPct(effectif, 1)}.`,
     interpretation: interpretationTmi(tmi),
     advice: adviceItems("Agir sur votre TMI", [
@@ -361,9 +407,10 @@ const enrichTauxMarginalImposition: Enricher = (input, result) => {
 const enrichDonationNumeraire: Enricher = (input, result) => {
   const montant = num(input.montant);
   const lien = String(input.lien);
-  const droits = lineAmount(result, /droits de donation/i) ?? 0;
-  const taxable = lineAmount(result, /base taxable/i) ?? 0;
-  const resteAbattement = lineAmount(result, /abattement restant/i) ?? 0;
+  const computed = donationNumeraire.calculate(input);
+  const droits = valueFromComputed(computed, /droits de donation/i, result, /droits/i);
+  const taxable = valueFromComputed(computed, /base taxable/i, result);
+  const resteAbattement = valueFromComputed(computed, /abattement restant/i, result);
 
   const liens: Record<string, string> = {
     enfant: "enfant",
@@ -373,7 +420,7 @@ const enrichDonationNumeraire: Enricher = (input, result) => {
 
   if (lien === "conjoint") {
     return enrich(result, {
-      primary: { label: "Droits de donation", value: fmtEur(0) },
+      primary: primaryFromComputed(computed, /droits de donation/i, result, "Droits de donation"),
       narrative: `Donation de ${fmtEur(montant)} à votre conjoint ou partenaire PACS : exonération totale de droits.`,
       interpretation: interpretationFavorable("Exonéré", "Transmission entre conjoints/PACS sans droits de mutation."),
       advice: adviceItems("Formalités", [
@@ -381,11 +428,24 @@ const enrichDonationNumeraire: Enricher = (input, result) => {
         "Pour les gros patrimoines, anticipez l'IFI et la succession",
         "Donation-partage possible pour plusieurs bénéficiaires",
       ]),
+      comparisons: [
+        {
+          scenario: "Vers un enfant (même montant)",
+          value: fmtEur(
+            valueFromComputed(
+              donationNumeraire.calculate({ ...input, lien: "enfant" }),
+              /droits de donation/i,
+              result
+            )
+          ),
+          detail: "Droits estimés avec abattement enfant",
+        },
+      ],
     });
   }
 
   return enrich(result, {
-    primary: { label: "Droits estimés", value: fmtEur(droits) },
+    primary: primaryFromComputed(computed, /droits de donation/i, result, "Droits estimés"),
     narrative: `Donation de ${fmtEur(montant)} à un ${liens[lien] ?? lien} : après abattement (${fmtEur(resteAbattement)} restant sur 15 ans), la base taxable est ${fmtEur(taxable)} — droits ~${fmtEur(droits)}.`,
     interpretation:
       droits === 0
@@ -398,6 +458,13 @@ const enrichDonationNumeraire: Enricher = (input, result) => {
       "Déclaration obligatoire même en dessous des abattements",
       "Notaire recommandé au-delà de 15 000 € ou pour l'immobilier",
     ]),
+    comparisons: [
+      {
+        scenario: "Abattement restant disponible",
+        value: fmtEur(resteAbattement),
+        detail: "Sur la période de 15 ans",
+      },
+    ],
     callouts: oneCallout({
       variant: "note",
       title: "Barème simplifié",
@@ -410,11 +477,12 @@ const enrichCesuCreditImpot: Enricher = (input, result) => {
   const cesu = num(input.cesuUtilises);
   const prefinance = num(input.cesuPrefinance);
   const depenses = num(input.depensesTotales);
-  const credit = lineAmount(result, /crédit d'impôt/i) ?? 0;
-  const eligible = lineAmount(result, /dépenses éligibles/i) ?? Math.max(0, depenses - prefinance);
+  const computed = cesuCreditImpot.calculate(input);
+  const credit = valueFromComputed(computed, /crédit d'impôt/i, result, /crédit/i);
+  const eligible = valueFromComputed(computed, /dépenses éligibles/i, result);
 
   return enrich(result, {
-    primary: { label: "Crédit d'impôt CESU", value: fmtEur(credit) },
+    primary: primaryFromComputed(computed, /crédit d'impôt/i, result, "Crédit d'impôt CESU"),
     narrative: `Sur ${fmtEur(depenses)} de services et ${fmtEur(cesu)} de CESU utilisés (${fmtEur(prefinance)} préfinancés), le crédit d'impôt atteint ${fmtEur(credit)} — base éligible ${fmtEur(eligible)}.`,
     interpretation:
       prefinance > 0
@@ -428,16 +496,23 @@ const enrichCesuCreditImpot: Enricher = (input, result) => {
       "CESU dématérialisé = même crédit que le papier",
       "Combine avec le crédit emploi à domicile (même plafond global)",
     ]),
-    comparisons:
-      prefinance > 0
-        ? [
-            {
-              scenario: "Sans CESU préfinancés",
-              value: fmtEur(Math.min(depenses, CREDIT_IMPOT_EMPLOI_DOMICILE.plafondDepenses) * 0.5),
-              detail: "Crédit théorique à 50 %",
-            },
-          ]
-        : undefined,
+    comparisons: [
+      {
+        scenario: prefinance > 0 ? "Sans CESU préfinancés" : "Au plafond de dépenses",
+        value: fmtEur(
+          valueFromComputed(
+            cesuCreditImpot.calculate(
+              prefinance > 0
+                ? { ...input, cesuPrefinance: 0 }
+                : { ...input, depensesTotales: CREDIT_IMPOT_EMPLOI_DOMICILE.plafondDepenses }
+            ),
+            /crédit d'impôt/i,
+            result
+          )
+        ),
+        detail: prefinance > 0 ? "Crédit théorique sans préfinancement" : "Crédit maximal estimé",
+      },
+    ],
   });
 };
 

@@ -2,8 +2,22 @@ import { capaciteEmprunt } from "../../../capacite-emprunt";
 import type { CapaciteEmpruntInput } from "../../../capacite-emprunt";
 import { mensualitePret } from "../../../mensualite-pret";
 import type { MensualitePretInput } from "../../../mensualite-pret";
-import { coutTotalCredit, tableauAmortissement } from "../../../additional/financement-1";
-import { pretRelais, rachatCredit, remboursementAnticipe, pretPtz, fraisAgence } from "../../../additional/financement-2";
+import { rendementLocatif } from "../../../rendement-locatif";
+import {
+  coutTotalCredit,
+  fraisNotaire,
+  tableauAmortissement,
+  tauxEndettement,
+} from "../../../additional/financement-1";
+import {
+  assuranceEmprunteur,
+  pretRelais,
+  rachatCredit,
+  remboursementAnticipe,
+  pretPtz,
+  fraisAgence,
+} from "../../../additional/financement-2";
+import { revisionLoyerIrl } from "../../../additional/gestion";
 import {
   fraisGarantieEmprunt,
   effortEpargneImmobilier,
@@ -22,7 +36,13 @@ import {
 } from "../../../additional/investissement";
 import { rentabiliteScpi, rentabiliteLocationCourteDuree, colocationRentabilite } from "../../../additional/investissement-2";
 import { impotRevenusFonciers, taxeFonciere, deficitFoncier, donationSuccession, locationMeubleeVsNue, ifiFortuneImmobiliere } from "../../../additional/fiscalite-2";
-import { encadrementLoyers, depotGarantieLocatif, chargesRecuperables, loyerChargesComprises } from "../../../additional/gestion-2";
+import {
+  encadrementLoyers,
+  depotGarantieLocatif,
+  chargesRecuperables,
+  loyerChargesComprises,
+  revisionLoyerCommercial,
+} from "../../../additional/gestion-2";
 import { PFU_TAUX_PS } from "@/lib/config/fiscalite";
 import { monthlyPaymentFromLoan } from "@/lib/utils/format";
 import { IFI_SEUIL } from "@/data/regulations/ifi";
@@ -351,13 +371,15 @@ function enrichTauxEndettement(input: EnricherInput, result: SimulatorResult): S
   const chargesActuelles = num(input.chargesMensuelles);
   const mensualiteProjet = num(input.mensualiteProjet);
   const charges = chargesActuelles + mensualiteProjet;
-  const resteAVivre = revenus - chargesActuelles - mensualiteProjet;
-  const taux = revenus > 0 ? (charges / revenus) * 100 : 0;
+  const computed = tauxEndettement.calculate({
+    revenusMensuels: revenus,
+    chargesMensuelles: chargesActuelles,
+    mensualiteProjet,
+  });
+  const taux = readComputedPercent(computed, result, "taux d'endettement");
+  const resteAVivre = readComputedAmount(computed, result, "reste à vivre");
+  const resteLine = readComputedText(computed, result, "reste à vivre");
   const marge = revenus > 0 ? Math.max(0, HCSF_TAUX_ENDETTEMENT_MAX - taux) : 0;
-
-  const resteLine =
-    lineText(result, "reste à vivre") ||
-    (result.lines.find((l) => /reste à vivre/i.test(l.label))?.value ?? "");
 
   const narrative =
     revenus <= 0
@@ -383,15 +405,18 @@ function enrichTauxEndettement(input: EnricherInput, result: SimulatorResult): S
 }
 
 function enrichRendementLocatif(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const netPct = findPercent(result, "rendement net") ?? 0;
-  const brutPct =
-    findPercent(result, "rendement brut") ??
-    (result.primary && /rendement brut/i.test(result.primary.label)
-      ? parsePercent(result.primary.value)
-      : null) ??
-    0;
-  const invest = findNumber(result, "investissement");
-  const revenuMensuel = findNumber(result, "revenu net mensuel");
+  const computed = rendementLocatif.calculate({
+    prixAchat: num(input.prixAchat),
+    fraisNotaire: num(input.fraisNotaire),
+    travaux: num(input.travaux),
+    loyerMensuel: num(input.loyerMensuel),
+    chargesAnnuelles: num(input.chargesAnnuelles),
+    vacanceLocative: num(input.vacanceLocative),
+  });
+  const netPct = readComputedPercent(computed, result, "rendement net");
+  const brutPct = readComputedPercent(computed, result, "rendement brut");
+  const invest = readComputedAmount(computed, result, "investissement");
+  const revenuMensuel = readComputedAmount(computed, result, "revenu net mensuel");
   const vacance = num(input.vacanceLocative);
 
   const narrative = `En intégrant ${formatCurrency(num(input.prixAchat))} d'achat, ${formatCurrency(num(input.fraisNotaire))} de notaire, ${formatCurrency(num(input.travaux))} de travaux et ${formatPercent(vacance, 0)} de vacance, un loyer de ${formatCurrency(num(input.loyerMensuel))}/mois donne un brut de ${formatPercent(brutPct, 2)} et un net de ${formatPercent(netPct, 2)}${revenuMensuel != null ? ` — soit ${formatCurrency(revenuMensuel)}/mois de revenu net avant financement` : ""}.`;
@@ -483,13 +508,12 @@ function enrichFraisNotaire(input: EnricherInput, result: SimulatorResult): Simu
   const prix = num(input.prixAchat);
   const typeBien = String(input.typeBien) === "neuf" ? "neuf" : "ancien";
   const tauxApplique = getFraisNotaireTaux(typeBien);
-  const frais =
-    findNumber(result, "frais de notaire") ??
-    (result.primary && /frais de notaire/i.test(result.primary.label)
-      ? parseFormattedNumber(result.primary.value)
-      : null) ??
-    (prix > 0 ? prix * (tauxApplique / 100) : 0);
-  const taux = findPercent(result, "taux") ?? tauxApplique;
+  const computed = fraisNotaire.calculate({
+    prixAchat: prix,
+    typeBien: String(input.typeBien),
+  });
+  const frais = readComputedAmount(computed, result, "frais de notaire");
+  const taux = readComputedPercent(computed, result, "taux") || tauxApplique;
   const total = prix + frais;
 
   const narrative = `Pour un bien ${typeBien === "neuf" ? "neuf (VEFA)" : "dans l'ancien"} à ${formatCurrency(prix)}, comptez environ ${formatCurrency(frais)} de frais de notaire (${formatPercent(taux, 1)}) — un budget acquisition réaliste tourne autour de ${formatCurrency(total)}.`;
@@ -1117,8 +1141,9 @@ function enrichAssuranceEmprunteur(input: EnricherInput, result: SimulatorResult
   const capital = num(input.capital);
   const taux = num(input.tauxAssurance);
   const duree = num(input.duree);
-  const mensuel = findNumber(result, "mensuelle") ?? 0;
-  const total = findNumber(result, "total") ?? 0;
+  const computed = assuranceEmprunteur.calculate({ capital, tauxAssurance: taux, duree });
+  const mensuel = readComputedAmount(computed, result, "mensuelle");
+  const total = readComputedAmount(computed, result, "coût total");
 
   const narrative = `Assurer ${formatCurrency(capital)} à ${formatPercent(taux, 2)}/an sur ${duree} ans coûte ${formatCurrency(mensuel)}/mois, soit ${formatCurrency(total)} sur la durée — une part non négligeable du coût total du crédit.`;
 
@@ -4145,7 +4170,12 @@ function enrichRevisionIrl(input: EnricherInput, result: SimulatorResult): Simul
   const loyer = num(input.loyerActuel);
   const irlA = num(input.irlAncien);
   const irlN = num(input.irlNouveau);
-  const nouveau = findNumber(result, "nouveau loyer") ?? loyer;
+  const computed = revisionLoyerIrl.calculate({
+    loyerActuel: loyer,
+    irlAncien: irlA,
+    irlNouveau: irlN,
+  });
+  const nouveau = readComputedAmount(computed, result, "nouveau loyer");
   const hausse = nouveau - loyer;
   const pct = loyer > 0 ? (hausse / loyer) * 100 : 0;
 
@@ -4377,7 +4407,13 @@ function enrichChargesRecuperables(input: EnricherInput, result: SimulatorResult
 function enrichRevisionLoyerCommercial(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const loyer = num(input.loyerActuel);
   const indice = String(input.indice);
-  const revise = findNumber(result, "révisé") ?? loyer;
+  const computed = revisionLoyerCommercial.calculate({
+    loyerActuel: loyer,
+    indiceAncien: num(input.indiceAncien),
+    indiceNouveau: num(input.indiceNouveau),
+    indice,
+  });
+  const revise = readComputedAmount(computed, result, "révisé");
   const hausse = revise - loyer;
 
   const narrative = `Avec l'indice ${indice} (${num(input.indiceNouveau)} vs ${num(input.indiceAncien)}), le loyer annuel passe de ${formatCurrency(loyer)} à ${formatCurrency(revise)} — soit +${formatCurrency(hausse)}/an (+${formatCurrency(hausse / 12)}/mois).`;

@@ -130,6 +130,52 @@ export function primaryFromLine(
   return { label: label ?? found.label, value: found.value };
 }
 
+/** Lit une métrique numérique depuis calculate(), avec fallback sur result.primary. */
+export function valueFromComputed(
+  computed: SimulatorResult,
+  pattern: RegExp | string,
+  result: SimulatorResult,
+  primaryLabelPattern?: RegExp
+): number {
+  const fromComputed = findValue(computed, pattern);
+  if (fromComputed != null) return fromComputed;
+  if (primaryLabelPattern && result.primary && primaryLabelPattern.test(result.primary.label)) {
+    return (
+      parseFormattedNumber(
+        result.primary.value.replace(/\/(mois|jour|h|an)$/i, "").replace(/ HT$/i, "")
+      ) ?? 0
+    );
+  }
+  return 0;
+}
+
+/** Lit une métrique textuelle depuis calculate(), avec fallback sur result.primary. */
+export function textFromComputed(
+  computed: SimulatorResult,
+  pattern: RegExp | string,
+  result: SimulatorResult,
+  primaryLabelPattern?: RegExp
+): string {
+  const fromComputed = findLine(computed, pattern)?.value;
+  if (fromComputed) return fromComputed;
+  if (primaryLabelPattern && result.primary && primaryLabelPattern.test(result.primary.label)) {
+    return result.primary.value;
+  }
+  return "";
+}
+
+/** Construit result.primary depuis calculate(), avec fallback sur result.primary. */
+export function primaryFromComputed(
+  computed: SimulatorResult,
+  pattern: RegExp | string,
+  result: SimulatorResult,
+  label?: string
+): ResultPrimary | undefined {
+  const line = findLine(computed, pattern);
+  if (line) return { label: label ?? line.label, value: line.value };
+  return result.primary;
+}
+
 type ThresholdRule = {
   max?: number;
   min?: number;

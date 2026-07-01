@@ -1,13 +1,34 @@
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils/format";
 import type { ResultInterpretation } from "../../../types";
-import { type Enricher, lineNumber, lineText, num } from "./helpers";
+import {
+  calculateurTva,
+  calculateurPourcentage,
+  regleDeTrois,
+  calculateurAge,
+  calculateurPourboire,
+  partageFacture,
+  convertisseurDevises,
+  convertisseurHeuresMinutes,
+  vitesseDistanceTemps,
+  evolutionPourcentage,
+} from "../../../general/quotidien";
+import {
+  buildPatch,
+  num,
+  primaryFromComputed,
+  textFromComputed,
+  valueFromComputed,
+  type Enricher,
+} from "./helpers";
 
 const enrichCalculateurTva: Enricher = (input, result) => {
-  const ht = lineNumber(result, /^prix ht/i) ?? num(input.montant);
-  const tva = lineNumber(result, /montant tva/i) ?? 0;
-  const ttc = lineNumber(result, /prix ttc/i) ?? 0;
   const taux = num(input.taux);
   const modeHt = String(input.mode) === "ht";
+  const computed = calculateurTva.calculate(input);
+  const ht = valueFromComputed(computed, /^prix ht/i, result);
+  const tva = valueFromComputed(computed, /montant tva/i, result);
+  const ttc = valueFromComputed(computed, /prix ttc/i, result, /prix ttc/i);
+  const tauxReduit = calculateurTva.calculate({ ...input, taux: "5.5" });
 
   const tauxLabels: Record<number, string> = {
     20: "taux normal (majorité des biens et services)",
@@ -23,14 +44,17 @@ const enrichCalculateurTva: Enricher = (input, result) => {
     message: `TVA ${formatPercent(taux, 1)} : ${formatCurrency(tva, 2)} sur une base ${modeHt ? "HT" : "TTC"} de ${formatCurrency(num(input.montant), 2)}.`,
   };
 
-  return {
-    ...result,
-    primary: {
-      label: "Prix TTC",
-      value: lineText(result, /prix ttc/i) ?? formatCurrency(ttc, 2),
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /prix ttc/i, result, "Prix TTC"),
     narrative: `${formatCurrency(ht, 2)} HT + ${formatCurrency(tva, 2)} de TVA (${formatPercent(taux, 1)}) = ${formatCurrency(ttc, 2)} TTC. ${tauxLabels[taux] ?? ""}`,
     interpretation,
+    comparisons: [
+      {
+        scenario: "Taux réduit 5,5 %",
+        value: formatCurrency(valueFromComputed(tauxReduit, /prix ttc/i, result), 2),
+        detail: "TTC avec le taux alimentation / énergie",
+      },
+    ],
     callouts: [
       {
         variant: "info",
@@ -38,14 +62,16 @@ const enrichCalculateurTva: Enricher = (input, result) => {
         text: "Taux métropolitain indicatif. DOM, intracommunautaire et auto-entrepreneur en franchise : régimes différents.",
       },
     ],
-  };
+  });
 };
 
 const enrichCalculateurPourcentage: Enricher = (input, result) => {
   const v = num(input.valeur);
   const p = num(input.pourcentage);
   const op = String(input.operation);
-  const res = lineNumber(result, /résultat|resultat/i) ?? 0;
+  const computed = calculateurPourcentage.calculate(input);
+  const res = valueFromComputed(computed, /résultat|resultat/i, result, /résultat|resultat/i);
+  const majore = calculateurPourcentage.calculate({ ...input, operation: "plus" });
 
   const opLabels: Record<string, string> = {
     de: `${formatPercent(p, 1)} de ${formatNumber(v, 2)}`,
@@ -60,12 +86,8 @@ const enrichCalculateurPourcentage: Enricher = (input, result) => {
     message: `${opLabels[op] ?? ""} = ${formatNumber(res, 2)}.`,
   };
 
-  return {
-    ...result,
-    primary: {
-      label: "Résultat",
-      value: lineText(result, /résultat|resultat/i) ?? formatNumber(res, 2),
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /résultat|resultat/i, result, "Résultat"),
     narrative: opLabels[op] ? `${opLabels[op]} donne ${formatNumber(res, 2)}.` : result.summary,
     interpretation,
     advice: {
@@ -76,14 +98,23 @@ const enrichCalculateurPourcentage: Enricher = (input, result) => {
         "Pour une variation entre deux valeurs, utilisez le simulateur d'évolution",
       ],
     },
-  };
+    comparisons: [
+      {
+        scenario: "Valeur + X %",
+        value: formatNumber(valueFromComputed(majore, /résultat|resultat/i, result), 2),
+        detail: "Même base avec majoration",
+      },
+    ],
+  });
 };
 
 const enrichRegleDeTrois: Enricher = (input, result) => {
   const a = num(input.a);
   const b = num(input.b);
   const c = num(input.c);
-  const x = lineNumber(result, /résultat|resultat|^x$/i) ?? (a > 0 ? (c * b) / a : 0);
+  const computed = regleDeTrois.calculate(input);
+  const x = valueFromComputed(computed, /résultat|resultat|^x$/i, result, /résultat|resultat/i);
+  const doubleC = regleDeTrois.calculate({ ...input, c: c * 2 });
 
   const interpretation: ResultInterpretation = {
     level: "neutral",
@@ -92,14 +123,17 @@ const enrichRegleDeTrois: Enricher = (input, result) => {
     message: `Si ${formatNumber(a, 2)} correspond à ${formatNumber(b, 2)}, alors ${formatNumber(c, 2)} correspond à ${formatNumber(x, 2)}.`,
   };
 
-  return {
-    ...result,
-    primary: {
-      label: "Résultat X",
-      value: formatNumber(x, 2),
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /résultat|resultat|^x$/i, result, "Résultat X"),
     narrative: `Proportion : ${formatNumber(a, 2)} → ${formatNumber(b, 2)} et ${formatNumber(c, 2)} → ${formatNumber(x, 2)} (X = C × B / A).`,
     interpretation,
+    comparisons: [
+      {
+        scenario: `C doublé (${formatNumber(c * 2, 2)})`,
+        value: formatNumber(valueFromComputed(doubleC, /résultat|resultat/i, result), 2),
+        detail: "Proportion directe conservée",
+      },
+    ],
     callouts: [
       {
         variant: "note",
@@ -107,13 +141,20 @@ const enrichRegleDeTrois: Enricher = (input, result) => {
         text: "Valable quand les grandeurs évoluent ensemble (prix/kg, recettes). Pour une relation inverse (plus de workers = moins de temps), inversez le calcul.",
       },
     ],
-  };
+  });
 };
 
 const enrichCalculateurAge: Enricher = (input, result) => {
-  const annees = lineNumber(result, /années compl|annees compl/i) ?? 0;
-  const totalJours = lineNumber(result, /total jours/i) ?? 0;
-  const ageLine = lineText(result, /^âge$|^age$/i) ?? result.lines[0]?.value ?? "";
+  const computed = calculateurAge.calculate(input);
+  const annees = valueFromComputed(computed, /années compl|annees compl/i, result);
+  const totalJours = valueFromComputed(computed, /total jours/i, result);
+  const ageLine = textFromComputed(computed, /^âge$|^age$/i, result, /^âge$|^age$/i);
+  const naissance = textFromComputed(computed, /naissance/i, result);
+  const dateCible = textFromComputed(computed, /date cible/i, result);
+  const anneeSuivante = calculateurAge.calculate({
+    ...input,
+    anneeCible: num(input.anneeCible) + 1,
+  });
 
   const interpretation: ResultInterpretation =
     annees >= 18
@@ -130,13 +171,9 @@ const enrichCalculateurAge: Enricher = (input, result) => {
           message: "Certaines démarches nécessitent l'autorisation parentale avant 18 ans.",
         };
 
-  return {
-    ...result,
-    primary: {
-      label: "Âge exact",
-      value: ageLine,
-    },
-    narrative: `Né(e) le ${lineText(result, /naissance/i) ?? "—"}, vous avez ${ageLine} au ${lineText(result, /date cible/i) ?? "—"} (${formatNumber(totalJours, 0)} jours).`,
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /^âge$|^age$/i, result, "Âge exact"),
+    narrative: `Né(e) le ${naissance || "—"}, vous avez ${ageLine} au ${dateCible || "—"} (${formatNumber(totalJours, 0)} jours).`,
     interpretation,
     advice: {
       title: "Usages courants",
@@ -146,16 +183,25 @@ const enrichCalculateurAge: Enricher = (input, result) => {
         "Élections : 18 ans pour voter aux élections nationales",
       ],
     },
-  };
+    comparisons: [
+      {
+        scenario: "Un an plus tard",
+        value: textFromComputed(anneeSuivante, /^âge$|^age$/i, result),
+        detail: `${formatNumber(valueFromComputed(anneeSuivante, /total jours/i, result), 0)} jours au total`,
+      },
+    ],
+  });
 };
 
 const enrichCalculateurPourboire: Enricher = (input, result) => {
   const addition = num(input.addition);
   const taux = num(input.pourboire);
-  const tip = lineNumber(result, /pourboire/i) ?? addition * (taux / 100);
-  const total = lineNumber(result, /total/i) ?? addition + tip;
   const pers = num(input.personnes);
-  const parPers = pers > 0 ? total / pers : total;
+  const computed = calculateurPourboire.calculate(input);
+  const tip = valueFromComputed(computed, /pourboire/i, result);
+  const total = valueFromComputed(computed, /total/i, result, /total/i);
+  const parPers = valueFromComputed(computed, /par personne/i, result);
+  const genereux = calculateurPourboire.calculate({ ...input, pourboire: 15 });
 
   const interpretation: ResultInterpretation = {
     level: "neutral",
@@ -164,12 +210,8 @@ const enrichCalculateurPourboire: Enricher = (input, result) => {
     message: `En France le service est inclus par la loi — ${formatPercent(taux, 0)} représente une gratification volontaire de ${formatCurrency(tip, 2)}.`,
   };
 
-  return {
-    ...result,
-    primary: {
-      label: "Total à payer",
-      value: lineText(result, /total/i) ?? formatCurrency(total, 2),
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /total/i, result, "Total à payer"),
     narrative: `Addition ${formatCurrency(addition, 2)} + pourboire ${formatPercent(taux, 0)} (${formatCurrency(tip, 2)}) = ${formatCurrency(total, 2)}, soit ${formatCurrency(parPers, 2)}/personne pour ${pers}.`,
     interpretation,
     advice: {
@@ -180,6 +222,13 @@ const enrichCalculateurPourboire: Enricher = (input, result) => {
         "Espèces remises directement au serveur, souvent préférées",
       ],
     },
+    comparisons: [
+      {
+        scenario: "Pourboire 15 %",
+        value: formatCurrency(valueFromComputed(genereux, /total/i, result), 2),
+        detail: "Total avec gratification plus généreuse",
+      },
+    ],
     callouts: [
       {
         variant: "info",
@@ -187,14 +236,17 @@ const enrichCalculateurPourboire: Enricher = (input, result) => {
         text: "Aux États-Unis le pourboire compense le salaire ; en France il s'ajoute à un salaire déjà rémunéré.",
       },
     ],
-  };
+  });
 };
 
 const enrichPartageFacture: Enricher = (input, result) => {
   const pers = num(input.personnes);
   const extra = num(input.payeurExtra);
-  const standard = lineNumber(result, /par personne/i) ?? 0;
-  const totalTip = lineNumber(result, /total avec/i) ?? 0;
+  const computed = partageFacture.calculate(input);
+  const standard = valueFromComputed(computed, /par personne/i, result, /par personne/i);
+  const totalTip = valueFromComputed(computed, /total avec/i, result);
+  const extraPay = valueFromComputed(computed, /payeurs/i, result);
+  const avecExtra = partageFacture.calculate({ ...input, payeurExtra: 1 });
 
   const interpretation: ResultInterpretation =
     extra > 0
@@ -211,12 +263,8 @@ const enrichPartageFacture: Enricher = (input, result) => {
           message: `${formatCurrency(standard, 2)} par personne sur ${pers} (${formatCurrency(totalTip, 2)} avec pourboire).`,
         };
 
-  return {
-    ...result,
-    primary: {
-      label: "Par personne",
-      value: lineText(result, /par personne/i) ?? formatCurrency(standard, 2),
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /par personne/i, result, "Par personne"),
     narrative: `Total ${formatCurrency(num(input.total))} + pourboire ${formatPercent(num(input.pourboire), 0)} = ${formatCurrency(totalTip, 2)} à répartir entre ${pers} personne(s).`,
     interpretation,
     advice: {
@@ -227,7 +275,14 @@ const enrichPartageFacture: Enricher = (input, result) => {
         "Si écarts importants (alcool, plats premium), utilisez l'option ×1,5",
       ],
     },
-  };
+    comparisons: [
+      {
+        scenario: "1 payeur ×1,5",
+        value: formatCurrency(valueFromComputed(avecExtra, /par personne/i, result), 2),
+        detail: extra > 0 ? `Payeurs premium : ${formatCurrency(extraPay, 2)}` : "Part standard réduite",
+      },
+    ],
+  });
 };
 
 const enrichConvertisseurDevises: Enricher = (input, result) => {
@@ -235,7 +290,9 @@ const enrichConvertisseurDevises: Enricher = (input, result) => {
   const src = String(input.deviseSource);
   const cible = String(input.deviseCible);
   const taux = num(input.taux);
-  const resLine = lineText(result, /résultat|resultat/i) ?? "";
+  const computed = convertisseurDevises.calculate(input);
+  const resLine = textFromComputed(computed, /résultat|resultat/i, result, /résultat|resultat/i);
+  const double = convertisseurDevises.calculate({ ...input, montant: montant * 2 });
 
   const interpretation: ResultInterpretation =
     src === cible
@@ -252,14 +309,17 @@ const enrichConvertisseurDevises: Enricher = (input, result) => {
           message: `Taux saisi : 1 EUR = ${taux} ${cible !== "EUR" ? cible : src}. Les banques appliquent une marge.`,
         };
 
-  return {
-    ...result,
-    primary: {
-      label: "Montant converti",
-      value: resLine,
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /résultat|resultat/i, result, "Montant converti"),
     narrative: `${formatNumber(montant, 2)} ${src} converti en ${cible} au taux indiqué — résultat : ${resLine}.`,
     interpretation,
+    comparisons: [
+      {
+        scenario: "Montant doublé",
+        value: textFromComputed(double, /résultat|resultat/i, result),
+        detail: "Conversion proportionnelle",
+      },
+    ],
     callouts: [
       {
         variant: "note",
@@ -267,21 +327,31 @@ const enrichConvertisseurDevises: Enricher = (input, result) => {
         text: "Saisissez le taux du jour (banque, xe.com). Frais de change et commissions non inclus — carte bancaire souvent plus avantageuse qu'un bureau de change.",
       },
     ],
-  };
+  });
 };
 
 const enrichConvertisseurHeuresMinutes: Enricher = (input, result) => {
   const h = num(input.heures);
   const m = num(input.minutes);
-  const totalMin = h * 60 + m;
-  const decimal = h + m / 60;
   const mode = String(input.mode);
+  const computed = convertisseurHeuresMinutes.calculate(input);
+  const totalMin = valueFromComputed(computed, /total minutes/i, result);
+  const decimal = valueFromComputed(computed, /heures décimales|heures decimales/i, result);
+  const secondes = valueFromComputed(computed, /secondes/i, result);
+  const uneHeure = convertisseurHeuresMinutes.calculate({ ...input, heures: h + 1, minutes: m });
 
   const modeLabels: Record<string, string> = {
     totalMin: `${totalMin} minutes au total`,
     decimal: `${formatNumber(decimal, 2)} heures décimales`,
-    secondes: `${formatNumber(totalMin * 60, 0)} secondes`,
+    secondes: `${formatNumber(secondes, 0)} secondes`,
   };
+
+  const primaryPattern =
+    mode === "decimal"
+      ? /heures décimales|heures decimales/i
+      : mode === "secondes"
+        ? /secondes/i
+        : /total minutes/i;
 
   const interpretation: ResultInterpretation = {
     level: "neutral",
@@ -290,13 +360,14 @@ const enrichConvertisseurHeuresMinutes: Enricher = (input, result) => {
     message: `${h} h ${m} min = ${modeLabels[mode] ?? `${totalMin} min`}.`,
   };
 
-  return {
-    ...result,
-    primary: {
-      label: "Total minutes",
-      value: `${totalMin} min`,
-    },
-    narrative: `${h} h ${m} min correspond à ${totalMin} min, ${formatNumber(decimal, 2)} h décimales ou ${formatNumber(totalMin * 60, 0)} s.`,
+  return buildPatch(result, {
+    primary: primaryFromComputed(
+      computed,
+      primaryPattern,
+      result,
+      mode === "decimal" ? "Heures décimales" : mode === "secondes" ? "Secondes" : "Total minutes"
+    ),
+    narrative: `${h} h ${m} min correspond à ${totalMin} min, ${formatNumber(decimal, 2)} h décimales ou ${formatNumber(secondes, 0)} s.`,
     interpretation,
     advice: {
       title: "Usage pratique",
@@ -306,14 +377,28 @@ const enrichConvertisseurHeuresMinutes: Enricher = (input, result) => {
         "Arrondissez selon la convention de votre employeur ou client",
       ],
     },
-  };
+    comparisons: [
+      {
+        scenario: "+1 heure",
+        value: textFromComputed(uneHeure, primaryPattern, result),
+        detail: `${valueFromComputed(uneHeure, /total minutes/i, result)} min au total`,
+      },
+    ],
+  });
 };
 
 const enrichVitesseDistanceTemps: Enricher = (input, result) => {
   const mode = String(input.calcul);
   const d = num(input.distance);
   const v = num(input.vitesse);
-  const mainLine = result.lines[0];
+  const computed = vitesseDistanceTemps.calculate(input);
+  const mainLabel =
+    mode === "temps" ? /temps/i : mode === "distance" ? /distance/i : /vitesse/i;
+  const mainValue = textFromComputed(computed, mainLabel, result);
+  const avecPauses =
+    mode === "temps" && v > 0
+      ? vitesseDistanceTemps.calculate({ ...input, vitesse: v / 1.15 })
+      : null;
 
   let interpretation: ResultInterpretation;
   if (mode === "temps" && v > 130) {
@@ -321,38 +406,37 @@ const enrichVitesseDistanceTemps: Enricher = (input, result) => {
       level: "intermediate",
       badge: "Vitesse élevée",
       title: "Temps théorique",
-      message: `${mainLine?.value ?? ""} à ${v} km/h sans pause — en pratique comptez +15-20 % pour le trafic.`,
+      message: `${mainValue} à ${v} km/h sans pause — en pratique comptez +15-20 % pour le trafic.`,
     };
   } else if (mode === "temps") {
     interpretation = {
       level: "neutral",
       badge: "Trajet",
       title: "Durée estimée",
-      message: `${d} km à ${v} km/h : ${mainLine?.value ?? ""} (vitesse moyenne constante supposée).`,
+      message: `${d} km à ${v} km/h : ${mainValue} (vitesse moyenne constante supposée).`,
     };
   } else {
     interpretation = {
       level: "neutral",
       badge: "Calcul",
       title: mode === "distance" ? "Distance parcourue" : "Vitesse moyenne",
-      message: `Formule V = D / T appliquée à vos valeurs.`,
+      message: "Formule V = D / T appliquée à vos valeurs.",
     };
   }
 
-  const avecPauses =
-    mode === "temps" && v > 0 ? (d / v) * 1.15 : null;
-  const hPause = avecPauses ? Math.floor(avecPauses) : 0;
-  const minPause = avecPauses ? Math.round((avecPauses - hPause) * 60) : 0;
+  const pauseValue =
+    avecPauses != null ? textFromComputed(avecPauses, /temps/i, result) : "";
 
-  return {
-    ...result,
-    primary: {
-      label: mainLine?.label ?? "Résultat",
-      value: mainLine?.value ?? "",
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(
+      computed,
+      mainLabel,
+      result,
+      mode === "temps" ? "Temps" : mode === "distance" ? "Distance" : "Vitesse"
+    ),
     narrative:
       mode === "temps"
-        ? `${d} km à ${v} km/h → ${mainLine?.value ?? ""}.${avecPauses ? ` Avec pauses (+15 %) : ~${hPause} h ${minPause} min.` : ""}`
+        ? `${d} km à ${v} km/h → ${mainValue}.${pauseValue ? ` Avec pauses (+15 %) : ~${pauseValue}.` : ""}`
         : result.summary,
     interpretation,
     advice: {
@@ -363,14 +447,43 @@ const enrichVitesseDistanceTemps: Enricher = (input, result) => {
         "Consultez un GPS pour le temps réel avec trafic",
       ],
     },
-  };
+    comparisons:
+      avecPauses != null
+        ? [
+            {
+              scenario: "Avec pauses (+15 %)",
+              value: pauseValue,
+              detail: "Vitesse effective réduite",
+            },
+          ]
+        : [
+            {
+              scenario: "Autre grandeur",
+              value: textFromComputed(
+                vitesseDistanceTemps.calculate({
+                  ...input,
+                  calcul: mode === "distance" ? "temps" : "distance",
+                }),
+                mode === "distance" ? /temps/i : /distance/i,
+                result
+              ),
+              detail: "Calcul croisé V = D / T",
+            },
+          ],
+  });
 };
 
 const enrichEvolutionPourcentage: Enricher = (input, result) => {
   const init = num(input.valeurInitiale);
   const fin = num(input.valeurFinale);
-  const evol = lineNumber(result, /évolution|evolution/i) ?? (init > 0 ? ((fin - init) / init) * 100 : 0);
+  const computed = evolutionPourcentage.calculate(input);
+  const evol = valueFromComputed(computed, /évolution|evolution/i, result, /évolution|evolution/i);
   const type = fin >= init ? "Hausse" : "Baisse";
+  const inverse = evolutionPourcentage.calculate({
+    ...input,
+    valeurInitiale: fin,
+    valeurFinale: init,
+  });
 
   let interpretation: ResultInterpretation;
   if (Math.abs(evol) < 5) {
@@ -396,14 +509,17 @@ const enrichEvolutionPourcentage: Enricher = (input, result) => {
     };
   }
 
-  return {
-    ...result,
-    primary: {
-      label: "Évolution",
-      value: lineText(result, /évolution|evolution/i) ?? formatPercent(evol, 1),
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /évolution|evolution/i, result, "Évolution"),
     narrative: `De ${formatNumber(init, 2)} à ${formatNumber(fin, 2)} : ${type.toLowerCase()} de ${formatPercent(Math.abs(evol), 1)} (référence = valeur initiale).`,
     interpretation,
+    comparisons: [
+      {
+        scenario: "Sens inverse",
+        value: textFromComputed(inverse, /évolution|evolution/i, result),
+        detail: `${formatNumber(init, 2)} ↔ ${formatNumber(fin, 2)}`,
+      },
+    ],
     callouts: [
       {
         variant: "note",
@@ -411,7 +527,7 @@ const enrichEvolutionPourcentage: Enricher = (input, result) => {
         text: "+50 % puis −50 % ne revient pas au point de départ (−25 % net). Pour plusieurs périodes, utilisez le coefficient multiplicateur.",
       },
     ],
-  };
+  });
 };
 
 export const SLUG_ENRICHERS: Record<string, Enricher> = {

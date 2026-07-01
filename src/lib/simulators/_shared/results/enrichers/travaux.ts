@@ -1,19 +1,32 @@
-import { getMaPrimeRenovForfait } from "@/lib/config/aides";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils/format";
 import type { ResultComparison, ResultInterpretation } from "../../../types";
 import {
-  type Enricher,
-  lineNumber,
-  lineText,
+  calculCarrelage,
+  quantitePeinture,
+  surfaceParquet,
+  maprimerenov,
+  estimationConsommationEnergie,
+  pompeAChaleurEconomies,
+  volumeSurfacePiece,
+  quantiteMortier,
+  volumeBeton,
+  economiesIsolation,
+} from "../../../general/travaux";
+import {
+  buildPatch,
   num,
+  primaryFromComputed,
+  valueFromComputed,
+  type Enricher,
 } from "./helpers";
 
 const enrichQuantitePeinture: Enricher = (input, result) => {
   const surface = num(input.surface);
   const couches = num(input.couches);
   const rendement = num(input.rendement);
-  const brut = rendement > 0 ? (surface * couches) / rendement : 0;
-  const avecMarge = brut * 1.1;
+  const computed = quantitePeinture.calculate(input);
+  const brut = valueFromComputed(computed, /brut/i, result);
+  const avecMarge = valueFromComputed(computed, /marge/i, result, /marge/i);
   const pots2L = Math.ceil(avecMarge / 2);
 
   const interpretation: ResultInterpretation = {
@@ -23,12 +36,8 @@ const enrichQuantitePeinture: Enricher = (input, result) => {
     message: `${formatNumber(avecMarge, 1)} L avec marge 10 % — prévoyez ${pots2L} pot(s) de 2 L ou l'équivalent en format disponible.`,
   };
 
-  return {
-    ...result,
-    primary: {
-      label: "Quantité avec marge",
-      value: lineText(result, /marge/i) ?? `${formatNumber(avecMarge, 1)} L`,
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /marge/i, result, "Quantité avec marge"),
     narrative: `Pour ${formatNumber(surface, 0)} m² en ${couches} couche(s) (rendement ${rendement} m²/L), comptez ${formatNumber(brut, 1)} L brut puis ${formatNumber(avecMarge, 1)} L avec 10 % de marge.`,
     interpretation,
     advice: {
@@ -46,14 +55,15 @@ const enrichQuantitePeinture: Enricher = (input, result) => {
         text: "10 % couvre les pertes au rouleau et au pinceau. Sur support très absorbant (placo neuf), montez à 15 %.",
       },
     ],
-  };
+  });
 };
 
 const enrichCalculCarrelage: Enricher = (input, result) => {
-  const carreaux = lineNumber(result, /carreaux/i) ?? 0;
   const marge = num(input.marge);
   const surface = num(input.surface);
-  const colle = lineNumber(result, /colle/i) ?? surface * 4;
+  const computed = calculCarrelage.calculate(input);
+  const carreaux = valueFromComputed(computed, /carreaux/i, result, /carreaux/i);
+  const colle = valueFromComputed(computed, /colle/i, result);
 
   const interpretation: ResultInterpretation =
     marge >= 15
@@ -70,12 +80,10 @@ const enrichCalculCarrelage: Enricher = (input, result) => {
           message: `${carreaux} carreaux (+ ${formatPercent(marge, 0)} chutes) — suffisant pour une pose droite classique.`,
         };
 
-  return {
-    ...result,
-    primary: {
-      label: "Carreaux à acheter",
-      value: `${carreaux}`,
-    },
+  const marge15 = calculCarrelage.calculate({ ...input, marge: 15 });
+
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /carreaux/i, result, "Carreaux à acheter"),
     narrative: `${formatNumber(surface, 0)} m² en ${num(input.longueurCarreau)}×${num(input.largeurCarreau)} cm : ${carreaux} carreaux et ~${formatNumber(colle, 0)} kg de colle.`,
     interpretation,
     advice: {
@@ -86,6 +94,13 @@ const enrichCalculCarrelage: Enricher = (input, result) => {
         "Planifiez le calepinage depuis le centre ou une paroi visible",
       ],
     },
+    comparisons: [
+      {
+        scenario: "Avec 15 % de marge chutes",
+        value: `${valueFromComputed(marge15, /carreaux/i, result)} carreaux`,
+        detail: "Recommandé en pose diagonale",
+      },
+    ],
     callouts: [
       {
         variant: "tip",
@@ -93,12 +108,13 @@ const enrichCalculCarrelage: Enricher = (input, result) => {
         text: "10 % en pose droite, 15 % en diagonal ou carreaux grand format. Gardez 2-3 carreaux après travaux pour les remplacements.",
       },
     ],
-  };
+  });
 };
 
 const enrichVolumeBeton: Enricher = (input, result) => {
-  const volume = num(input.longueur) * num(input.largeur) * num(input.hauteur);
-  const avecMarge = volume * 1.05;
+  const computed = volumeBeton.calculate(input);
+  const volume = valueFromComputed(computed, /brut/i, result);
+  const avecMarge = valueFromComputed(computed, /\+5|5 %/i, result, /\+5|5 %/i);
   const sacs = Math.ceil(avecMarge * 50);
   const type = String(input.type);
 
@@ -117,12 +133,8 @@ const enrichVolumeBeton: Enricher = (input, result) => {
           message: `${formatNumber(avecMarge, 2)} m³ — environ ${sacs} sacs de 35 L prémélangés suffisent.`,
         };
 
-  return {
-    ...result,
-    primary: {
-      label: "Volume béton (+5 %)",
-      value: lineText(result, /\+5|5 %/i) ?? `${formatNumber(avecMarge, 2)} m³`,
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /\+5|5 %/i, result, "Volume béton (+5 %)"),
     narrative: `${type === "poteau" ? "Poteau" : "Dalle"} ${num(input.longueur)}×${num(input.largeur)}×${num(input.hauteur)} m : ${formatNumber(volume, 2)} m³ brut, ${formatNumber(avecMarge, 2)} m³ avec marge de perte.`,
     interpretation,
     advice: {
@@ -143,14 +155,15 @@ const enrichVolumeBeton: Enricher = (input, result) => {
             },
           ]
         : undefined,
-  };
+  });
 };
 
 const enrichSurfaceParquet: Enricher = (input, result) => {
-  const surfacePiece = num(input.longueur) * num(input.largeur);
   const marge = num(input.marge);
-  const surfaceTotale = surfacePiece * (1 + marge / 100);
-  const packs = lineNumber(result, /packs/i) ?? 0;
+  const computed = surfaceParquet.calculate(input);
+  const packs = valueFromComputed(computed, /packs/i, result, /packs/i);
+  const surfaceTotale = valueFromComputed(computed, /surface totale/i, result);
+  const surfacePiece = valueFromComputed(computed, /surface pièce/i, result);
   const packSurface = num(input.surfacePack);
 
   const interpretation: ResultInterpretation = {
@@ -160,12 +173,10 @@ const enrichSurfaceParquet: Enricher = (input, result) => {
     message: `${formatNumber(surfaceTotale, 1)} m² utiles (pièce ${formatNumber(surfacePiece, 1)} m² + ${formatPercent(marge, 0)} chutes).`,
   };
 
-  return {
-    ...result,
-    primary: {
-      label: "Packs nécessaires",
-      value: `${packs}`,
-    },
+  const diagonal = surfaceParquet.calculate({ ...input, marge: 12 });
+
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /packs/i, result, "Packs nécessaires"),
     narrative: `Pièce ${num(input.longueur)}×${num(input.largeur)} m (${formatNumber(surfacePiece, 1)} m²) + ${formatPercent(marge, 0)} chutes = ${formatNumber(surfaceTotale, 1)} m², soit ${packs} pack(s) de ${packSurface} m².`,
     interpretation,
     advice: {
@@ -176,6 +187,13 @@ const enrichSurfaceParquet: Enricher = (input, result) => {
         "Gardez un pack entier pour les réparations futures",
       ],
     },
+    comparisons: [
+      {
+        scenario: "Pose diagonale (12 % chutes)",
+        value: `${valueFromComputed(diagonal, /packs/i, result)} packs`,
+        detail: `${formatNumber(valueFromComputed(diagonal, /surface totale/i, result), 1)} m² à couvrir`,
+      },
+    ],
     callouts: [
       {
         variant: "tip",
@@ -183,15 +201,16 @@ const enrichSurfaceParquet: Enricher = (input, result) => {
         text: "Les packs s'achètent entiers : la marge inclut les chutes de découpe. Vérifiez le même numéro de lot sur tous les packs.",
       },
     ],
-  };
+  });
 };
 
 const enrichMaprimerenov: Enricher = (input, result) => {
   const cout = num(input.coutTravaux);
   const couleur = String(input.couleur);
   const travaux = String(input.travaux);
-  const aide = Math.min(cout, getMaPrimeRenovForfait(travaux, couleur));
-  const reste = cout - aide;
+  const computed = maprimerenov.calculate(input);
+  const aide = valueFromComputed(computed, /aide maprime/i, result, /aide/i);
+  const reste = valueFromComputed(computed, /reste à charge/i, result);
   const taux = cout > 0 ? (aide / cout) * 100 : 0;
 
   const couleurLabels: Record<string, string> = {
@@ -216,12 +235,10 @@ const enrichMaprimerenov: Enricher = (input, result) => {
           message: `Forfait ${travaux} pour revenus ${couleurLabels[couleur] ?? couleur} — plafonné au coût réel des travaux.`,
         };
 
-  return {
-    ...result,
-    primary: {
-      label: "MaPrimeRénov' estimée",
-      value: formatCurrency(aide),
-    },
+  const modeste = maprimerenov.calculate({ ...input, couleur: "bleu" });
+
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /aide maprime/i, result, "MaPrimeRénov' estimée"),
     narrative: `Travaux ${travaux} à ${formatCurrency(cout)} (foyer ${couleurLabels[couleur] ?? couleur}) : aide estimée ${formatCurrency(aide)}, reste ${formatCurrency(reste)}.`,
     interpretation,
     advice: {
@@ -232,6 +249,13 @@ const enrichMaprimerenov: Enricher = (input, result) => {
         "Dossier sur france-renov.gouv.fr ou via un conseiller France Rénov'",
       ],
     },
+    comparisons: [
+      {
+        scenario: "Revenus très modestes (bleu)",
+        value: formatCurrency(valueFromComputed(modeste, /aide maprime/i, result)),
+        detail: "Forfait maximal pour ce type de travaux",
+      },
+    ],
     callouts: [
       {
         variant: "note",
@@ -239,15 +263,16 @@ const enrichMaprimerenov: Enricher = (input, result) => {
         text: "Montants forfaitaires indicatifs. Le montant définitif dépend de votre RFR, du gain énergétique et des plafonds en vigueur.",
       },
     ],
-  };
+  });
 };
 
 const enrichEstimationConsommationEnergie: Enricher = (input, result) => {
-  const kwh = lineNumber(result, /consommation/i) ?? 0;
-  const cout = lineNumber(result, /coût|cout/i) ?? 0;
   const surface = num(input.surface);
-  const kwhM2 = surface > 0 ? kwh / surface : 0;
   const isolation = String(input.isolation);
+  const computed = estimationConsommationEnergie.calculate(input);
+  const kwh = valueFromComputed(computed, /consommation/i, result);
+  const cout = valueFromComputed(computed, /coût annuel/i, result, /coût/i);
+  const kwhM2 = valueFromComputed(computed, /kwh\/m²/i, result) || (surface > 0 ? kwh / surface : 0);
 
   let interpretation: ResultInterpretation;
   if (kwhM2 > 250) {
@@ -273,12 +298,10 @@ const enrichEstimationConsommationEnergie: Enricher = (input, result) => {
     };
   }
 
-  return {
-    ...result,
-    primary: {
-      label: "Coût annuel estimé",
-      value: lineText(result, /coût|cout/i) ?? formatCurrency(cout),
-    },
+  const isole = estimationConsommationEnergie.calculate({ ...input, isolation: "bonne" });
+
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /coût annuel/i, result, "Coût annuel estimé"),
     narrative: `${surface} m², isolation ${isolation}, chauffage ${String(input.chauffage)} : ~${formatNumber(kwh, 0)} kWh/an soit ${formatCurrency(cout)}/an à ${num(input.prixKwh).toFixed(3)} €/kWh.`,
     interpretation,
     advice: {
@@ -289,6 +312,13 @@ const enrichEstimationConsommationEnergie: Enricher = (input, result) => {
         "Comparez les offres énergie et suivez votre consommation réelle",
       ],
     },
+    comparisons: [
+      {
+        scenario: "Avec une bonne isolation (DPE A/B/C)",
+        value: formatCurrency(valueFromComputed(isole, /coût annuel/i, result)),
+        detail: `${formatNumber(valueFromComputed(isole, /consommation/i, result), 0)} kWh/an estimés`,
+      },
+    ],
     callouts: [
       {
         variant: "info",
@@ -296,14 +326,15 @@ const enrichEstimationConsommationEnergie: Enricher = (input, result) => {
         text: "Un audit énergétique ou le DPE officiel intègrent le climat, l'orientation et l'usage réel du logement.",
       },
     ],
-  };
+  });
 };
 
 const enrichPompeAChaleurEconomies: Enricher = (input, result) => {
-  const economie = lineNumber(result, /économie|economie/i) ?? 0;
-  const roi = lineNumber(result, /retour|roi/i) ?? 0;
   const scop = num(input.efficacite);
   const investNet = num(input.coutPac) - num(input.aide);
+  const computed = pompeAChaleurEconomies.calculate(input);
+  const economie = valueFromComputed(computed, /économie/i, result, /économie/i);
+  const roi = valueFromComputed(computed, /retour|roi/i, result);
 
   let interpretation: ResultInterpretation;
   if (roi <= 8 && economie > 0) {
@@ -329,21 +360,21 @@ const enrichPompeAChaleurEconomies: Enricher = (input, result) => {
     };
   }
 
-  const comparisons: ResultComparison[] = [];
-  if (scop < 4) {
-    comparisons.push({
-      scenario: "Avec SCOP 4,0",
-      value: formatCurrency(num(input.coutActuel) - num(input.coutActuel) / 4 * 1.3),
-      detail: "Coût chauffage annuel estimé plus bas",
-    });
-  }
-
-  return {
-    ...result,
-    primary: {
-      label: "Économie annuelle",
-      value: lineText(result, /économie|economie/i) ?? formatCurrency(economie),
+  const scop4 = pompeAChaleurEconomies.calculate({ ...input, efficacite: 4 });
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: scop < 4 ? "Avec SCOP 4,0" : "Sans aides publiques",
+      value: formatCurrency(
+        scop < 4
+          ? valueFromComputed(scop4, /économie/i, result)
+          : valueFromComputed(pompeAChaleurEconomies.calculate({ ...input, aide: 0 }), /économie/i, result)
+      ),
+      detail: scop < 4 ? "Économie annuelle estimée plus élevée" : "Investissement net plus élevé",
     },
+  ];
+
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /économie/i, result, "Économie annuelle"),
     narrative: `Chauffage actuel ${formatCurrency(num(input.coutActuel))}/an, PAC ${formatCurrency(num(input.coutPac))} (aides ${formatCurrency(num(input.aide))}, reste à charge ${formatCurrency(investNet)}) : économie ~${formatCurrency(economie)}/an, ROI ${formatNumber(roi, 1)} ans.`,
     interpretation,
     advice: {
@@ -354,17 +385,18 @@ const enrichPompeAChaleurEconomies: Enricher = (input, result) => {
         "Vérifiez la compatibilité radiateurs basse température ou plancher chauffant",
       ],
     },
-    comparisons: comparisons.length ? comparisons : undefined,
-  };
+    comparisons,
+  });
 };
 
 const enrichVolumeSurfacePiece: Enricher = (input, result) => {
   const l = num(input.longueur);
   const w = num(input.largeur);
   const h = num(input.hauteur);
-  const surface = l * w;
-  const volume = surface * h;
-  const murs = 2 * (l + w) * h;
+  const computed = volumeSurfacePiece.calculate(input);
+  const surface = valueFromComputed(computed, /surface au sol/i, result);
+  const volume = valueFromComputed(computed, /volume/i, result, /volume/i);
+  const murs = valueFromComputed(computed, /surface murs/i, result);
   const mursPeinture = murs * 0.85;
 
   const interpretation: ResultInterpretation = {
@@ -374,12 +406,8 @@ const enrichVolumeSurfacePiece: Enricher = (input, result) => {
     message: `${formatNumber(surface, 2)} m² au sol, ${formatNumber(volume, 1)} m³ — murs ~${formatNumber(murs, 1)} m² (${formatNumber(mursPeinture, 1)} m² après ouvertures).`,
   };
 
-  return {
-    ...result,
-    primary: {
-      label: "Volume de la pièce",
-      value: lineText(result, /volume/i) ?? `${formatNumber(volume, 1)} m³`,
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /volume/i, result, "Volume de la pièce"),
     narrative: `Pièce ${l}×${w}×${h} m : sol ${formatNumber(surface, 2)} m², volume ${formatNumber(volume, 1)} m³, murs ${formatNumber(murs, 1)} m².`,
     interpretation,
     advice: {
@@ -390,6 +418,13 @@ const enrichVolumeSurfacePiece: Enricher = (input, result) => {
         "Volume → climatisation (~40 W/m³) ou débit VMC",
       ],
     },
+    comparisons: [
+      {
+        scenario: "Surface murs pour peinture (−15 %)",
+        value: `${formatNumber(mursPeinture, 1)} m²`,
+        detail: "Après déduction portes et fenêtres",
+      },
+    ],
     callouts: [
       {
         variant: "tip",
@@ -397,12 +432,13 @@ const enrichVolumeSurfacePiece: Enricher = (input, result) => {
         text: "Divisez en rectangles, calculez chaque zone séparément puis additionnez les surfaces.",
       },
     ],
-  };
+  });
 };
 
 const enrichQuantiteMortier: Enricher = (input, result) => {
-  const total = lineNumber(result, /totale|total/i) ?? 0;
-  const sacs = lineNumber(result, /sacs/i) ?? 0;
+  const computed = quantiteMortier.calculate(input);
+  const total = valueFromComputed(computed, /quantité totale|totale/i, result, /total/i);
+  const sacs = valueFromComputed(computed, /sacs/i, result, /sacs/i);
   const type = String(input.type);
   const surface = num(input.surface);
 
@@ -419,12 +455,10 @@ const enrichQuantiteMortier: Enricher = (input, result) => {
     message: `${formatNumber(total, 0)} kg de ${typeLabels[type] ?? type} pour ${surface} m² — arrondi au sac entier.`,
   };
 
-  return {
-    ...result,
-    primary: {
-      label: "Sacs de 25 kg",
-      value: `${sacs}`,
-    },
+  const joint = quantiteMortier.calculate({ ...input, type: "joint" });
+
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /sacs 25/i, result, "Sacs de 25 kg"),
     narrative: `${surface} m² en ${typeLabels[type] ?? type} : ${formatNumber(total, 0)} kg, soit ${sacs} sac(s) de 25 kg (surcommande au supérieur).`,
     interpretation,
     advice: {
@@ -435,6 +469,13 @@ const enrichQuantiteMortier: Enricher = (input, result) => {
         "Préparez 10 % de colle en plus sur surfaces irrégulières",
       ],
     },
+    comparisons: [
+      {
+        scenario: "Joint carrelage (même surface)",
+        value: `${valueFromComputed(joint, /sacs/i, result)} sac(s)`,
+        detail: `${formatNumber(valueFromComputed(joint, /quantité totale/i, result), 0)} kg de joint`,
+      },
+    ],
     callouts: [
       {
         variant: "tip",
@@ -442,14 +483,15 @@ const enrichQuantiteMortier: Enricher = (input, result) => {
         text: "Les sacs s'achètent entiers : le calcul arrondit au supérieur. Conservez un sac ouvert pour les retouches.",
       },
     ],
-  };
+  });
 };
 
 const enrichEconomiesIsolation: Enricher = (input, result) => {
-  const economie = lineNumber(result, /économie|economie/i) ?? 0;
-  const roi = lineNumber(result, /retour|roi/i) ?? 0;
-  const tauxStr = lineText(result, /réduction|reduction/i) ?? "";
   const type = String(input.typeIsolation);
+  const computed = economiesIsolation.calculate(input);
+  const economie = valueFromComputed(computed, /économie/i, result, /économie/i);
+  const roi = valueFromComputed(computed, /retour|roi/i, result);
+  const tauxPct = valueFromComputed(computed, /réduction/i, result);
 
   const typeLabels: Record<string, string> = {
     combles: "combles perdus",
@@ -471,16 +513,14 @@ const enrichEconomiesIsolation: Enricher = (input, result) => {
       level: "neutral",
       badge: "Gain modéré",
       title: "Économie estimée",
-      message: `Isolation ${typeLabels[type]} : ${tauxStr} de réduction, ROI ~${formatNumber(roi, 1)} ans.`,
+      message: `Isolation ${typeLabels[type]} : ${formatPercent(tauxPct, 0)} de réduction, ROI ~${formatNumber(roi, 1)} ans.`,
     };
   }
 
-  return {
-    ...result,
-    primary: {
-      label: "Économie annuelle",
-      value: lineText(result, /économie|economie/i) ?? formatCurrency(economie),
-    },
+  const globale = economiesIsolation.calculate({ ...input, typeIsolation: "globale" });
+
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /économie/i, result, "Économie annuelle"),
     narrative: `Facture ${formatCurrency(num(input.factureActuelle))}/an, isolation ${typeLabels[type]} (${formatCurrency(num(input.coutIsolation))}, aides ${formatCurrency(num(input.aide))}) : économie ${formatCurrency(economie)}/an, ROI ${formatNumber(roi, 1)} ans.`,
     interpretation,
     advice: {
@@ -491,6 +531,13 @@ const enrichEconomiesIsolation: Enricher = (input, result) => {
         "Combinez avec changement de chauffage pour maximiser le gain DPE",
       ],
     },
+    comparisons: [
+      {
+        scenario: "Rénovation globale (40 % d'économie)",
+        value: formatCurrency(valueFromComputed(globale, /économie/i, result)),
+        detail: `ROI ~${formatNumber(valueFromComputed(globale, /retour|roi/i, result), 1)} ans`,
+      },
+    ],
     callouts: [
       {
         variant: "info",
@@ -498,7 +545,7 @@ const enrichEconomiesIsolation: Enricher = (input, result) => {
         text: "Isolez avant d'installer une PAC ou une chaudière performante — sinon l'équipement sera surdimensionné et moins rentable.",
       },
     ],
-  };
+  });
 };
 
 export const SLUG_ENRICHERS: Record<string, Enricher> = {

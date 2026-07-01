@@ -13,6 +13,18 @@ import {
 import { formatNumber } from "@/lib/utils/format";
 import type { ResultComparison } from "../../../types";
 import {
+  calculateurTjmFreelance,
+  revenuNetIndependant,
+  sasuRemunerationDividendes,
+  portageSalarialVsFreelance,
+  seuilFranchiseTva,
+  breakEvenEntreprise,
+  margeCommercialeTaux,
+  coutHoraireChargeTns,
+  exonerationAcre,
+  facturationObjectifRevenuNet,
+} from "../../../general/entreprise";
+import {
   adviceItems,
   enrich,
   fmtEur,
@@ -20,10 +32,11 @@ import {
   interpretationFavorable,
   interpretationIntermediate,
   interpretationWarning,
-  lineAmount,
-  lineValue,
   num,
   oneCallout,
+  primaryFromComputed,
+  textFromComputed,
+  valueFromComputed,
   type Enricher,
 } from "./helpers";
 
@@ -32,13 +45,13 @@ const enrichCalculateurTjmFreelance: Enricher = (input, result) => {
   const jours = num(input.joursFacturables);
   const taux = num(input.tauxCharges);
   const frais = num(input.fraisAnnuel);
-  const tjm = lineAmount(result, /tjm/i) ?? 0;
-  const ca = lineAmount(result, /ca annuel/i) ?? 0;
+  const computed = calculateurTjmFreelance.calculate(input);
+  const tjm = valueFromComputed(computed, /tjm/i, result, /tjm/i);
+  const ca = valueFromComputed(computed, /ca annuel/i, result);
 
   const comparisons: ResultComparison[] = [];
   if (jours < 220) {
-    const caAlt = ca;
-    const tjmAlt = caAlt / (jours + 20);
+    const tjmAlt = ca / (jours + 20);
     comparisons.push({
       scenario: `Avec ${jours + 20} jours facturables/an`,
       value: fmtEur(tjmAlt) + "/jour",
@@ -47,7 +60,7 @@ const enrichCalculateurTjmFreelance: Enricher = (input, result) => {
   }
 
   return enrich(result, {
-    primary: { label: "TJM minimum", value: fmtEur(tjm) + "/jour" },
+    primary: primaryFromComputed(computed, /tjm/i, result, "TJM minimum"),
     narrative: `Pour ${fmtEur(net)}/an net (${fmtEur(frais)} de frais, ${fmtPct(taux, 0)} de charges+impôts), facturez ${fmtEur(ca)} de CA sur ${jours} jours — soit ${fmtEur(tjm)}/jour minimum.`,
     interpretation:
       tjm <= 400
@@ -63,8 +76,8 @@ const enrichCalculateurTjmFreelance: Enricher = (input, result) => {
     comparisons: comparisons.length ? comparisons : undefined,
     callouts: oneCallout({
       variant: "note",
-      title: "TJM ≠ taux horaire",
-      text: "Le TJM inclut jours non facturés (prospection, admin) — divisez par jours facturables, pas ouvrés.",
+      title: "Comment est calculé le TJM ?",
+      text: `CA annuel = (revenu net ${fmtEur(net)} + frais ${fmtEur(frais)}) ÷ (1 − ${fmtPct(taux, 0)} charges) = ${fmtEur(ca)}. TJM = ${fmtEur(ca)} ÷ ${jours} jours = ${fmtEur(tjm)}/jour.`,
     }),
   });
 };
@@ -74,8 +87,9 @@ const enrichRevenuNetIndependant: Enricher = (input, result) => {
   const activite = String(input.activite);
   const taux = getMicroEntrepreneurTaux(activite);
   const frais = num(input.fraisAnnuel);
-  const net = lineAmount(result, /revenu net annuel/i) ?? 0;
-  const netMensuel = net / 12;
+  const computed = revenuNetIndependant.calculate(input);
+  const net = valueFromComputed(computed, /revenu net annuel/i, result, /revenu net/i);
+  const netMensuel = valueFromComputed(computed, /revenu net mensuel/i, result) || net / 12;
 
   const labels: Record<string, string> = {
     vente: "vente",
@@ -84,7 +98,7 @@ const enrichRevenuNetIndependant: Enricher = (input, result) => {
   };
 
   return enrich(result, {
-    primary: { label: "Revenu net mensuel", value: fmtEur(netMensuel) },
+    primary: primaryFromComputed(computed, /revenu net mensuel/i, result, "Revenu net mensuel"),
     narrative: `${fmtEur(ca)} de CA en ${labels[activite] ?? activite} → ${fmtEur(ca * (taux / 100))} de cotisations (${fmtPct(taux, 1)}) et ${fmtEur(frais)} de frais — il reste ${fmtEur(net)}/an (${fmtEur(netMensuel)}/mois).`,
     interpretation:
       net / ca >= 0.7
@@ -109,7 +123,8 @@ const enrichSasuRemunerationDividendes: Enricher = (input, result) => {
   const brut = num(input.montantBrut);
   const mode = String(input.mode);
   const tauxSal = num(input.tauxCotisations) / 100;
-  const net = lineAmount(result, /net perçu/i) ?? 0;
+  const computed = sasuRemunerationDividendes.calculate(input);
+  const net = valueFromComputed(computed, /net perçu/i, result, /net perçu/i);
   const netPct = brut > 0 ? (net / brut) * 100 : 0;
 
   const netSalaire = brut * (1 - tauxSal);
@@ -117,7 +132,7 @@ const enrichSasuRemunerationDividendes: Enricher = (input, result) => {
   const meilleur = netSalaire > netDividendes ? "Salaire" : "Dividendes";
 
   return enrich(result, {
-    primary: { label: "Net perçu", value: fmtEur(net) },
+    primary: primaryFromComputed(computed, /net perçu/i, result),
     narrative:
       mode === "salaire"
         ? `${fmtEur(brut)} en salaire dirigeant (${fmtPct(num(input.tauxCotisations), 0)} de cotisations) → ${fmtEur(net)} net (${fmtPct(netPct, 0)} du brut).`
@@ -164,13 +179,16 @@ const enrichSasuRemunerationDividendes: Enricher = (input, result) => {
 const enrichPortageSalarialVsFreelance: Enricher = (input, result) => {
   const ca = num(input.caMensuel);
   const fraisP = num(input.fraisPortage);
-  const netPortage = lineAmount(result, /net portage/i) ?? ca * (1 - fraisP / 100) * PORTAGE_NET_CA_RATIO;
-  const netFreelance = lineAmount(result, /net freelance/i) ?? 0;
+  const computed = portageSalarialVsFreelance.calculate(input);
+  const netPortage = valueFromComputed(computed, /net portage/i, result);
+  const netFreelance = valueFromComputed(computed, /net freelance/i, result);
   const diff = Math.abs(netPortage - netFreelance);
-  const meilleur = lineValue(result, /meilleure option/i) || (netPortage >= netFreelance ? "Portage salarial" : "Micro-entreprise");
+  const meilleur =
+    textFromComputed(computed, /meilleure option/i, result, /meilleure option/i) ||
+    (netPortage >= netFreelance ? "Portage salarial" : "Micro-entreprise");
 
   return enrich(result, {
-    primary: { label: "Meilleure option", value: meilleur },
+    primary: primaryFromComputed(computed, /meilleure option/i, result, "Meilleure option"),
     narrative: `Sur ${fmtEur(ca)}/mois HT, le portage (${fmtPct(fraisP, 1)} de frais de gestion) laisse ${fmtEur(netPortage)} net vs ${fmtEur(netFreelance)} en micro-entreprise — écart ${fmtEur(diff)}/mois en faveur du ${meilleur.toLowerCase()}.`,
     interpretation:
       diff < 200
@@ -194,10 +212,12 @@ const enrichPortageSalarialVsFreelance: Enricher = (input, result) => {
 const enrichSeuilFranchiseTva: Enricher = (input, result) => {
   const ca = num(input.caAnnuel);
   const type = String(input.typeActivite);
+  const computed = seuilFranchiseTva.calculate(input);
   const seuil =
     type === "ventes" ? FRANCHISE_TVA.ventes : FRANCHISE_TVA.prestations;
   const seuilMaj = seuil * FRANCHISE_TVA.coefficientSeuilMajore;
-  const ok = ca <= seuil;
+  const statutFranchise = textFromComputed(computed, /statut franchise/i, result);
+  const ok = statutFranchise.includes("Sous") || ca <= seuil;
   const marge = Math.abs(seuil - ca);
 
   return enrich(result, {
@@ -226,14 +246,15 @@ const enrichSeuilFranchiseTva: Enricher = (input, result) => {
 };
 
 const enrichBreakEvenEntreprise: Enricher = (input, result) => {
-  const ca = lineAmount(result, /ca break-even/i) ?? 0;
-  const units = lineAmount(result, /unités/i) ?? 0;
+  const computed = breakEvenEntreprise.calculate(input);
+  const ca = valueFromComputed(computed, /ca break-even/i, result, /ca break-even/i);
+  const units = valueFromComputed(computed, /unités/i, result);
   const fixes = num(input.chargesFixes);
   const margeUnit = num(input.prixVenteUnitaire) - num(input.coutVariableUnitaire);
   const tauxMarge = num(input.prixVenteUnitaire) > 0 ? (margeUnit / num(input.prixVenteUnitaire)) * 100 : 0;
 
   return enrich(result, {
-    primary: { label: "CA break-even", value: fmtEur(ca) + "/mois" },
+    primary: primaryFromComputed(computed, /ca break-even/i, result, "CA break-even"),
     narrative: `Avec ${fmtEur(fixes)}/mois de charges fixes et ${fmtEur(margeUnit)} de marge unitaire (${fmtPct(tauxMarge, 1)}), il faut vendre ${formatNumber(units, 0)} unités soit ${fmtEur(ca)}/mois pour être à l'équilibre.`,
     interpretation:
       tauxMarge >= 50
@@ -253,17 +274,23 @@ const enrichBreakEvenEntreprise: Enricher = (input, result) => {
         detail: "CA break-even mensuel",
       },
     ],
+    callouts: oneCallout({
+      variant: "note",
+      title: "Comment est calculé le break-even ?",
+      text: `Unités = charges fixes ${fmtEur(fixes)} ÷ marge unitaire ${fmtEur(margeUnit)} = ${formatNumber(units, 0)}. CA = ${formatNumber(units, 0)} × ${fmtEur(num(input.prixVenteUnitaire))} = ${fmtEur(ca)}/mois.`,
+    }),
   });
 };
 
 const enrichMargeCommercialeTaux: Enricher = (input, result) => {
   const cout = num(input.coutAchat);
   const taux = num(input.tauxMarge);
-  const pv = lineAmount(result, /prix de vente/i) ?? cout * (1 + taux / 100);
-  const marge = lineAmount(result, /marge commerciale/i) ?? pv - cout;
+  const computed = margeCommercialeTaux.calculate(input);
+  const pv = valueFromComputed(computed, /prix de vente/i, result, /prix de vente/i);
+  const marge = valueFromComputed(computed, /marge commerciale/i, result);
 
   return enrich(result, {
-    primary: { label: "Prix de vente HT", value: fmtEur(pv) },
+    primary: primaryFromComputed(computed, /prix de vente/i, result),
     narrative: `Coût d'achat ${fmtEur(cout)} + marge ${fmtPct(taux, 0)} → prix de vente ${fmtEur(pv)} (marge ${fmtEur(marge)}).`,
     interpretation:
       taux >= 40
@@ -276,6 +303,18 @@ const enrichMargeCommercialeTaux: Enricher = (input, result) => {
       "Intégrez transport, SAV et retours dans le coût d'achat",
       "Comparez avec la concurrence avant de verrouiller le prix",
     ]),
+    comparisons: [
+      {
+        scenario: "Coût d'achat seul (marge 0 %)",
+        value: fmtEur(cout),
+        detail: "Prix de vente HT minimum",
+      },
+    ],
+    callouts: oneCallout({
+      variant: "note",
+      title: "Comment est calculée la marge ?",
+      text: `Marge = ${fmtEur(cout)} × ${fmtPct(taux, 0)} = ${fmtEur(marge)}. Prix de vente HT = ${fmtEur(cout)} + ${fmtEur(marge)} = ${fmtEur(pv)}.`,
+    }),
   });
 };
 
@@ -284,11 +323,12 @@ const enrichCoutHoraireChargeTns: Enricher = (input, result) => {
   const heures = num(input.heuresFacturables);
   const taux = num(input.tauxCharges);
   const frais = num(input.fraisMensuel);
-  const horaire = lineAmount(result, /taux horaire/i) ?? 0;
-  const ca = lineAmount(result, /ca mensuel/i) ?? 0;
+  const computed = coutHoraireChargeTns.calculate(input);
+  const horaire = valueFromComputed(computed, /taux horaire|horaire chargé/i, result, /horaire/i);
+  const ca = valueFromComputed(computed, /ca mensuel/i, result);
 
   return enrich(result, {
-    primary: { label: "Tarif horaire chargé", value: fmtEur(horaire) + "/h" },
+    primary: primaryFromComputed(computed, /taux horaire|horaire chargé/i, result, "Tarif horaire chargé"),
     narrative: `Pour ${fmtEur(net)}/mois net (${heures} h facturables, ${fmtPct(taux, 0)} de charges TNS, ${fmtEur(frais)} de frais), facturez ${fmtEur(ca)}/mois — soit ${fmtEur(horaire)}/h minimum.`,
     interpretation:
       horaire <= 50
@@ -308,18 +348,25 @@ const enrichCoutHoraireChargeTns: Enricher = (input, result) => {
         detail: "Tarif horaire recalculé",
       },
     ],
+    callouts: oneCallout({
+      variant: "note",
+      title: "Comment est calculé le tarif horaire ?",
+      text: `Brut = ${fmtEur(net)} ÷ (1 − ${fmtPct(taux, 0)}). CA = brut + frais ${fmtEur(frais)} = ${fmtEur(ca)}. Tarif = ${fmtEur(ca)} ÷ ${heures} h = ${fmtEur(horaire)}/h.`,
+    }),
   });
 };
 
 const enrichExonerationAcre: Enricher = (input, result) => {
   const ca = num(input.caAnnuel);
   const tauxAcre = num(input.tauxAcre);
-  const economie = lineAmount(result, /économie annuelle/i) ?? 0;
-  const chargesAcre = lineAmount(result, /charges avec acre/i) ?? 0;
   const activite = String(input.activite);
+  const computed = exonerationAcre.calculate(input);
+  const economie = valueFromComputed(computed, /économie annuelle/i, result, /économie/i);
+  const chargesAcre = valueFromComputed(computed, /charges avec acre/i, result);
+  const chargesSans = valueFromComputed(computed, /charges sans acre/i, result);
 
   return enrich(result, {
-    primary: { label: "Économie ACRE", value: fmtEur(economie) + "/an" },
+    primary: primaryFromComputed(computed, /économie annuelle/i, result, "Économie ACRE"),
     narrative: `Sur ${fmtEur(ca)} de CA (${activite.toUpperCase()}), l'ACRE à ${fmtPct(tauxAcre, 0)} réduit vos cotisations à ${fmtEur(chargesAcre)} — économie ${fmtEur(economie)} la 1re année.`,
     interpretation:
       economie >= 3000
@@ -330,6 +377,13 @@ const enrichExonerationAcre: Enricher = (input, result) => {
       "Réduction ~50 % la 1re année, dégressive ensuite",
       "Non cumulable avec certaines aides — vérifiez votre éligibilité",
     ]),
+    comparisons: [
+      {
+        scenario: "Sans ACRE",
+        value: fmtEur(chargesSans),
+        detail: "Cotisations annuelles estimées",
+      },
+    ],
     callouts: oneCallout({
       variant: "info",
       title: "Durée limitée",
@@ -342,11 +396,12 @@ const enrichFacturationObjectifRevenuNet: Enricher = (input, result) => {
   const net = num(input.netMensuel);
   const taux = num(input.tauxCharges) || FREELANCE_TAUX_CHARGES_DEFAUT;
   const frais = num(input.fraisMensuel);
-  const ca = lineAmount(result, /ca mensuel/i) ?? 0;
-  const caAnnuel = lineAmount(result, /ca annuel/i) ?? ca * 12;
+  const computed = facturationObjectifRevenuNet.calculate(input);
+  const ca = valueFromComputed(computed, /ca mensuel/i, result, /ca mensuel/i);
+  const caAnnuel = valueFromComputed(computed, /ca annuel/i, result) || ca * 12;
 
   return enrich(result, {
-    primary: { label: "CA mensuel à facturer", value: fmtEur(ca) + " HT" },
+    primary: primaryFromComputed(computed, /ca mensuel/i, result, "CA mensuel à facturer"),
     narrative: `Objectif ${fmtEur(net)}/mois net (${fmtPct(taux, 0)} charges+impôts, ${fmtEur(frais)} de frais) → facturez ${fmtEur(ca)}/mois HT, soit ${fmtEur(caAnnuel)}/an.`,
     interpretation:
       ca <= 5000
@@ -366,6 +421,11 @@ const enrichFacturationObjectifRevenuNet: Enricher = (input, result) => {
         detail: "CA mensuel si taux réduit",
       },
     ],
+    callouts: oneCallout({
+      variant: "note",
+      title: "Comment est calculé le CA objectif ?",
+      text: `CA mensuel = (revenu net ${fmtEur(net)} + frais ${fmtEur(frais)}) ÷ (1 − ${fmtPct(taux, 0)}) = ${fmtEur(ca)} HT.`,
+    }),
   });
 };
 

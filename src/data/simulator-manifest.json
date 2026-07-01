@@ -668,12 +668,12 @@
           "title": "Simulateur d'intérêts composés"
         },
         {
-          "slug": "simulateur-inflation",
-          "title": "Simulateur inflation"
-        },
-        {
           "slug": "mensualite-credit-consommation",
           "title": "Simulateur de mensualité crédit consommation"
+        },
+        {
+          "slug": "simulateur-inflation",
+          "title": "Simulateur inflation"
         }
       ],
       "categories": [
@@ -1194,12 +1194,12 @@
           "title": "Calculateur TJM freelance"
         },
         {
-          "slug": "break-even-entreprise",
-          "title": "Simulateur de seuil de rentabilité"
-        },
-        {
           "slug": "facturation-objectif-revenu-net",
           "title": "Simulateur de facturation objectif revenu net"
+        },
+        {
+          "slug": "break-even-entreprise",
+          "title": "Simulateur de seuil de rentabilité"
         }
       ],
       "categories": [
@@ -1704,8 +1704,8 @@
           "title": "Simulateur d'estimation consommation énergie"
         },
         {
-          "slug": "quantite-peinture",
-          "title": "Calculateur de quantité de peinture"
+          "slug": "maprimerenov",
+          "title": "Simulateur MaPrimeRénov'"
         }
       ],
       "categories": [
@@ -1720,12 +1720,12 @@
               "title": "Simulateur d'estimation consommation énergie"
             },
             {
-              "slug": "economies-isolation",
-              "title": "Simulateur d'économies isolation"
+              "slug": "maprimerenov",
+              "title": "Simulateur MaPrimeRénov'"
             },
             {
-              "slug": "pompe-a-chaleur-economies",
-              "title": "Simulateur de pompe à chaleur économies"
+              "slug": "economies-isolation",
+              "title": "Simulateur d'économies isolation"
             }
           ]
         },

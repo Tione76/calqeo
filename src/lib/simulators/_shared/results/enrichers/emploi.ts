@@ -2,39 +2,41 @@ import {
   COTISATIONS_PATRONALES_DEFAUT,
   COTISATIONS_SALARIALES_DEFAUT,
   HEURES_LEGALES_SEMAINE,
-  HEURES_SUP_MAJORATION_25,
-  HEURES_SUP_MAJORATION_50,
   HEURES_SUP_SEUIL_25,
-  JOURS_CONGES_PAR_MOIS,
   ARE_TAUX_JOURNALIER,
   SMIC_HORAIRE_BRUT,
   LICENCIEMENT_ANCIENNETE_MIN,
 } from "@/lib/config/urssaf";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils/format";
-import {
-  brutToNetMensuel,
-  netToBrutMensuel,
-  coutEmployeurMensuel,
-  indemniteLicenciementLegale,
-  ijssJournaliere,
-  areJournaliere,
-} from "../../payroll";
 import type { ResultInterpretation } from "../../../types";
 import {
+  salaireBrutNet,
+  salaireNetBrut,
+  coutTotalEmbauche,
+  indemnitesLicenciement,
+  congesPayesAcquis,
+  ijssArretMaladie,
+  allocationChomageAre,
+  heuresSupplementaires,
+  salaireTempsPartiel,
+  smicNet,
+} from "../../../general/emploi";
+import {
   buildPatch,
-  findValue,
   interpretThreshold,
   num,
-  primaryFromLine,
+  primaryFromComputed,
+  valueFromComputed,
   type Enricher,
 } from "./helpers";
 
 const enrichSalaireBrutNet: Enricher = (input, result) => {
   const brut = num(input.brut);
   const taux = num(input.tauxCotisations);
-  const net = findValue(result, /net avant impôt|net/i) ?? brutToNetMensuel(brut, taux);
-  const cotisations = brut - net;
-  const pctPrelevement = brut > 0 ? (cotisations / brut) * 100 : 0;
+  const computed = salaireBrutNet.calculate(input);
+  const net = valueFromComputed(computed, /net avant impôt|net/i, result, /net/i);
+  const cotisations = valueFromComputed(computed, /cotisations/i, result);
+  const pctPrelevement = valueFromComputed(computed, /taux de prélèvements/i, result);
 
   const interpretation = interpretThreshold(pctPrelevement, [
     {
@@ -60,11 +62,11 @@ const enrichSalaireBrutNet: Enricher = (input, result) => {
     },
   ]);
 
-  const brutPlus200 = brut + 200;
-  const netPlus200 = brutToNetMensuel(brutPlus200, taux);
+  const plus200 = salaireBrutNet.calculate({ ...input, brut: brut + 200 });
+  const netPlus200 = valueFromComputed(plus200, /net avant impôt|net/i, result);
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /net avant impôt|net/i, "Salaire net estimé"),
+    primary: primaryFromComputed(computed, /net avant impôt|net/i, result, "Salaire net estimé"),
     narrative: `Un brut de ${formatCurrency(brut)}/mois avec ${formatPercent(taux, 0)} de cotisations salariales donne environ ${formatCurrency(net)} net avant impôt (${formatCurrency(cotisations)} de prélèvements).`,
     interpretation,
     advice: {
@@ -88,12 +90,17 @@ const enrichSalaireBrutNet: Enricher = (input, result) => {
 
 const enrichSalaireNetBrut: Enricher = (input, result) => {
   const net = num(input.net);
-  const taux = num(input.tauxCotisations);
-  const brut = findValue(result, /brut estimé|brut/i) ?? netToBrutMensuel(net, taux);
+  const computed = salaireNetBrut.calculate(input);
+  const brut = valueFromComputed(computed, /brut estimé|brut/i, result, /brut/i);
   const ecart = brut - net;
 
+  const cadre = salaireNetBrut.calculate({
+    ...input,
+    tauxCotisations: COTISATIONS_SALARIALES_DEFAUT + 2,
+  });
+
   return buildPatch(result, {
-    primary: primaryFromLine(result, /brut estimé|brut/i, "Salaire brut nécessaire"),
+    primary: primaryFromComputed(computed, /brut estimé|brut/i, result, "Salaire brut nécessaire"),
     narrative: `Pour percevoir ${formatCurrency(net)} net/mois, il faut environ ${formatCurrency(brut)} de brut (${formatCurrency(ecart)} de cotisations et CSG/CRDS).`,
     interpretation: {
       level: "neutral",
@@ -113,7 +120,7 @@ const enrichSalaireNetBrut: Enricher = (input, result) => {
     comparisons: [
       {
         scenario: `Si les cotisations passaient à ${formatPercent(COTISATIONS_SALARIALES_DEFAUT + 2, 0)}`,
-        value: formatCurrency(netToBrutMensuel(net, COTISATIONS_SALARIALES_DEFAUT + 2)),
+        value: formatCurrency(valueFromComputed(cadre, /brut estimé|brut/i, result)),
         detail: "Brut nécessaire recalculé (statut cadre)",
       },
     ],
@@ -123,8 +130,9 @@ const enrichSalaireNetBrut: Enricher = (input, result) => {
 const enrichCoutTotalEmbauche: Enricher = (input, result) => {
   const brut = num(input.brut);
   const taux = num(input.tauxPatronal);
-  const cout = findValue(result, /coût mensuel total/i) ?? coutEmployeurMensuel(brut, taux);
-  const charges = cout - brut;
+  const computed = coutTotalEmbauche.calculate(input);
+  const cout = valueFromComputed(computed, /coût mensuel total/i, result, /coût/i);
+  const charges = valueFromComputed(computed, /charges patronales/i, result);
   const ratio = brut > 0 ? (charges / brut) * 100 : 0;
 
   const interpretation = interpretThreshold(ratio, [
@@ -151,10 +159,12 @@ const enrichCoutTotalEmbauche: Enricher = (input, result) => {
     },
   ]);
 
-  const coutAnnuel = cout * 12;
+  const coutAnnuel = valueFromComputed(computed, /coût annuel/i, result) || cout * 12;
+  const plus200 = coutTotalEmbauche.calculate({ ...input, brut: brut + 200 });
+  const coutPlus200 = valueFromComputed(plus200, /coût mensuel total/i, result);
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /coût mensuel total/i),
+    primary: primaryFromComputed(computed, /coût mensuel total/i, result),
     narrative: `Un salarié à ${formatCurrency(brut)} brut/mois coûte ${formatCurrency(cout)}/mois à l'employeur (${formatCurrency(charges)} de charges, ${formatPercent(taux, 0)}), soit ${formatCurrency(coutAnnuel)}/an.`,
     interpretation,
     advice: {
@@ -169,8 +179,8 @@ const enrichCoutTotalEmbauche: Enricher = (input, result) => {
     comparisons: [
       {
         scenario: "Si le brut augmentait de 200 €",
-        value: formatCurrency(coutEmployeurMensuel(brut + 200, taux)),
-        detail: `+${formatCurrency(coutEmployeurMensuel(brut + 200, taux) - cout)}/mois pour l'employeur`,
+        value: formatCurrency(coutPlus200),
+        detail: `+${formatCurrency(coutPlus200 - cout)}/mois pour l'employeur`,
       },
     ],
   });
@@ -179,8 +189,9 @@ const enrichCoutTotalEmbauche: Enricher = (input, result) => {
 const enrichIndemnitesLicenciement: Enricher = (input, result) => {
   const salaire = num(input.salaireBrut);
   const anc = num(input.anciennete);
-  const indemnite = findValue(result, /indemnité légale/i) ?? indemniteLicenciementLegale(salaire, anc);
-  const moisEquiv = salaire > 0 ? indemnite / salaire : 0;
+  const computed = indemnitesLicenciement.calculate(input);
+  const indemnite = valueFromComputed(computed, /indemnité légale/i, result, /indemnité/i);
+  const moisEquiv = valueFromComputed(computed, /équivalent en mois/i, result) || (salaire > 0 ? indemnite / salaire : 0);
 
   let interpretation: ResultInterpretation;
   if (anc < LICENCIEMENT_ANCIENNETE_MIN) {
@@ -213,10 +224,11 @@ const enrichIndemnitesLicenciement: Enricher = (input, result) => {
     };
   }
 
-  const indemnitePlus2Ans = indemniteLicenciementLegale(salaire, anc + 2);
+  const plus2Ans = indemnitesLicenciement.calculate({ ...input, anciennete: anc + 2 });
+  const indemnitePlus2Ans = valueFromComputed(plus2Ans, /indemnité légale/i, result);
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /indemnité légale/i),
+    primary: primaryFromComputed(computed, /indemnité légale/i, result),
     narrative: `Avec ${formatCurrency(salaire)} brut/mois et ${formatNumber(anc, 1)} ans d'ancienneté, l'indemnité légale minimale est d'environ ${formatCurrency(indemnite)} (${formatNumber(moisEquiv, 2)} mois de salaire).`,
     interpretation,
     advice: {
@@ -248,8 +260,9 @@ const enrichIndemnitesLicenciement: Enricher = (input, result) => {
 const enrichCongesPayesAcquis: Enricher = (input, result) => {
   const mois = num(input.moisTravailles);
   const jpm = num(input.joursParMois);
-  const jours = findValue(result, /jours ouvrables/i) ?? mois * jpm;
-  const semaines = jours / 6;
+  const computed = congesPayesAcquis.calculate(input);
+  const jours = valueFromComputed(computed, /jours ouvrables/i, result, /jours/i);
+  const semaines = valueFromComputed(computed, /équivalent semaines/i, result) || jours / 6;
   const plafondAnnuel = 30;
 
   const interpretation = interpretThreshold(jours, [
@@ -276,10 +289,11 @@ const enrichCongesPayesAcquis: Enricher = (input, result) => {
     },
   ]);
 
-  const joursAnneeComplete = 12 * JOURS_CONGES_PAR_MOIS;
+  const anneeComplete = congesPayesAcquis.calculate({ ...input, moisTravailles: 12 });
+  const joursAnneeComplete = valueFromComputed(anneeComplete, /jours ouvrables/i, result);
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /jours ouvrables/i),
+    primary: primaryFromComputed(computed, /jours ouvrables/i, result),
     narrative: `Sur ${mois} mois travaillés à ${jpm} jours/mois, vous avez acquis ${formatNumber(jours, 1)} jours ouvrables (≈ ${formatNumber(semaines, 1)} semaines).`,
     interpretation,
     advice: {
@@ -304,9 +318,15 @@ const enrichCongesPayesAcquis: Enricher = (input, result) => {
 const enrichIjssArretMaladie: Enricher = (input, result) => {
   const brut = num(input.salaireBrut);
   const jours = num(input.joursArret);
-  const ijssJour = findValue(result, /ijss journalière/i) ?? ijssJournaliere(brut);
-  const total = ijssJour * jours;
-  const netMensuel = brutToNetMensuel(brut, COTISATIONS_SALARIALES_DEFAUT);
+  const computed = ijssArretMaladie.calculate(input);
+  const ijssJour = valueFromComputed(computed, /ijss journalière/i, result, /ijss/i);
+  const total = valueFromComputed(computed, /total sur la période/i, result);
+
+  const netRef = salaireBrutNet.calculate({
+    brut,
+    tauxCotisations: COTISATIONS_SALARIALES_DEFAUT,
+  });
+  const netMensuel = valueFromComputed(netRef, /net avant impôt|net/i, result);
   const perteJour = netMensuel / 30 - ijssJour;
   const tauxRemplacement = netMensuel > 0 ? (ijssJour * 30) / netMensuel : 0;
 
@@ -334,8 +354,11 @@ const enrichIjssArretMaladie: Enricher = (input, result) => {
     },
   ]);
 
+  const trenteJours = ijssArretMaladie.calculate({ ...input, joursArret: 30 });
+  const total30 = valueFromComputed(trenteJours, /total sur la période/i, result);
+
   return buildPatch(result, {
-    primary: primaryFromLine(result, /ijss journalière/i),
+    primary: primaryFromComputed(computed, /ijss journalière/i, result),
     narrative: `Avec ${formatCurrency(brut)} brut/mois, les IJSS sont d'environ ${formatCurrency(ijssJour)}/jour. Sur ${jours} jours indemnisés (hors carence), vous percevrez ${formatCurrency(total)}.`,
     interpretation,
     advice: {
@@ -350,7 +373,7 @@ const enrichIjssArretMaladie: Enricher = (input, result) => {
     comparisons: [
       {
         scenario: "Si l'arrêt durait 30 jours",
-        value: formatCurrency(ijssJour * 30),
+        value: formatCurrency(total30),
         detail: `Écart estimé vs. net : ${formatCurrency(perteJour * 30)}/mois`,
       },
     ],
@@ -360,10 +383,15 @@ const enrichIjssArretMaladie: Enricher = (input, result) => {
 const enrichAllocationChomageAre: Enricher = (input, result) => {
   const brut = num(input.salaireBrutMensuel);
   const joursMois = num(input.joursIndemnises);
-  const journalier = (brut * 12) / 365;
-  const areJour = findValue(result, /are journalière/i) ?? areJournaliere(journalier);
-  const areMois = areJour * joursMois;
-  const netAvant = brutToNetMensuel(brut, COTISATIONS_SALARIALES_DEFAUT);
+  const computed = allocationChomageAre.calculate(input);
+  const areJour = valueFromComputed(computed, /are journalière/i, result, /are/i);
+  const areMois = valueFromComputed(computed, /are mensuelle/i, result, /are/i);
+
+  const netRef = salaireBrutNet.calculate({
+    brut,
+    tauxCotisations: COTISATIONS_SALARIALES_DEFAUT,
+  });
+  const netAvant = valueFromComputed(netRef, /net avant impôt|net/i, result);
   const tauxRemplacement = netAvant > 0 ? areMois / netAvant : 0;
 
   const interpretation = interpretThreshold(tauxRemplacement * 100, [
@@ -391,7 +419,7 @@ const enrichAllocationChomageAre: Enricher = (input, result) => {
   ]);
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /are mensuelle/i),
+    primary: primaryFromComputed(computed, /are mensuelle/i, result, "ARE mensuelle estimée"),
     narrative: `Avec un dernier salaire de ${formatCurrency(brut)} brut, l'ARE est estimée à ${formatCurrency(areJour)}/jour, soit ${formatCurrency(areMois)}/mois (${joursMois} jours).`,
     interpretation,
     advice: {
@@ -416,10 +444,16 @@ const enrichAllocationChomageAre: Enricher = (input, result) => {
 const enrichHeuresSupplementaires: Enricher = (input, result) => {
   const taux = num(input.tauxHoraireBrut);
   const heures = num(input.heuresSup);
-  const total = findValue(result, /total heures sup/i) ?? 0;
+  const computed = heuresSupplementaires.calculate(input);
+  const total = valueFromComputed(computed, /total heures sup/i, result, /total/i);
   const h25 = Math.min(heures, HEURES_SUP_SEUIL_25);
   const h50 = Math.max(0, heures - HEURES_SUP_SEUIL_25);
-  const netEstime = brutToNetMensuel(total, COTISATIONS_SALARIALES_DEFAUT);
+
+  const netRef = salaireBrutNet.calculate({
+    brut: total,
+    tauxCotisations: COTISATIONS_SALARIALES_DEFAUT,
+  });
+  const netEstime = valueFromComputed(netRef, /net avant impôt|net/i, result);
 
   const interpretation = interpretThreshold(heures, [
     {
@@ -445,12 +479,11 @@ const enrichHeuresSupplementaires: Enricher = (input, result) => {
     },
   ]);
 
-  const totalPlus5 =
-    Math.min(heures + 5, HEURES_SUP_SEUIL_25) * taux * HEURES_SUP_MAJORATION_25 +
-    Math.max(0, heures + 5 - HEURES_SUP_SEUIL_25) * taux * HEURES_SUP_MAJORATION_50;
+  const plus5 = heuresSupplementaires.calculate({ ...input, heuresSup: heures + 5 });
+  const totalPlus5 = valueFromComputed(plus5, /total heures sup/i, result);
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /total heures sup/i),
+    primary: primaryFromComputed(computed, /total heures sup/i, result),
     narrative: `${heures} h supplémentaires à ${formatCurrency(taux)}/h brut (${h25} h à +25 %, ${h50} h à +50 %) génèrent ${formatCurrency(total)} brut ce mois (~ ${formatCurrency(netEstime)} net).`,
     interpretation,
     advice: {
@@ -475,10 +508,10 @@ const enrichHeuresSupplementaires: Enricher = (input, result) => {
 const enrichSalaireTempsPartiel: Enricher = (input, result) => {
   const brutTP = num(input.brutTempsPlein);
   const heures = num(input.heuresHebdo);
-  const taux = num(input.tauxCotisations);
+  const computed = salaireTempsPartiel.calculate(input);
+  const brut = valueFromComputed(computed, /salaire brut/i, result, /brut/i);
+  const net = valueFromComputed(computed, /net estimé|net/i, result, /net/i);
   const ratio = heures / HEURES_LEGALES_SEMAINE;
-  const brut = findValue(result, /salaire brut/i) ?? brutTP * ratio;
-  const net = findValue(result, /net estimé|net/i) ?? brutToNetMensuel(brut, taux);
 
   const interpretation = interpretThreshold(ratio * 100, [
     {
@@ -504,10 +537,14 @@ const enrichSalaireTempsPartiel: Enricher = (input, result) => {
     },
   ]);
 
-  const netTempsPlein = brutToNetMensuel(brutTP, taux);
+  const tempsPlein = salaireTempsPartiel.calculate({
+    ...input,
+    heuresHebdo: HEURES_LEGALES_SEMAINE,
+  });
+  const netTempsPlein = valueFromComputed(tempsPlein, /net estimé|net/i, result);
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /salaire brut/i),
+    primary: primaryFromComputed(computed, /salaire brut/i, result),
     narrative: `Un contrat à ${heures} h/semaine (${formatPercent(ratio * 100, 0)} du temps plein) sur une base de ${formatCurrency(brutTP)} brut donne ${formatCurrency(brut)} brut et ${formatCurrency(net)} net/mois.`,
     interpretation,
     advice: {
@@ -533,8 +570,9 @@ const enrichSmicNet: Enricher = (input, result) => {
   const horaire = num(input.smicHoraire);
   const heures = num(input.heuresHebdo);
   const taux = num(input.tauxCotisations);
-  const net = findValue(result, /smic net mensuel|net mensuel/i) ?? 0;
-  const brut = findValue(result, /smic brut mensuel|brut mensuel/i) ?? horaire * heures * (52 / 12);
+  const computed = smicNet.calculate(input);
+  const net = valueFromComputed(computed, /smic net mensuel|net mensuel/i, result, /net/i);
+  const brut = valueFromComputed(computed, /smic brut mensuel|brut mensuel/i, result);
   const ecartSmic = horaire - SMIC_HORAIRE_BRUT;
 
   let interpretation: ResultInterpretation;
@@ -561,8 +599,15 @@ const enrichSmicNet: Enricher = (input, result) => {
     };
   }
 
+  const tempsPlein = smicNet.calculate({
+    smicHoraire: SMIC_HORAIRE_BRUT,
+    heuresHebdo: HEURES_LEGALES_SEMAINE,
+    tauxCotisations: taux,
+  });
+  const netTempsPlein = valueFromComputed(tempsPlein, /smic net mensuel|net mensuel/i, result);
+
   return buildPatch(result, {
-    primary: primaryFromLine(result, /smic net mensuel|net mensuel/i, "SMIC net mensuel"),
+    primary: primaryFromComputed(computed, /smic net mensuel|net mensuel/i, result, "SMIC net mensuel"),
     narrative: `À ${formatCurrency(horaire)}/h brut pour ${heures} h/semaine, le net mensuel est d'environ ${formatCurrency(net)} (brut : ${formatCurrency(brut)}).`,
     interpretation,
     advice: {
@@ -574,17 +619,22 @@ const enrichSmicNet: Enricher = (input, result) => {
         "Heures sup et primes s'ajoutent au SMIC de base",
       ],
     },
-    comparisons: heures !== HEURES_LEGALES_SEMAINE
-      ? [
-          {
-            scenario: `Au SMIC temps plein (${HEURES_LEGALES_SEMAINE} h)`,
-            value: formatCurrency(
-              brutToNetMensuel(SMIC_HORAIRE_BRUT * HEURES_LEGALES_SEMAINE * (52 / 12), taux)
-            ),
-            detail: "Net mensuel au SMIC légal 35 h",
-          },
-        ]
-      : undefined,
+    comparisons:
+      heures !== HEURES_LEGALES_SEMAINE
+        ? [
+            {
+              scenario: `Au SMIC temps plein (${HEURES_LEGALES_SEMAINE} h)`,
+              value: formatCurrency(netTempsPlein),
+              detail: "Net mensuel au SMIC légal 35 h",
+            },
+          ]
+        : [
+            {
+              scenario: "Brut mensuel au SMIC",
+              value: formatCurrency(brut),
+              detail: `${heures} h/semaine × ${formatCurrency(horaire)}/h`,
+            },
+          ],
   });
 };
 

@@ -1,10 +1,24 @@
 import { formatCurrency, formatNumber } from "@/lib/utils/format";
 import type { ResultCallout, ResultInterpretation } from "../../../types";
 import {
-  type Enricher,
-  lineNumber,
-  lineText,
+  calculateurImc,
+  poidsIdeal,
+  caloriesJournalieres,
+  calculateurOvulation,
+  dateAccouchement,
+  hydratationQuotidienne,
+  proteinesJournalieres,
+  economiesArretTabac,
+  unitesAlcool,
+  cyclesSommeil,
+} from "../../../general/sante";
+import {
+  buildPatch,
   num,
+  primaryFromComputed,
+  textFromComputed,
+  valueFromComputed,
+  type Enricher,
 } from "./helpers";
 
 const medicalCallout = (
@@ -19,8 +33,10 @@ const medicalCallout = (
 const enrichCalculateurImc: Enricher = (input, result) => {
   const poids = num(input.poids);
   const taille = num(input.taille);
-  const imc = lineNumber(result, /imc/i) ?? 0;
-  const categorie = lineText(result, /interpr/i) ?? "";
+  const computed = calculateurImc.calculate(input);
+  const imc = valueFromComputed(computed, /^imc$/i, result, /^imc$/i);
+  const categorie = textFromComputed(computed, /interpr/i, result, /interpr/i);
+  const poidsIdealVal = textFromComputed(computed, /poids id/i, result);
 
   let interpretation: ResultInterpretation;
   if (imc < 18.5) {
@@ -56,11 +72,10 @@ const enrichCalculateurImc: Enricher = (input, result) => {
     };
   }
 
-  const poidsIdeal = lineText(result, /poids id/i);
+  const poidsIdeal = poidsIdealVal;
 
-  return {
-    ...result,
-    primary: { label: "Votre IMC", value: lineText(result, /^imc$/i) ?? formatNumber(imc, 1) },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /^imc$/i, result, "Votre IMC"),
     narrative: `Avec ${poids} kg pour ${taille} cm, votre IMC est de ${formatNumber(imc, 1)}${categorie ? ` (${categorie})` : ""}.${poidsIdeal ? ` Un poids correspondant à un IMC de 22 serait d'environ ${poidsIdeal}.` : ""}`,
     interpretation,
     advice: {
@@ -76,15 +91,16 @@ const enrichCalculateurImc: Enricher = (input, result) => {
         "L'IMC est un indicateur général. Seul un médecin peut diagnostiquer un trouble du poids ou prescrire un suivi."
       ),
     ],
-  };
+  });
 };
 
 const enrichPoidsIdeal: Enricher = (input, result) => {
   const taille = num(input.taille);
   const age = num(input.age);
   const homme = String(input.sexe) === "homme";
-  const creff = lineNumber(result, /creff/i) ?? 0;
-  const lorentz = lineNumber(result, /lorentz/i) ?? 0;
+  const computed = poidsIdeal.calculate(input);
+  const creff = valueFromComputed(computed, /creff/i, result, /creff/i);
+  const lorentz = valueFromComputed(computed, /lorentz/i, result);
   const ecart = Math.abs(creff - lorentz);
 
   const interpretation: ResultInterpretation =
@@ -103,12 +119,8 @@ const enrichPoidsIdeal: Enricher = (input, result) => {
           message: `Creff et Lorentz diffèrent de ${formatNumber(ecart, 1)} kg — normal compte tenu de l'âge et de la morphologie.`,
         };
 
-  return {
-    ...result,
-    primary: {
-      label: "Poids idéal Creff",
-      value: lineText(result, /creff/i) ?? `${formatNumber(creff, 1)} kg`,
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /creff/i, result, "Poids idéal Creff"),
     narrative: `Pour ${homme ? "un homme" : "une femme"} de ${taille} cm et ${age} ans, Creff estime ${formatNumber(creff, 1)} kg et Lorentz ${formatNumber(lorentz, 1)} kg.`,
     interpretation,
     advice: {
@@ -119,20 +131,28 @@ const enrichPoidsIdeal: Enricher = (input, result) => {
         "Un écart de ±5 kg autour du poids idéal est généralement sans conséquence",
       ],
     },
+    comparisons: [
+      {
+        scenario: "Poids pour IMC 22",
+        value: `${formatNumber(valueFromComputed(computed, /imc 22/i, result), 1)} kg`,
+        detail: "Référence souvent utilisée en nutrition",
+      },
+    ],
     callouts: [
       medicalCallout(
         "Ces formules sont indicatives. Un médecin ou diététicien peut fixer un objectif adapté à votre santé."
       ),
     ],
-  };
+  });
 };
 
 const enrichCaloriesJournalieres: Enricher = (input, result) => {
-  const besoins = lineNumber(result, /besoins/i) ?? 0;
-  const bmr = lineNumber(result, /métabolisme|metabolisme/i) ?? 0;
-  const perte = lineNumber(result, /perdre/i) ?? 0;
   const homme = String(input.sexe) === "homme";
   const plancher = homme ? 1500 : 1200;
+  const computed = caloriesJournalieres.calculate(input);
+  const besoins = valueFromComputed(computed, /besoins/i, result, /besoins/i);
+  const bmr = valueFromComputed(computed, /métabolisme|metabolisme/i, result);
+  const perte = valueFromComputed(computed, /perdre/i, result);
 
   let interpretation: ResultInterpretation;
   if (perte < plancher) {
@@ -158,12 +178,10 @@ const enrichCaloriesJournalieres: Enricher = (input, result) => {
     };
   }
 
-  return {
-    ...result,
-    primary: {
-      label: "Besoins journaliers",
-      value: lineText(result, /besoins/i) ?? `${formatNumber(besoins, 0)} kcal`,
-    },
+  const sedentaire = caloriesJournalieres.calculate({ ...input, activite: "1.2" });
+
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /besoins/i, result, "Besoins journaliers"),
     narrative: `Avec ${num(input.poids)} kg, ${num(input.taille)} cm et ${num(input.age)} ans, vos besoins sont d'environ ${formatNumber(besoins, 0)} kcal/jour. Pour une perte progressive, visez ${formatNumber(perte, 0)} kcal (−400 kcal).`,
     interpretation,
     advice: {
@@ -174,18 +192,27 @@ const enrichCaloriesJournalieres: Enricher = (input, result) => {
         "Privilégiez les aliments riches en nutriments plutôt que les calories vides",
       ],
     },
+    comparisons: [
+      {
+        scenario: "En activité sédentaire",
+        value: `${formatNumber(valueFromComputed(sedentaire, /besoins/i, result), 0)} kcal/jour`,
+        detail: "Besoins sans sport régulier",
+      },
+    ],
     callouts: [
       medicalCallout(
         "Cette estimation (Mifflin-St Jeor) ne tient pas compte de pathologies, grossesse ou traitements. Consultez un diététicien pour un plan personnalisé."
       ),
     ],
-  };
+  });
 };
 
 const enrichDateAccouchement: Enricher = (input, result) => {
-  const joursRestants = lineNumber(result, /jours rest/i) ?? 0;
-  const semaines = lineText(result, /semaines/i) ?? "";
-  const dpa = lineText(result, /accouchement/i) ?? "";
+  const computed = dateAccouchement.calculate(input);
+  const joursRestants = valueFromComputed(computed, /jours rest/i, result);
+  const semaines = textFromComputed(computed, /semaines/i, result);
+  const dpa = textFromComputed(computed, /accouchement/i, result, /accouchement/i);
+  const ddr = textFromComputed(computed, /derni/i, result);
 
   let interpretation: ResultInterpretation;
   if (joursRestants > 14) {
@@ -212,13 +239,9 @@ const enrichDateAccouchement: Enricher = (input, result) => {
     };
   }
 
-  return {
-    ...result,
-    primary: {
-      label: "Date probable d'accouchement",
-      value: dpa,
-    },
-    narrative: `Dernières règles le ${lineText(result, /derni/i) ?? "—"}, cycle de ${num(input.dureeCycle)} jours : DPA estimée au ${dpa}.`,
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /accouchement/i, result, "Date probable d'accouchement"),
+    narrative: `Dernières règles le ${ddr || "—"}, cycle de ${num(input.dureeCycle)} jours : DPA estimée au ${dpa}.`,
     interpretation,
     advice: {
       title: "Suivi de grossesse",
@@ -234,13 +257,15 @@ const enrichDateAccouchement: Enricher = (input, result) => {
         "Suivi médical obligatoire"
       ),
     ],
-  };
+  });
 };
 
 const enrichCalculateurOvulation: Enricher = (input, result) => {
   const cycle = num(input.dureeCycle);
-  const jourOvulation = cycle - 14;
-  const fenetre = lineText(result, /fenêtre|fenetre/i) ?? "";
+  const computed = calculateurOvulation.calculate(input);
+  const fenetre = textFromComputed(computed, /fenêtre|fenetre/i, result, /fenêtre|fenetre/i);
+  const jourOvulation = textFromComputed(computed, /jour ovulation/i, result);
+  const cycleCourt = calculateurOvulation.calculate({ ...input, dureeCycle: 24 });
 
   const interpretation: ResultInterpretation =
     cycle >= 21 && cycle <= 35
@@ -248,7 +273,7 @@ const enrichCalculateurOvulation: Enricher = (input, result) => {
           level: "neutral",
           badge: "Estimation",
           title: "Fenêtre fertile estimée",
-          message: `Ovulation probable autour du J${jourOvulation} — fenêtre fertile sur 6 à 7 jours.`,
+          message: `Ovulation probable autour du ${jourOvulation || "—"} — fenêtre fertile sur 6 à 7 jours.`,
         }
       : {
           level: "warning",
@@ -258,13 +283,9 @@ const enrichCalculateurOvulation: Enricher = (input, result) => {
             "Cycle hors fourchette 21-35 jours — les tests d'ovulation ou un suivi médical sont recommandés.",
         };
 
-  return {
-    ...result,
-    primary: {
-      label: "Fenêtre fertile",
-      value: fenetre,
-    },
-    narrative: `Sur un cycle de ${cycle} jours, l'ovulation est estimée au J${jourOvulation}. Fenêtre fertile : ${fenetre}.`,
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /fenêtre|fenetre/i, result, "Fenêtre fertile"),
+    narrative: `Sur un cycle de ${cycle} jours, l'ovulation est estimée au ${jourOvulation || "—"}. Fenêtre fertile : ${fenetre}.`,
     interpretation,
     advice: {
       title: "Affiner la détection",
@@ -274,6 +295,13 @@ const enrichCalculateurOvulation: Enricher = (input, result) => {
         "Stress, voyage et maladie peuvent décaler l'ovulation",
       ],
     },
+    comparisons: [
+      {
+        scenario: "Cycle de 24 jours",
+        value: textFromComputed(cycleCourt, /fenêtre|fenetre/i, result),
+        detail: "Fenêtre fertile plus précoce",
+      },
+    ],
     callouts: [
       {
         variant: "warning",
@@ -281,14 +309,16 @@ const enrichCalculateurOvulation: Enricher = (input, result) => {
         text: "Ce calcul ne remplace ni un contraceptif ni un avis médical. Pour une contraception ou un projet de grossesse, consultez un professionnel.",
       },
     ],
-  };
+  });
 };
 
 const enrichHydratationQuotidienne: Enricher = (input, result) => {
-  const total = lineNumber(result, /eau recomm/i) ?? 0;
-  const verres = lineNumber(result, /verres/i) ?? 0;
   const activite = num(input.activite);
   const climat = num(input.climat);
+  const computed = hydratationQuotidienne.calculate(input);
+  const total = valueFromComputed(computed, /eau recomm/i, result, /eau recomm/i);
+  const verres = valueFromComputed(computed, /verres/i, result);
+  const intense = hydratationQuotidienne.calculate({ ...input, activite: "1" });
 
   let interpretation: ResultInterpretation;
   if (total < 1.5) {
@@ -317,12 +347,8 @@ const enrichHydratationQuotidienne: Enricher = (input, result) => {
 
   const bonus = activite + climat;
 
-  return {
-    ...result,
-    primary: {
-      label: "Eau recommandée",
-      value: lineText(result, /eau recomm/i) ?? `${formatNumber(total, 1)} L/jour`,
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /eau recomm/i, result, "Eau recommandée"),
     narrative: `Pour ${num(input.poids)} kg${bonus > 0 ? `, avec ${activite > 0 ? "activité physique" : ""}${activite > 0 && climat > 0 ? " et " : ""}${climat > 0 ? "climat chaud" : ""}` : ""}, visez ${formatNumber(total, 1)} L par jour (~${verres} verres).`,
     interpretation,
     advice: {
@@ -333,18 +359,27 @@ const enrichHydratationQuotidienne: Enricher = (input, result) => {
         "Augmentez avant, pendant et après l'effort physique",
       ],
     },
+    comparisons: [
+      {
+        scenario: "Activité intense",
+        value: `${formatNumber(valueFromComputed(intense, /eau recomm/i, result), 1)} L/jour`,
+        detail: "Besoins avec sport soutenu",
+      },
+    ],
     callouts: [
       medicalCallout(
         "Insuffisance cardiaque, rénale ou autres pathologies : les besoins en eau diffèrent. Suivez les recommandations de votre médecin."
       ),
     ],
-  };
+  });
 };
 
 const enrichProteinesJournalieres: Enricher = (input, result) => {
-  const total = lineNumber(result, /protéines|proteines/i) ?? 0;
   const gPerKg = num(input.objectif);
-  const parRepas = lineNumber(result, /repas/i) ?? total / 3;
+  const computed = proteinesJournalieres.calculate(input);
+  const total = valueFromComputed(computed, /protéines|proteines/i, result, /protéines|proteines/i);
+  const parRepas = valueFromComputed(computed, /repas/i, result);
+  const maintien = proteinesJournalieres.calculate({ ...input, objectif: "1.2" });
 
   let interpretation: ResultInterpretation;
   if (gPerKg <= 1.2) {
@@ -370,12 +405,8 @@ const enrichProteinesJournalieres: Enricher = (input, result) => {
     };
   }
 
-  return {
-    ...result,
-    primary: {
-      label: "Protéines par jour",
-      value: lineText(result, /protéines|proteines/i) ?? `${formatNumber(total, 0)} g`,
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /protéines|proteines/i, result, "Protéines par jour"),
     narrative: `Pour ${num(input.poids)} kg à ${gPerKg} g/kg, visez ${formatNumber(total, 0)} g par jour, soit ~${formatNumber(parRepas, 0)} g par repas (3 repas).`,
     interpretation,
     advice: {
@@ -386,19 +417,28 @@ const enrichProteinesJournalieres: Enricher = (input, result) => {
         "Hydratez-vous suffisamment avec un apport protéique élevé",
       ],
     },
+    comparisons: [
+      {
+        scenario: "Objectif maintien (1,2 g/kg)",
+        value: `${formatNumber(valueFromComputed(maintien, /protéines|proteines/i, result), 0)} g/jour`,
+        detail: "Apport réduit pour activité modérée",
+      },
+    ],
     callouts: [
       medicalCallout(
         "Insuffisance rénale ou autres pathologies : limitez l'apport protéique sur avis médical uniquement."
       ),
     ],
-  };
+  });
 };
 
 const enrichEconomiesArretTabac: Enricher = (input, result) => {
-  const economie = lineNumber(result, /économie|economie/i) ?? 0;
-  const cigEvitees = lineNumber(result, /cigarettes/i) ?? 0;
   const duree = num(input.duree);
-  const coutJour = lineNumber(result, /coût|cout/i) ?? 0;
+  const computed = economiesArretTabac.calculate(input);
+  const economie = valueFromComputed(computed, /économie|economie/i, result, /économie|economie/i);
+  const cigEvitees = valueFromComputed(computed, /cigarettes/i, result);
+  const coutJour = valueFromComputed(computed, /coût\/jour|cout\/jour/i, result);
+  const sixMois = economiesArretTabac.calculate({ ...input, duree: 180 });
 
   const interpretation: ResultInterpretation =
     duree >= 365
@@ -415,12 +455,8 @@ const enrichEconomiesArretTabac: Enricher = (input, result) => {
           message: `À ${formatCurrency(coutJour)}/jour, la motivation financière s'accumule rapidement.`,
         };
 
-  return {
-    ...result,
-    primary: {
-      label: "Économie totale",
-      value: lineText(result, /économie|economie/i) ?? formatCurrency(economie),
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /économie|economie/i, result, "Économie totale"),
     narrative: `${num(input.cigarettesJour)} cigarettes/jour à ${formatCurrency(num(input.prixPaquet))}/paquet : sur ${duree} jours sans tabac, vous économisez ${formatCurrency(economie)}.`,
     interpretation,
     advice: {
@@ -431,6 +467,13 @@ const enrichEconomiesArretTabac: Enricher = (input, result) => {
         "Après 1 an sans tabac, le risque cardiaque est divisé par 2",
       ],
     },
+    comparisons: [
+      {
+        scenario: "6 mois sans tabac",
+        value: formatCurrency(valueFromComputed(sixMois, /économie|economie/i, result)),
+        detail: "Projection sur 180 jours",
+      },
+    ],
     callouts: [
       {
         variant: "info",
@@ -438,14 +481,16 @@ const enrichEconomiesArretTabac: Enricher = (input, result) => {
         text: "Amélioration respiratoire en quelques semaines. Seul un professionnel de santé peut accompagner un sevrage adapté à votre situation.",
       },
     ],
-  };
+  });
 };
 
 const enrichUnitesAlcool: Enricher = (input, result) => {
-  const parSemaine = lineNumber(result, /semaine/i) ?? 0;
-  const parJour = lineNumber(result, /jour/i) ?? 0;
-  const statut = lineText(result, /statut/i) ?? "";
+  const computed = unitesAlcool.calculate(input);
+  const parSemaine = valueFromComputed(computed, /unités\/semaine|unites\/semaine/i, result);
+  const parJour = valueFromComputed(computed, /unités\/jour|unites\/jour/i, result);
+  const statut = textFromComputed(computed, /statut/i, result);
   const conforme = statut.toLowerCase().includes("dans");
+  const reduit = unitesAlcool.calculate({ ...input, quantite: 1, frequence: 3 });
 
   let interpretation: ResultInterpretation;
   if (conforme && parJour <= 2) {
@@ -477,12 +522,8 @@ const enrichUnitesAlcool: Enricher = (input, result) => {
     spiritueux: "spiritueux",
   };
 
-  return {
-    ...result,
-    primary: {
-      label: "Unités par semaine",
-      value: lineText(result, /semaine/i) ?? formatNumber(parSemaine, 0),
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(computed, /unités\/semaine|unites\/semaine/i, result, "Unités par semaine"),
     narrative: `${num(input.quantite)} verres de ${typeLabels[String(input.type)] ?? "alcool"}, ${num(input.frequence)} jours/semaine : ${formatNumber(parSemaine, 0)} unités/semaine (${statut.toLowerCase()}).`,
     interpretation,
     advice: {
@@ -493,19 +534,32 @@ const enrichUnitesAlcool: Enricher = (input, result) => {
         "Alternez chaque verre avec un verre d'eau",
       ],
     },
+    comparisons: [
+      {
+        scenario: "1 verre, 3 jours/semaine",
+        value: `${formatNumber(valueFromComputed(reduit, /unités\/semaine|unites\/semaine/i, result), 0)} unités/semaine`,
+        detail: "Consommation modérée",
+      },
+    ],
     callouts: [
       medicalCallout(
         "Aucune consommation d'alcool n'est sans risque. En cas de difficulté à limiter, parlez-en à votre médecin ou appelez Alcool Info Service (0 980 980 930)."
       ),
     ],
-  };
+  });
 };
 
 const enrichCyclesSommeil: Enricher = (input, result) => {
   const cycles = num(input.cycles);
   const mode = String(input.mode);
-  const heureCible = lineText(result, mode === "reveil" ? /coucher/i : /réveil|reveil/i) ?? "";
-  const duree = lineNumber(result, /durée|duree/i) ?? (cycles * 90 + 15) / 60;
+  const computed = cyclesSommeil.calculate(input);
+  const heureCible = textFromComputed(
+    computed,
+    mode === "reveil" ? /heure de coucher/i : /heure de réveil/i,
+    result
+  );
+  const duree = valueFromComputed(computed, /durée|duree/i, result);
+  const plusCycles = cyclesSommeil.calculate({ ...input, cycles: cycles + 1 });
 
   let interpretation: ResultInterpretation;
   if (cycles >= 5 && duree >= 7) {
@@ -531,12 +585,13 @@ const enrichCyclesSommeil: Enricher = (input, result) => {
     };
   }
 
-  return {
-    ...result,
-    primary: {
-      label: mode === "reveil" ? "Heure de coucher idéale" : "Heure de réveil idéale",
-      value: heureCible,
-    },
+  return buildPatch(result, {
+    primary: primaryFromComputed(
+      computed,
+      mode === "reveil" ? /heure de coucher/i : /heure de réveil/i,
+      result,
+      mode === "reveil" ? "Heure de coucher idéale" : "Heure de réveil idéale"
+    ),
     narrative:
       mode === "reveil"
         ? `Pour vous réveiller à ${num(input.heure)}h${String(num(input.minutes)).padStart(2, "0")} après ${cycles} cycles de 90 min (+ 15 min d'endormissement), couchez-vous vers ${heureCible}.`
@@ -550,13 +605,24 @@ const enrichCyclesSommeil: Enricher = (input, result) => {
         "Chambre fraîche (18-19 °C), obscure et silencieuse",
       ],
     },
+    comparisons: [
+      {
+        scenario: `${cycles + 1} cycles`,
+        value: textFromComputed(
+          plusCycles,
+          mode === "reveil" ? /heure de coucher/i : /heure de réveil/i,
+          result
+        ),
+        detail: `${formatNumber(valueFromComputed(plusCycles, /durée|duree/i, result), 1)} h de sommeil`,
+      },
+    ],
     callouts: [
       medicalCallout(
         "Les cycles durent 80 à 110 min selon les personnes. En cas d'insomnie chronique ou d'apnée suspectée, consultez un médecin du sommeil.",
         "Indicateur général"
       ),
     ],
-  };
+  });
 };
 
 export const SLUG_ENRICHERS: Record<string, Enricher> = {

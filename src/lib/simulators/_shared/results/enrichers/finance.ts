@@ -1,4 +1,15 @@
-import { mensualiteCreditConsommation } from "../../../general/finance";
+import {
+  mensualiteCreditConsommation,
+  interetsComposes,
+  simulateurInflation,
+  budgetResteAVivre,
+  simulateurRetraite,
+  rendementLivretA,
+  rendementPea,
+  coutTotalCreditConsommation,
+  loaVsCreditAuto,
+  fraisKilometriques,
+} from "../../../general/finance";
 import {
   PFU_TAUX_GLOBAL,
   PEA_PS_APRES_5_ANS,
@@ -22,7 +33,8 @@ import {
   mergeResult,
   num,
   parseFormattedNumber,
-  primaryFromLine,
+  primaryFromComputed,
+  valueFromComputed,
   type Enricher,
 } from "./helpers";
 
@@ -189,8 +201,9 @@ const enrichInteretsComposes: Enricher = (input, result) => {
   const mensuel = num(input.versementMensuel);
   const rendement = num(input.rendement);
   const duree = num(input.duree);
-  const capitalFinal = findValue(result, /capital final/i) ?? 0;
-  const gains = findValue(result, /gains/i) ?? 0;
+  const computed = interetsComposes.calculate(input);
+  const capitalFinal = valueFromComputed(computed, /capital final/i, result, /capital final/i);
+  const gains = valueFromComputed(computed, /gains/i, result);
   const ratioGains = capitalFinal > 0 ? (gains / capitalFinal) * 100 : 0;
 
   const interpretation = interpretThreshold(ratioGains, [
@@ -221,7 +234,7 @@ const enrichInteretsComposes: Enricher = (input, result) => {
   const capPlus5 = compoundCapital(initial, mensuel, rendement, duree + 5);
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /capital final/i),
+    primary: primaryFromComputed(computed, /capital final/i, result),
     narrative: `Avec ${formatCurrency(initial)} de départ, ${formatCurrency(mensuel)}/mois de versements et ${formatPercent(rendement, 1)} de rendement sur ${duree} ans, votre capital atteindrait ${formatCurrency(capitalFinal)} dont ${formatCurrency(gains)} de gains.`,
     interpretation,
     advice: {
@@ -245,6 +258,13 @@ const enrichInteretsComposes: Enricher = (input, result) => {
         detail: `+${formatCurrency(capPlus5 - capitalFinal)} de capital final`,
       },
     ],
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculé le capital final ?",
+        text: `Capitalisation mensuelle : versement initial ${formatCurrency(initial)} + ${formatCurrency(mensuel)}/mois à ${formatPercent(rendement, 1)} sur ${duree} ans (${duree * 12} mois). Les intérêts sont réinvestis chaque mois.`,
+      },
+    ],
   });
 };
 
@@ -252,7 +272,8 @@ const enrichSimulateurInflation: Enricher = (input, result) => {
   const capital = num(input.capital);
   const inflation = num(input.inflation);
   const duree = num(input.duree);
-  const valeurReelle = findValue(result, /pouvoir d'achat/i) ?? 0;
+  const computed = simulateurInflation.calculate(input);
+  const valeurReelle = valueFromComputed(computed, /pouvoir d'achat/i, result, /pouvoir d'achat/i);
   const perte = capital - valeurReelle;
   const pctPerte = capital > 0 ? (perte / capital) * 100 : 0;
 
@@ -284,7 +305,7 @@ const enrichSimulateurInflation: Enricher = (input, result) => {
   const valeurAlt = capital / Math.pow(1 + inflationAlt / 100, duree);
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /pouvoir d'achat/i),
+    primary: primaryFromComputed(computed, /pouvoir d'achat/i, result),
     narrative: `Vos ${formatCurrency(capital)} aujourd'hui vaudront l'équivalent de ${formatCurrency(valeurReelle)} dans ${duree} ans avec une inflation de ${formatPercent(inflation, 1)}/an.`,
     interpretation,
     advice: {
@@ -318,7 +339,8 @@ const enrichBudgetResteAVivre: Enricher = (input, result) => {
   const logement = num(input.logement);
   const credits = num(input.credits);
   const chargesFixes = num(input.chargesFixes);
-  const reste = findValue(result, /reste à vivre/i) ?? revenus - logement - credits - chargesFixes;
+  const computed = budgetResteAVivre.calculate(input);
+  const reste = valueFromComputed(computed, /reste à vivre/i, result, /reste à vivre/i);
   const ratio = revenus > 0 ? (reste / revenus) * 100 : 0;
 
   const interpretation = interpretThreshold(reste, [
@@ -348,7 +370,7 @@ const enrichBudgetResteAVivre: Enricher = (input, result) => {
   const resteLogementReduit = revenus - (logement - 100) - credits - chargesFixes;
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /reste à vivre/i),
+    primary: primaryFromComputed(computed, /reste à vivre/i, result),
     narrative: `Sur ${formatCurrency(revenus)} nets, après ${formatCurrency(logement)} de logement, ${formatCurrency(credits)} de crédits et ${formatCurrency(chargesFixes)} de charges fixes, il vous reste ${formatCurrency(reste)}/mois (${formatPercent(ratio, 0)} des revenus).`,
     interpretation,
     advice: {
@@ -367,6 +389,13 @@ const enrichBudgetResteAVivre: Enricher = (input, result) => {
         detail: `+${formatCurrency(100)}/mois de reste à vivre`,
       },
     ],
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculé le reste à vivre ?",
+        text: `Revenus nets ${formatCurrency(revenus)} − logement ${formatCurrency(logement)} − crédits ${formatCurrency(credits)} − charges fixes ${formatCurrency(chargesFixes)} = ${formatCurrency(reste)}/mois.`,
+      },
+    ],
   });
 };
 
@@ -377,8 +406,9 @@ const enrichSimulateurRetraite: Enricher = (input, result) => {
   const mensuel = num(input.versementMensuel);
   const rendement = num(input.rendement);
   const annees = Math.max(0, ageRetraite - ageActuel);
-  const capital = findValue(result, /capital estimé/i) ?? 0;
-  const retrait = findValue(result, /retrait mensuel/i) ?? (capital * RETRAITE_TAUX_RETRAIT_DURABLE) / 12;
+  const computed = simulateurRetraite.calculate(input);
+  const capital = valueFromComputed(computed, /capital estimé/i, result, /capital estimé/i);
+  const retrait = valueFromComputed(computed, /retrait mensuel/i, result, /retrait mensuel/i);
 
   const interpretation = interpretThreshold(retrait, [
     {
@@ -413,7 +443,7 @@ const enrichSimulateurRetraite: Enricher = (input, result) => {
   const retraitPlus50 = (capPlus50 * RETRAITE_TAUX_RETRAIT_DURABLE) / 12;
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /capital estimé/i),
+    primary: primaryFromComputed(computed, /capital estimé/i, result),
     narrative: `À ${ageActuel} ans avec ${formatCurrency(capitalActuel)} déjà épargnés et ${formatCurrency(mensuel)}/mois jusqu'à ${ageRetraite} ans (${annees} ans, ${formatPercent(rendement, 1)}), vous accumuleriez ${formatCurrency(capital)} — soit ${formatCurrency(retrait)}/mois de retrait durable.`,
     interpretation,
     advice: {
@@ -446,7 +476,8 @@ const enrichRendementLivretA: Enricher = (input, result) => {
   const capital = Math.min(num(input.capital), LIVRET_A_PLAFOND);
   const taux = num(input.taux);
   const duree = num(input.duree);
-  const interets = findValue(result, /intérêts|interets/i) ?? 0;
+  const computed = rendementLivretA.calculate(input);
+  const interets = valueFromComputed(computed, /intérêts|interets/i, result, /intérêts|interets/i);
   const plafondAtteint = num(input.capital) >= LIVRET_A_PLAFOND;
   const margePlafond = LIVRET_A_PLAFOND - capital;
 
@@ -474,7 +505,7 @@ const enrichRendementLivretA: Enricher = (input, result) => {
   const interetsPlafond = LIVRET_A_PLAFOND * Math.pow(1 + taux / 100, duree) - LIVRET_A_PLAFOND;
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /intérêts|interets/i),
+    primary: primaryFromComputed(computed, /intérêts|interets/i, result),
     narrative: `${formatCurrency(capital)} placés à ${formatPercent(taux, 1)} pendant ${duree} ans génèrent ${formatCurrency(interets)} d'intérêts exonérés d'impôt.`,
     interpretation,
     advice: {
@@ -495,6 +526,13 @@ const enrichRendementLivretA: Enricher = (input, result) => {
             detail: `Intérêts sur ${formatCurrency(LIVRET_A_PLAFOND)} à ${formatPercent(taux, 1)}`,
           },
         ],
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment sont calculés les intérêts ?",
+        text: `Capital ${formatCurrency(capital)} capitalisé à ${formatPercent(taux, 1)}/an sur ${duree} ans (intérêts composés simplifiés, plafond ${formatCurrency(LIVRET_A_PLAFOND)}).`,
+      },
+    ],
   });
 };
 
@@ -503,8 +541,9 @@ const enrichRendementPea: Enricher = (input, result) => {
   const rendement = num(input.rendement);
   const duree = num(input.duree);
   const apres5 = String(input.apresCinqAns) === "oui";
-  const capitalNet = findValue(result, /capital net/i) ?? 0;
-  const gainNet = findValue(result, /gain net/i) ?? 0;
+  const computed = rendementPea.calculate(input);
+  const capitalNet = valueFromComputed(computed, /capital net/i, result, /capital net/i);
+  const gainNet = valueFromComputed(computed, /gain net/i, result);
   const eligibleFiscal = apres5 && duree >= PEA_DUREE_FISCALITE_MIN;
 
   const brut = initial * Math.pow(1 + rendement / 100, duree);
@@ -535,7 +574,7 @@ const enrichRendementPea: Enricher = (input, result) => {
         };
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /capital net/i),
+    primary: primaryFromComputed(computed, /capital net/i, result),
     narrative: `${formatCurrency(initial)} investis à ${formatPercent(rendement, 1)} sur ${duree} ans donnent ${formatCurrency(capitalNet)} net (gain net : ${formatCurrency(gainNet)}).`,
     interpretation,
     advice: {
@@ -556,6 +595,15 @@ const enrichRendementPea: Enricher = (input, result) => {
           },
         ]
       : undefined,
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculé le rendement net ?",
+        text: eligibleFiscal
+          ? `Gain brut capitalisé à ${formatPercent(rendement, 1)} sur ${duree} ans, puis fiscalité PEA (${formatPercent(PEA_PS_APRES_5_ANS * 100, 1)} de prélèvements sociaux uniquement).`
+          : `Gain brut capitalisé à ${formatPercent(rendement, 1)} sur ${duree} ans, puis flat tax ${formatPercent(PFU_TAUX_GLOBAL * 100, 0)}.`,
+      },
+    ],
   });
 };
 
@@ -564,9 +612,10 @@ const enrichCoutTotalCreditConsommation: Enricher = (input, result) => {
   const taux = num(input.taux);
   const duree = num(input.duree);
   const frais = num(input.frais);
-  const cout = findValue(result, /coût total/i) ?? 0;
+  const computed = coutTotalCreditConsommation.calculate(input);
+  const cout = valueFromComputed(computed, /coût total/i, result, /coût total/i);
   const taegApprox = montant > 0 ? (cout / montant / duree) * 100 : 0;
-  const mensualite = findValue(result, /mensualit/i) ?? monthlyPaymentFromLoan(montant, taux, duree);
+  const mensualite = valueFromComputed(computed, /mensualit/i, result) || monthlyPaymentFromLoan(montant, taux, duree);
 
   const interpretation = interpretThreshold(taegApprox, [
     {
@@ -597,7 +646,7 @@ const enrichCoutTotalCreditConsommation: Enricher = (input, result) => {
   const coutCourt = mCourt * dureeMoins1 * 12 + frais - montant;
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /coût total/i),
+    primary: primaryFromComputed(computed, /coût total/i, result),
     narrative: `Emprunter ${formatCurrency(montant)} sur ${duree} ans à ${formatPercent(taux, 1)} (+ ${formatCurrency(frais)} de frais) coûte ${formatCurrency(cout)} au total, soit ${formatCurrency(mensualite)}/mois.`,
     interpretation,
     advice: {
@@ -616,6 +665,13 @@ const enrichCoutTotalCreditConsommation: Enricher = (input, result) => {
         detail: `${formatCurrency(cout - coutCourt)} d'économie sur le coût total`,
       },
     ],
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculé le coût total ?",
+        text: `(Mensualité × ${duree * 12} mois) + frais ${formatCurrency(frais)} − capital ${formatCurrency(montant)} = ${formatCurrency(cout)}. TAEG approximatif : ${formatPercent(taegApprox, 1)}.`,
+      },
+    ],
   });
 };
 
@@ -626,8 +682,10 @@ const enrichLoaVsCreditAuto: Enricher = (input, result) => {
   const dureeCredit = num(input.dureeCredit);
   const tauxCredit = num(input.tauxCredit);
   const reprise = num(input.valeurReprise);
-  const meilleur = findLine(result, /meilleure option/i)?.value ?? "";
-  const totalLoa = findValue(result, /coût total loa/i) ?? mensLoa * dureeLoa * 12;
+  const computed = loaVsCreditAuto.calculate(input);
+  const meilleur = findLine(computed, /meilleure option/i)?.value ?? findLine(result, /meilleure option/i)?.value ?? "";
+  const totalLoa = valueFromComputed(computed, /coût total loa/i, result) || mensLoa * dureeLoa * 12;
+  const coutCreditNet = valueFromComputed(computed, /coût net crédit/i, result);
 
   const interpretation: ResultInterpretation =
     meilleur === "Crédit auto"
@@ -649,8 +707,8 @@ const enrichLoaVsCreditAuto: Enricher = (input, result) => {
   const coutCreditReprisePlus = mensCredit * dureeCredit * 12 - reprisePlus;
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /meilleure option/i, "Option la plus avantageuse"),
-    narrative: `Pour un véhicule à ${formatCurrency(prix)}, la LOA (${formatCurrency(mensLoa)}/mois × ${dureeLoa} ans = ${formatCurrency(totalLoa)}) est comparée au crédit (${formatPercent(tauxCredit, 1)}, ${dureeCredit} ans, reprise ${formatCurrency(reprise)}).`,
+    primary: primaryFromComputed(computed, /meilleure option/i, result, "Option la plus avantageuse"),
+    narrative: `Pour un véhicule à ${formatCurrency(prix)}, la LOA (${formatCurrency(mensLoa)}/mois × ${dureeLoa} ans = ${formatCurrency(totalLoa)}) est comparée au crédit (${formatPercent(tauxCredit, 1)}, ${dureeCredit} ans, reprise ${formatCurrency(reprise)}, coût net ${formatCurrency(coutCreditNet)}).`,
     interpretation,
     advice: {
       title: "Choisir entre LOA et crédit auto",
@@ -675,7 +733,8 @@ const enrichFraisKilometriques: Enricher = (input, result) => {
   const km = num(input.kilometres);
   const cv = num(input.puissance);
   const electrique = String(input.type) === "electrique";
-  const frais = findValue(result, /frais annuels/i) ?? 0;
+  const computed = fraisKilometriques.calculate(input);
+  const frais = valueFromComputed(computed, /frais annuels/i, result, /frais annuels/i);
   const coeff = getBaremeKilometriqueCoeff(cv);
 
   const fraisThermique = km * coeff;
@@ -704,7 +763,7 @@ const enrichFraisKilometriques: Enricher = (input, result) => {
         };
 
   return buildPatch(result, {
-    primary: primaryFromLine(result, /frais annuels/i),
+    primary: primaryFromComputed(computed, /frais annuels/i, result),
     narrative: `Pour ${formatNumber(km, 0)} km/an avec un véhicule ${electrique ? "électrique" : "thermique"} de ${cv} CV, le barème fiscal donne ${formatCurrency(frais)}/an (${formatCurrency(frais / 12)}/mois).`,
     interpretation,
     advice: {
@@ -725,6 +784,13 @@ const enrichFraisKilometriques: Enricher = (input, result) => {
             detail: `${formatCurrency(economie)}/an de moins qu'en thermique`,
           },
         ],
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment sont calculés les frais kilométriques ?",
+        text: `${formatNumber(km, 0)} km × coefficient ${coeff.toFixed(3)} €/km${electrique ? " (bonus véhicule électrique)" : ""} = ${formatCurrency(frais)}/an.`,
+      },
+    ],
   });
 };
 
