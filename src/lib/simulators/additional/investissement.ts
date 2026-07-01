@@ -103,15 +103,23 @@ export const rendementLocatifBrut: SimulatorDefinition = {
     { question: "Simulateur complet ?", answer: "Voir aussi /simulateurs/rendement-locatif pour brut, net et cash-flow." },
   ]),
   calculate(input) {
-    const total = investissementBase(num(input.prix), num(input.notaire), num(input.travaux));
-    const loyerAnnuel = num(input.loyer) * 12;
+    const prix = num(input.prix);
+    const notaire = num(input.notaire);
+    const travaux = num(input.travaux);
+    const loyer = num(input.loyer);
+    const total = investissementBase(prix, notaire, travaux);
+    const loyerAnnuel = loyer * 12;
     const rendement = total > 0 ? (loyerAnnuel / total) * 100 : 0;
     return {
       summary: `Rendement locatif brut : ${formatPercent(rendement, 2)}.`,
       lines: [
         { label: "Rendement brut", value: formatPercent(rendement, 2), highlight: true },
-        { label: "Loyer annuel", value: formatCurrency(loyerAnnuel) },
+        { label: "Prix d'achat", value: formatCurrency(prix) },
+        { label: "Frais de notaire", value: formatCurrency(notaire) },
+        { label: "Travaux", value: formatCurrency(travaux) },
         { label: "Investissement total", value: formatCurrency(total) },
+        { label: "Loyer mensuel", value: formatCurrency(loyer) },
+        { label: "Loyer annuel", value: formatCurrency(loyerAnnuel) },
       ],
     };
   },
@@ -149,16 +157,31 @@ export const rendementLocatifNet: SimulatorDefinition = {
     { question: "Simulateur complet ?", answer: "/simulateurs/rendement-locatif combine brut, net et cash-flow." },
   ]),
   calculate(input) {
-    const total = investissementBase(num(input.prix), num(input.notaire), num(input.travaux));
-    const loyerEffectif = num(input.loyer) * 12 * (1 - num(input.vacance) / 100);
-    const net = loyerEffectif - num(input.charges);
-    const rendement = total > 0 ? (net / total) * 100 : 0;
+    const prix = num(input.prix);
+    const notaire = num(input.notaire);
+    const travaux = num(input.travaux);
+    const loyer = num(input.loyer);
+    const charges = num(input.charges);
+    const vacance = num(input.vacance);
+    const total = investissementBase(prix, notaire, travaux);
+    const loyerAnnuel = loyer * 12;
+    const vacanceMontant = loyerAnnuel * (vacance / 100);
+    const revenuNet = loyerAnnuel - charges - vacanceMontant;
+    const rendement = total > 0 ? (revenuNet / total) * 100 : 0;
     return {
       summary: `Rendement locatif net : ${formatPercent(rendement, 2)}.`,
       lines: [
         { label: "Rendement net", value: formatPercent(rendement, 2), highlight: true },
-        { label: "Revenu net annuel", value: formatCurrency(net) },
+        { label: "Prix d'achat", value: formatCurrency(prix) },
+        { label: "Frais de notaire", value: formatCurrency(notaire) },
+        { label: "Travaux", value: formatCurrency(travaux) },
         { label: "Investissement total", value: formatCurrency(total) },
+        { label: "Loyer mensuel", value: formatCurrency(loyer) },
+        { label: "Loyer annuel", value: formatCurrency(loyerAnnuel) },
+        { label: "Charges annuelles", value: formatCurrency(charges) },
+        { label: "Vacance locative", value: formatPercent(vacance, 0) },
+        { label: "Vacance locative (montant)", value: formatCurrency(vacanceMontant) },
+        { label: "Revenu net annuel", value: formatCurrency(revenuNet) },
       ],
     };
   },
@@ -194,15 +217,25 @@ export const cashFlowImmobilier: SimulatorDefinition = {
     { question: "Achat comptant ?", answer: "Mettez mensualité à 0." },
   ]),
   calculate(input) {
-    const loyerEff = num(input.loyer) * (1 - num(input.vacance) / 100);
-    const cashFlow = loyerEff - num(input.charges) - num(input.mensualite);
+    const loyer = num(input.loyer);
+    const charges = num(input.charges);
+    const vacance = num(input.vacance);
+    const mensualite = num(input.mensualite);
+    const perteVacance = loyer * (vacance / 100);
+    const loyerEff = loyer - perteVacance;
+    const cashFlow = loyerEff - charges - mensualite;
+    const cashFlowAnnuel = cashFlow * 12;
     return {
       summary: `Cash-flow mensuel : ${formatCurrency(cashFlow)} (${cashFlow >= 0 ? "excédent" : "déficit"}).`,
       lines: [
         { label: "Cash-flow mensuel", value: formatCurrency(cashFlow), highlight: true },
-        { label: "Cash-flow annuel", value: formatCurrency(cashFlow * 12) },
+        { label: "Loyer mensuel", value: formatCurrency(loyer) },
+        { label: "Vacance locative", value: formatPercent(vacance, 0) },
+        { label: "Perte liée à la vacance", value: formatCurrency(perteVacance) },
         { label: "Loyer mensuel effectif", value: formatCurrency(loyerEff) },
-        { label: "Mensualité crédit", value: formatCurrency(num(input.mensualite)) },
+        { label: "Charges mensuelles", value: formatCurrency(charges) },
+        { label: "Mensualité de crédit", value: formatCurrency(mensualite) },
+        { label: "Cash-flow annuel", value: formatCurrency(cashFlowAnnuel) },
       ],
     };
   },
@@ -247,18 +280,28 @@ export const rentabiliteLmnp: SimulatorDefinition = {
   ]),
   calculate(input) {
     const invest = num(input.investissement);
-    const recettes = num(input.loyerMensuel) * 12;
+    const loyerMensuel = num(input.loyerMensuel);
+    const recettes = loyerMensuel * 12;
     const charges = num(input.charges);
     const regime = String(input.regime);
     const revenuNet = regime === "micro" ? recettes * MICRO_MEUBLE_ABATTEMENT : recettes - charges;
     const rendement = invest > 0 ? (revenuNet / invest) * 100 : 0;
+    const regimeLabel = regime === "micro" ? "Micro-BIC" : "Réel simplifié";
+    const abattementApplique =
+      regime === "micro"
+        ? `${formatPercent((1 - MICRO_MEUBLE_ABATTEMENT) * 100, 0)} (${formatCurrency(recettes - revenuNet)})`
+        : formatCurrency(charges);
     return {
       summary: `Rentabilité LMNP estimée : ${formatPercent(rendement, 2)}.`,
       lines: [
         { label: "Rentabilité estimée", value: formatPercent(rendement, 2), highlight: true },
+        { label: "Investissement total", value: formatCurrency(invest) },
+        { label: "Loyer mensuel meublé", value: formatCurrency(loyerMensuel) },
         { label: "Recettes annuelles", value: formatCurrency(recettes) },
-        { label: "Revenu net fiscal estimé", value: formatCurrency(revenuNet) },
-        { label: "Régime", value: regime === "micro" ? "Micro-BIC" : "Réel" },
+        { label: "Charges annuelles", value: formatCurrency(charges) },
+        { label: "Régime fiscal", value: regimeLabel },
+        { label: "Abattement appliqué", value: abattementApplique },
+        { label: "Revenu fiscal estimé", value: formatCurrency(revenuNet) },
       ],
     };
   },
@@ -303,15 +346,30 @@ export const budgetTravaux: SimulatorDefinition = {
   calculate(input) {
     const surface = num(input.surface);
     const prixM2: Record<string, number> = { legere: 400, moyenne: 800, lourde: 1200 };
+    const niveauLabels: Record<string, string> = {
+      legere: "Légère — ~400 €/m²",
+      moyenne: "Moyenne — ~800 €/m²",
+      lourde: "Lourde — ~1 200 €/m²",
+    };
     const niveau = String(input.niveau);
     const pm2 = prixM2[niveau] ?? 800;
     const budget = surface * pm2;
+    const marge10 = budget * 0.1;
+    const marge15 = budget * 0.15;
+    const budgetMarge10 = budget + marge10;
+    const budgetMarge15 = budget + marge15;
     return {
       summary: `Budget travaux estimé : ${formatCurrency(budget)}.`,
       lines: [
         { label: "Budget total", value: formatCurrency(budget), highlight: true },
-        { label: "Prix au m²", value: formatCurrency(pm2) },
         { label: "Surface", value: `${surface} m²` },
+        { label: "Niveau de travaux", value: niveauLabels[niveau] ?? niveau },
+        { label: "Prix moyen au m²", value: formatCurrency(pm2) },
+        { label: "Budget estimé", value: formatCurrency(budget) },
+        { label: "Marge imprévus 10 %", value: formatCurrency(marge10) },
+        { label: "Marge imprévus 15 %", value: formatCurrency(marge15) },
+        { label: "Budget avec marge 10 %", value: formatCurrency(budgetMarge10) },
+        { label: "Budget avec marge 15 %", value: formatCurrency(budgetMarge15) },
       ],
     };
   },
@@ -349,20 +407,41 @@ export const rentabiliteApresTravaux: SimulatorDefinition = {
     { question: "Fiscalité ?", answer: "Certaines charges déductibles en location." },
   ]),
   calculate(input) {
-    const total = investissementBase(num(input.prix), num(input.notaire), num(input.travaux));
-    const loyerApres = num(input.loyerApres) * 12;
-    const loyerAvant = num(input.loyerAvant) * 12;
-    const netApres = ((loyerApres - num(input.charges)) / total) * 100;
-    const totalSansTravaux = num(input.prix) + num(input.notaire);
-    const netAvant = totalSansTravaux > 0 ? ((loyerAvant - num(input.charges)) / totalSansTravaux) * 100 : 0;
+    const prix = num(input.prix);
+    const notaire = num(input.notaire);
+    const travaux = num(input.travaux);
+    const loyerApresMensuel = num(input.loyerApres);
+    const loyerAvantMensuel = num(input.loyerAvant);
+    const charges = num(input.charges);
+    const total = investissementBase(prix, notaire, travaux);
+    const loyerApresAnnuel = loyerApresMensuel * 12;
+    const loyerAvantAnnuel = loyerAvantMensuel * 12;
+    const revenuNetApres = loyerApresAnnuel - charges;
+    const revenuNetAvant = loyerAvantAnnuel - charges;
+    const netApres = total > 0 ? (revenuNetApres / total) * 100 : 0;
+    const totalSansTravaux = prix + notaire;
+    const netAvant = totalSansTravaux > 0 ? (revenuNetAvant / totalSansTravaux) * 100 : 0;
+    const surloyerMensuel = loyerApresMensuel - loyerAvantMensuel;
+    const surloyerAnnuel = surloyerMensuel * 12;
+    const gainRendement = netApres - netAvant;
+    const gainPointsLabel = `${gainRendement >= 0 ? "+" : ""}${gainRendement.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} point${Math.abs(gainRendement) >= 2 ? "s" : ""}`;
     return {
       summary: `Rendement net après travaux : ${formatPercent(netApres, 2)} (avant : ${formatPercent(netAvant, 2)}).`,
       lines: [
         { label: "Rendement net après travaux", value: formatPercent(netApres, 2), highlight: true },
-        { label: "Rendement net avant travaux", value: formatPercent(netAvant, 2) },
+        { label: "Prix d'achat", value: formatCurrency(prix) },
+        { label: "Frais de notaire", value: formatCurrency(notaire) },
+        { label: "Coût des travaux", value: formatCurrency(travaux) },
         { label: "Investissement total", value: formatCurrency(total) },
-        { label: "Surloyer mensuel", value: formatCurrency(num(input.loyerApres) - num(input.loyerAvant)) },
-        { label: "Coût travaux", value: formatCurrency(num(input.travaux)) },
+        { label: "Loyer avant travaux", value: formatCurrency(loyerAvantMensuel) },
+        { label: "Loyer après travaux", value: formatCurrency(loyerApresMensuel) },
+        { label: "Surloyer mensuel", value: formatCurrency(surloyerMensuel) },
+        { label: "Surloyer annuel", value: formatCurrency(surloyerAnnuel) },
+        { label: "Charges annuelles", value: formatCurrency(charges) },
+        { label: "Revenu net annuel avant travaux", value: formatCurrency(revenuNetAvant) },
+        { label: "Revenu net annuel après travaux", value: formatCurrency(revenuNetApres) },
+        { label: "Rendement net avant travaux", value: formatPercent(netAvant, 2) },
+        { label: "Gain de rendement", value: gainPointsLabel },
       ],
     };
   },

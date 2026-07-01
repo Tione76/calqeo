@@ -11,7 +11,16 @@ import {
   impactHausseTaux,
   creditTravaux,
 } from "../../../additional/financement-3";
-import { plusValueImmobiliere } from "../../../additional/investissement";
+import {
+  plusValueImmobiliere,
+  rendementLocatifBrut,
+  rendementLocatifNet,
+  cashFlowImmobilier,
+  rentabiliteLmnp,
+  budgetTravaux,
+  rentabiliteApresTravaux,
+} from "../../../additional/investissement";
+import { rentabiliteScpi, rentabiliteLocationCourteDuree } from "../../../additional/investissement-2";
 import { monthlyPaymentFromLoan } from "@/lib/utils/format";
 import { IFI_SEUIL } from "@/data/regulations/ifi";
 import { estimerPtz } from "@/data/regulations/ptz";
@@ -98,31 +107,6 @@ function rendementNetInterpretation(pct: number): ResultInterpretation {
     badge: "Attention",
     title: "Situation défavorable",
     message: "Le cash-flow net est négatif ou nul : l'opération est risquée.",
-  };
-}
-
-function cashFlowInterpretation(cf: number): ResultInterpretation {
-  if (cf >= 100) {
-    return {
-      level: "favorable",
-      badge: "Excédent",
-      title: "Cash-flow positif",
-      message: "Le bien génère un surplus mensuel après charges et crédit.",
-    };
-  }
-  if (cf >= 0) {
-    return {
-      level: "intermediate",
-      badge: "Équilibre",
-      title: "Autofinancement",
-      message: "Le loyer couvre charges et mensualité, sans marge confortable.",
-    };
-  }
-  return {
-    level: "warning",
-    badge: "Déficit",
-    title: "Effort de trésorerie",
-    message: "Vous devrez compléter chaque mois — vérifiez la durée du crédit et le loyer.",
   };
 }
 
@@ -2161,123 +2145,630 @@ function enrichPlusValue(input: EnricherInput, result: SimulatorResult): Simulat
   });
 }
 
+function rendementBrutInterpretation(pct: number): ResultInterpretation {
+  if (pct < 4) {
+    return {
+      level: "warning",
+      badge: "Faible",
+      title: "Rendement faible",
+      message:
+        "Le rendement brut reste modeste — vérifiez le prix d'achat, le loyer et les charges avant de vous engager.",
+    };
+  }
+  if (pct < 6) {
+    return {
+      level: "intermediate",
+      badge: "Correct",
+      title: "Rendement correct",
+      message:
+        "Le rendement brut est cohérent, mais il faut vérifier les charges, la fiscalité et la vacance locative pour connaître la rentabilité réelle.",
+    };
+  }
+  if (pct <= 8) {
+    return {
+      level: "favorable",
+      badge: "Bon",
+      title: "Bon rendement",
+      message:
+        "Rendement brut attractif — confirmez avec le net, le cash-flow et la fiscalité avant d'investir.",
+    };
+  }
+  return {
+    level: "favorable",
+    badge: "Élevé",
+    title: "Rendement élevé",
+    message:
+      "Rendement brut élevé — validez la fiabilité du loyer, l'état du bien et les charges réelles.",
+  };
+}
+
+function rendementBrutAdvice(pct: number): ResultAdvice {
+  const items: string[] = [
+    "Le rendement brut ne tient pas compte des charges de copropriété ni des charges non récupérables.",
+    "Intégrez la taxe foncière, la vacance locative et la fiscalité pour estimer la rentabilité réelle.",
+    "Le financement (crédit, assurance emprunteur) impacte le cash-flow, pas le rendement brut.",
+  ];
+
+  if (pct < 4) {
+    items.push(
+      "Négociez le prix d'achat ou recherchez un loyer plus élevé pour améliorer le ratio."
+    );
+  } else if (pct < 6) {
+    items.push(
+      "Comparez le brut de plusieurs annonces sur une base homogène (même zone, même type de bien)."
+    );
+  } else {
+    items.push(
+      "Un bon rendement brut peut masquer des charges élevées — calculez le rendement net."
+    );
+  }
+
+  items.push(
+    "Poursuivez avec le simulateur rendement locatif complet (/simulateurs/rendement-locatif) pour brut, net et cash-flow."
+  );
+
+  return { title: "Après le rendement brut", items: items.slice(0, 5) };
+}
+
 function enrichRendementBrut(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const pct = findPercent(result, "rendement brut") ?? 0;
-  const total = num(input.prix) + num(input.notaire) + num(input.travaux);
+  const prix = num(input.prix);
+  const notaire = num(input.notaire);
+  const travaux = num(input.travaux);
   const loyer = num(input.loyer);
 
-  const narrative = `Un investissement de ${formatCurrency(total)} loué ${formatCurrency(loyer)}/mois affiche un rendement brut de ${formatPercent(pct, 2)} — indicateur rapide avant de déduire charges et vacance.`;
+  const computed = rendementLocatifBrut.calculate({
+    prix,
+    notaire,
+    travaux,
+    loyer,
+  });
+
+  const readPercent = (pattern: string): number =>
+    findPercent(computed, pattern) ??
+    (result.primary && new RegExp(pattern, "i").test(result.primary.label)
+      ? parsePercent(result.primary.value)
+      : null) ??
+    findPercent(result, pattern) ??
+    0;
+
+  const readAmount = (pattern: string): number =>
+    findNumber(computed, pattern) ?? findNumber(result, pattern) ?? 0;
+
+  const pct = readPercent("rendement brut");
+  const total = readAmount("investissement total");
+  const loyerAnnuel = readAmount("loyer annuel");
+
+  const narrative = `Un investissement total de ${formatCurrency(total)} loué ${formatCurrency(loyer)}/mois génère ${formatCurrency(loyerAnnuel)} de loyers annuels, soit un rendement locatif brut estimé à ${formatPercent(pct, 2)}.`;
+
+  const loyerPlus10 = loyer * 1.1;
+  const computedPlus10 = rendementLocatifBrut.calculate({
+    prix,
+    notaire,
+    travaux,
+    loyer: loyerPlus10,
+  });
+  const pctPlus10 = findPercent(computedPlus10, "rendement brut") ?? 0;
+  const loyerAnnuelPlus10 = findNumber(computedPlus10, "loyer annuel") ?? loyerPlus10 * 12;
+  const ecartPoints = pctPlus10 - pct;
+
+  const calculRendementText = [
+    `Prix d'achat : ${formatCurrency(prix)}`,
+    `+ Frais de notaire : ${formatCurrency(notaire)}`,
+    `+ Travaux : ${formatCurrency(travaux)}`,
+    `= Investissement total : ${formatCurrency(total)}`,
+    `Loyer mensuel : ${formatCurrency(loyer)}`,
+    `Loyer annuel : ${formatCurrency(loyerAnnuel)}`,
+    `Formule : loyers annuels / investissement total × 100`,
+    `Rendement brut : ${formatPercent(pct, 2)}`,
+  ].join(" · ");
+
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: "Situation actuelle",
+      value: formatPercent(pct, 2),
+      detail: `Loyer ${formatCurrency(loyer)}/mois · ${formatCurrency(loyerAnnuel)}/an`,
+    },
+    {
+      scenario: "Si le loyer augmentait de 10 %",
+      value: formatPercent(pctPlus10, 2),
+      detail: `Loyer ${formatCurrency(loyerPlus10)}/mois · ${formatCurrency(loyerAnnuelPlus10)}/an`,
+    },
+    {
+      scenario: "Écart de rendement",
+      value: `${ecartPoints >= 0 ? "+" : ""}${formatPercent(ecartPoints, 2)} point${Math.abs(ecartPoints) >= 2 ? "s" : ""}`,
+      detail: `Nouveau rendement brut : ${formatPercent(pctPlus10, 2)}`,
+    },
+  ];
 
   return mergeResult(result, {
     primary: { label: "Rendement brut", value: formatPercent(pct, 2) },
     narrative,
-    interpretation:
-      pct >= 6
-        ? {
-            level: "favorable",
-            badge: "Élevé",
-            title: "Bon filtre initial",
-            message: "Rendement brut attractif — validez avec le net et le cash-flow.",
-          }
-        : pct >= 4
-          ? {
-              level: "intermediate",
-              badge: "Standard",
-              title: "Fourchette courante",
-              message: "Typique en province — le net sera inférieur après charges.",
-            }
-          : {
-              level: "warning",
-              badge: "Bas",
-              title: "Peu sélectif",
-              message: "En zone tendue, un brut faible peut encore se justifier par la plus-value — pas par le rendement.",
-            },
-    advice: {
-      title: "Après le rendement brut",
-      items: [
-        "Calculez le rendement net avec charges et vacance locative",
-        "Comparez le brut de plusieurs annonces sur une base homogène",
-        "Un bon brut masque parfois des charges de copropriété élevées",
-        "Utilisez le simulateur rendement locatif complet pour le cash-flow",
-      ],
-    },
-  });
-}
-
-function enrichRendementNet(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const pct = findPercent(result, "rendement net") ?? 0;
-  const charges = num(input.charges);
-  const vacance = num(input.vacance);
-  const loyer = num(input.loyer);
-
-  const narrative = `Avec ${formatCurrency(loyer)}/mois, ${formatCurrency(charges)}/an de charges et ${formatPercent(vacance, 0)} de vacance, le rendement net atteint ${formatPercent(pct, 2)} — plus proche de la réalité locative que le brut seul.`;
-
-  return mergeResult(result, {
-    primary: { label: "Rendement net", value: formatPercent(pct, 2) },
-    narrative,
-    interpretation: rendementNetInterpretation(pct),
-    advice: rendementAdvice,
-  });
-}
-
-function enrichCashFlow(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const cf = findNumber(result, "cash-flow mensuel") ?? 0;
-  const loyer = num(input.loyer);
-  const charges = num(input.charges);
-  const mensualite = num(input.mensualite);
-  const vacance = num(input.vacance);
-
-  const narrative = `Entre un loyer effectif de ${formatCurrency(loyer * (1 - vacance / 100))}/mois (vacance ${formatPercent(vacance, 0)}), ${formatCurrency(charges)} de charges et ${formatCurrency(mensualite)} de crédit, il ${cf >= 0 ? "reste" : "manque"} ${formatCurrency(Math.abs(cf))}/mois en trésorerie.`;
-
-  return mergeResult(result, {
-    primary: { label: "Cash-flow mensuel", value: formatCurrency(cf) },
-    narrative,
-    interpretation: cashFlowInterpretation(cf),
-    advice: {
-      title: "Pour améliorer le cash-flow",
-      items: [
-        "Négociez le prix d'achat ou allongez la durée du crédit",
-        "Optimisez le loyer (meublé, colocation) sans sous-estimer la vacance",
-        "Réduisez les charges non récupérables (taxe foncière, copropriété)",
-        "Simulez un apport plus important pour baisser la mensualité",
-      ],
-    },
+    interpretation: rendementBrutInterpretation(pct),
+    advice: rendementBrutAdvice(pct),
+    lines: computed.lines.filter((line) => !line.highlight),
+    comparisons,
     callouts: [
       {
         variant: "note",
-        title: "À savoir",
-        text: "Un cash-flow positif ne garantit pas un bon rendement long terme — croisez avec le rendement net.",
+        title: "Comment est calculé le rendement locatif brut ?",
+        text: calculRendementText,
       },
     ],
   });
 }
 
-function enrichRentabiliteLmnp(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const pct = findPercent(result, "rentabilité") ?? 0;
-  const regime = String(input.regime) === "micro" ? "Micro-BIC" : "Réel";
-  const loyer = num(input.loyerMensuel);
-  const invest = num(input.investissement);
+function rendementNetSimulatorInterpretation(pct: number): ResultInterpretation {
+  if (pct < 3) {
+    return {
+      level: "warning",
+      badge: "Faible",
+      title: "Rendement net faible",
+      message:
+        "Le rendement net reste modeste — vérifiez le prix d'achat, les charges et le loyer avant de vous engager.",
+    };
+  }
+  if (pct < 5) {
+    return {
+      level: "intermediate",
+      badge: "Correct",
+      title: "Rendement net correct",
+      message:
+        "Le rendement net tient déjà compte des charges et de la vacance locative. Il reste à vérifier la fiscalité, le financement et le cash-flow réel.",
+    };
+  }
+  if (pct <= 7) {
+    return {
+      level: "favorable",
+      badge: "Bon",
+      title: "Bon rendement net",
+      message:
+        "Rendement net attractif — confirmez avec la fiscalité, le crédit et le cash-flow mensuel.",
+    };
+  }
+  return {
+    level: "favorable",
+    badge: "Élevé",
+    title: "Rendement net élevé",
+    message:
+      "Rendement net élevé — validez la fiabilité des charges déclarées et la durabilité du loyer.",
+  };
+}
 
-  const narrative = `En ${regime} sur ${formatCurrency(invest)} investis et ${formatCurrency(loyer)}/mois de loyer meublé, la rentabilité fiscale estimée est de ${formatPercent(pct, 2)} — le régime ${regime === "Micro-BIC" ? "applique un abattement forfaitaire de 50 %" : "deduit les charges réelles"}.`;
+function rendementNetSimulatorAdvice(pct: number): ResultAdvice {
+  const items: string[] = [
+    "Le rendement net ne tient pas encore compte de la fiscalité (micro-foncier, réel, LMNP…).",
+    "Le financement (crédit, assurance emprunteur) impacte le cash-flow, pas le rendement net.",
+    "Prévoyez les travaux futurs et l'assurance PNO si elle n'est pas incluse dans les charges.",
+    "Vérifiez que la taxe foncière est bien intégrée dans vos charges annuelles.",
+  ];
+
+  if (pct < 3) {
+    items.push(
+      "Réduisez les charges non récupérables ou négociez le prix d'achat pour améliorer le ratio."
+    );
+  } else if (pct < 5) {
+    items.push(
+      "Comparez le net de plusieurs biens sur une base homogène (même vacance, mêmes postes de charges)."
+    );
+  } else {
+    items.push(
+      "Un bon rendement net peut masquer un cash-flow négatif si le crédit est lourd — simulez le cash-flow."
+    );
+  }
+
+  items.push(
+    "Poursuivez avec le simulateur rendement locatif complet (/simulateurs/rendement-locatif) ou cash-flow immobilier."
+  );
+
+  return { title: "Après le rendement net", items: items.slice(0, 5) };
+}
+
+function enrichRendementNet(input: EnricherInput, result: SimulatorResult): SimulatorResult {
+  const prix = num(input.prix);
+  const notaire = num(input.notaire);
+  const travaux = num(input.travaux);
+  const loyer = num(input.loyer);
+  const charges = num(input.charges);
+  const vacance = num(input.vacance);
+
+  const computed = rendementLocatifNet.calculate({
+    prix,
+    notaire,
+    travaux,
+    loyer,
+    charges,
+    vacance,
+  });
+
+  const readPercent = (pattern: string): number =>
+    findPercent(computed, pattern) ??
+    (result.primary && new RegExp(pattern, "i").test(result.primary.label)
+      ? parsePercent(result.primary.value)
+      : null) ??
+    findPercent(result, pattern) ??
+    0;
+
+  const readAmount = (pattern: string): number =>
+    findNumber(computed, pattern) ?? findNumber(result, pattern) ?? 0;
+
+  const pct = readPercent("rendement net");
+  const total = readAmount("investissement total");
+  const loyerAnnuel = readAmount("loyer annuel");
+  const vacanceMontant = readAmount("vacance locative (montant)");
+  const revenuNet = readAmount("revenu net annuel");
+
+  const narrative = `Avec un investissement total de ${formatCurrency(total)}, un loyer de ${formatCurrency(loyer)}/mois, ${formatCurrency(charges)} de charges annuelles et ${formatPercent(vacance, 0)} de vacance locative, votre revenu net annuel est estimé à ${formatCurrency(revenuNet)}, soit un rendement locatif net de ${formatPercent(pct, 2)}.`;
+
+  const chargesReduites = charges * 0.8;
+  const computedChargesMoins20 = rendementLocatifNet.calculate({
+    prix,
+    notaire,
+    travaux,
+    loyer,
+    charges: chargesReduites,
+    vacance,
+  });
+  const pctReduit = findPercent(computedChargesMoins20, "rendement net") ?? 0;
+  const revenuNetReduit = findNumber(computedChargesMoins20, "revenu net annuel") ?? 0;
+  const ecartPoints = pctReduit - pct;
+
+  const calculRendementText = [
+    `Prix d'achat : ${formatCurrency(prix)}`,
+    `+ Frais de notaire : ${formatCurrency(notaire)}`,
+    `+ Travaux : ${formatCurrency(travaux)}`,
+    `= Investissement total : ${formatCurrency(total)}`,
+    `Loyer mensuel : ${formatCurrency(loyer)}`,
+    `Loyer annuel : ${formatCurrency(loyerAnnuel)}`,
+    `Charges annuelles : ${formatCurrency(charges)}`,
+    `Vacance locative : ${formatPercent(vacance, 0)} (${formatCurrency(vacanceMontant)})`,
+    `Revenu net annuel : ${formatCurrency(revenuNet)}`,
+    `Formule : revenu net annuel / investissement total × 100`,
+    `Rendement net : ${formatPercent(pct, 2)}`,
+  ].join(" · ");
+
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: "Situation actuelle",
+      value: formatPercent(pct, 2),
+      detail: `Charges ${formatCurrency(charges)}/an · Revenu net ${formatCurrency(revenuNet)}/an`,
+    },
+    {
+      scenario: "Si les charges diminuaient de 20 %",
+      value: formatPercent(pctReduit, 2),
+      detail: `Charges ${formatCurrency(chargesReduites)}/an · Revenu net ${formatCurrency(revenuNetReduit)}/an`,
+    },
+    {
+      scenario: "Écart de rendement",
+      value: `${ecartPoints >= 0 ? "+" : ""}${formatPercent(ecartPoints, 2)} point${Math.abs(ecartPoints) >= 2 ? "s" : ""}`,
+      detail: `Nouveau rendement net : ${formatPercent(pctReduit, 2)}`,
+    },
+  ];
+
+  return mergeResult(result, {
+    primary: { label: "Rendement net", value: formatPercent(pct, 2) },
+    narrative,
+    interpretation: rendementNetSimulatorInterpretation(pct),
+    advice: rendementNetSimulatorAdvice(pct),
+    lines: computed.lines.filter((line) => !line.highlight),
+    comparisons,
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculé le rendement locatif net ?",
+        text: calculRendementText,
+      },
+    ],
+  });
+}
+
+function cashFlowSimulatorInterpretation(cf: number): ResultInterpretation {
+  if (cf < 0) {
+    return {
+      level: "warning",
+      badge: "À surveiller",
+      title: "Cash-flow négatif",
+      message:
+        "Le loyer ne couvre pas totalement les charges et la mensualité. Il faut prévoir un effort d'épargne mensuel ou ajuster le projet.",
+    };
+  }
+  if (cf <= 100) {
+    return {
+      level: "intermediate",
+      badge: "Équilibre",
+      title: "Autofinancement fragile",
+      message:
+        "Le loyer couvre charges et mensualité, mais la marge reste faible — surveillez vacance et charges imprévues.",
+    };
+  }
+  if (cf <= 300) {
+    return {
+      level: "favorable",
+      badge: "Positif",
+      title: "Cash-flow positif",
+      message: "Le bien génère un surplus mensuel après charges et crédit — validez avec le rendement net et la fiscalité.",
+    };
+  }
+  return {
+    level: "favorable",
+    badge: "Confortable",
+    title: "Cash-flow très confortable",
+    message: "La trésorerie mensuelle reste confortable — croisez tout de même avec la rentabilité long terme.",
+  };
+}
+
+function cashFlowSimulatorAdvice(cf: number): ResultAdvice {
+  const items: string[] = [
+    "Le cash-flow peut encore être impacté par la fiscalité, les travaux futurs et les charges exceptionnelles.",
+    "Vérifiez que l'assurance PNO et la taxe foncière sont bien intégrées dans vos charges mensuelles.",
+    "Anticipez les impayés éventuels et les périodes de vacance plus longues que prévu.",
+  ];
+
+  if (cf < 0) {
+    items.push(
+      "Négociez le prix d'achat, augmentez l'apport ou allongez la durée du crédit pour réduire la mensualité.",
+      "Réduisez les charges ou améliorez le loyer si le marché le permet.",
+      "Vérifiez la fiscalité et les travaux à venir avant de vous engager."
+    );
+  } else {
+    items.push(
+      "Sécurisez la qualité du locataire et anticipez les travaux futurs.",
+      "Comparez ce cash-flow avec le rendement net pour une vision complète de la rentabilité."
+    );
+  }
+
+  return { title: "Pour améliorer le cash-flow", items: items.slice(0, 5) };
+}
+
+function enrichCashFlow(input: EnricherInput, result: SimulatorResult): SimulatorResult {
+  const loyer = num(input.loyer);
+  const charges = num(input.charges);
+  const vacance = num(input.vacance);
+  const mensualite = num(input.mensualite);
+
+  const computed = cashFlowImmobilier.calculate({
+    loyer,
+    charges,
+    vacance,
+    mensualite,
+  });
+
+  const readAmount = (pattern: string): number =>
+    findNumber(computed, pattern) ??
+    (result.primary && new RegExp(pattern, "i").test(result.primary.label)
+      ? parseFormattedNumber(result.primary.value.replace(/\/mois$/i, ""))
+      : null) ??
+    findNumber(result, pattern) ??
+    0;
+
+  const cf = readAmount("cash-flow mensuel");
+  const cfAnnuel = readAmount("cash-flow annuel");
+  const loyerEff = readAmount("loyer mensuel effectif");
+  const perteVacance = readAmount("perte liée à la vacance");
+  const cfAffichage = `${formatCurrency(cf)}/mois`;
+
+  const narrative =
+    cf < 0
+      ? `Avec un loyer de ${formatCurrency(loyer)}/mois, une vacance locative estimée à ${formatPercent(vacance, 0)}, ${formatCurrency(charges)} de charges mensuelles et une mensualité de crédit de ${formatCurrency(mensualite)}, votre cash-flow ressort à ${cfAffichage}. L'investissement ne s'autofinance donc pas complètement.`
+      : `Avec un loyer de ${formatCurrency(loyer)}/mois, une vacance locative estimée à ${formatPercent(vacance, 0)}, ${formatCurrency(charges)} de charges mensuelles et une mensualité de crédit de ${formatCurrency(mensualite)}, votre cash-flow ressort à ${cfAffichage}. Le bien s'autofinance${cf <= 100 ? ", mais la marge reste limitée" : " avec une marge mensuelle"}.`;
+
+  const loyerPlus10 = loyer * 1.1;
+  const computedPlus10 = cashFlowImmobilier.calculate({
+    loyer: loyerPlus10,
+    charges,
+    vacance,
+    mensualite,
+  });
+  const loyerEffPlus10 = findNumber(computedPlus10, "loyer mensuel effectif") ?? 0;
+  const cfPlus10 = findNumber(computedPlus10, "cash-flow mensuel") ?? 0;
+  const ecartCf = cfPlus10 - cf;
+
+  const calculCashFlowText = [
+    `Loyer mensuel : ${formatCurrency(loyer)}`,
+    `Vacance locative : ${formatPercent(vacance, 0)} (${formatCurrency(perteVacance)})`,
+    `Loyer mensuel effectif : ${formatCurrency(loyerEff)}`,
+    `Charges mensuelles : ${formatCurrency(charges)}`,
+    `Mensualité de crédit : ${formatCurrency(mensualite)}`,
+    `Formule : loyer effectif − charges − mensualité`,
+    `Cash-flow mensuel : ${cfAffichage}`,
+    `Cash-flow annuel : ${formatCurrency(cfAnnuel)}`,
+  ].join(" · ");
+
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: "Situation actuelle",
+      value: cfAffichage,
+      detail: `Loyer effectif ${formatCurrency(loyerEff)}/mois`,
+    },
+    {
+      scenario: "Si le loyer augmentait de 10 %",
+      value: `${formatCurrency(cfPlus10)}/mois`,
+      detail: `Loyer ${formatCurrency(loyerPlus10)}/mois · effectif ${formatCurrency(loyerEffPlus10)}/mois`,
+    },
+    {
+      scenario: "Écart de cash-flow",
+      value: `${ecartCf >= 0 ? "+" : ""}${formatCurrency(ecartCf)}/mois`,
+      detail: `Nouveau cash-flow : ${formatCurrency(cfPlus10)}/mois`,
+    },
+  ];
+
+  return mergeResult(result, {
+    primary: { label: "Cash-flow mensuel", value: cfAffichage },
+    narrative,
+    interpretation: cashFlowSimulatorInterpretation(cf),
+    advice: cashFlowSimulatorAdvice(cf),
+    lines: computed.lines.filter((line) => !line.highlight),
+    comparisons,
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculé le cash-flow immobilier ?",
+        text: calculCashFlowText,
+      },
+      {
+        variant: "note",
+        title: "À savoir",
+        text: "Un cash-flow positif ne garantit pas une bonne rentabilité long terme : croisez toujours avec le rendement net, la fiscalité et les travaux futurs.",
+      },
+    ],
+  });
+}
+
+function lmnpInterpretation(pct: number): ResultInterpretation {
+  if (pct < 3) {
+    return {
+      level: "warning",
+      badge: "Faible",
+      title: "Rentabilité faible",
+      message:
+        "La rentabilité fiscale estimée reste modeste — vérifiez le loyer, les charges et le régime fiscal retenu.",
+    };
+  }
+  if (pct < 5) {
+    return {
+      level: "intermediate",
+      badge: "Correcte",
+      title: "Rentabilité correcte",
+      message:
+        "Le projet affiche une rentabilité cohérente pour un LMNP, sous réserve de valider charges, vacance et impôt sur le revenu.",
+    };
+  }
+  if (pct <= 7) {
+    return {
+      level: "favorable",
+      badge: "Bonne",
+      title: "Bonne rentabilité",
+      message:
+        "La rentabilité fiscale estimée est attractive — confirmez avec un expert-comptable le régime le plus avantageux.",
+    };
+  }
+  return {
+    level: "favorable",
+    badge: "Excellente",
+    title: "Excellente rentabilité",
+    message:
+      "La rentabilité fiscale estimée est élevée — vérifiez tout de même la solidité du loyer et la fiscalité réelle après impôt.",
+  };
+}
+
+function lmnpAdvice(regime: string, pct: number): ResultAdvice {
+  const isMicro = regime === "micro";
+  const items: string[] = [
+    "Optimisez le loyer meublé en respectant la liste des meubles obligatoires pour conserver le statut LMNP.",
+    "Intégrez toutes les charges (copropriété, PNO, gestion, entretien) pour comparer micro-BIC et réel sur une base réaliste.",
+    "Anticipez les travaux d'entretien et la fiscalité LMNP au-delà de cette estimation simplifiée.",
+  ];
+
+  if (isMicro) {
+    items.push(
+      "Si vos charges dépassent l'abattement forfaitaire de 50 %, le régime réel peut devenir plus intéressant.",
+      "Comparez avec un expert-comptable l'intérêt des amortissements au régime réel."
+    );
+  } else {
+    items.push(
+      "Optimisez les amortissements du mobilier et du bien au régime réel avec votre expert-comptable.",
+      "Suivez les déficits BIC éventuellement reportables sur les revenus futurs."
+    );
+  }
+
+  if (pct < 3) {
+    items.push("Revoyez le prix d'achat, le loyer ou le montant des charges pour améliorer la rentabilité.");
+  }
+
+  return { title: "Pour optimiser votre LMNP", items: items.slice(0, 5) };
+}
+
+function enrichRentabiliteLmnp(input: EnricherInput, result: SimulatorResult): SimulatorResult {
+  const invest = num(input.investissement);
+  const loyer = num(input.loyerMensuel);
+  const charges = num(input.charges);
+  const regime = String(input.regime);
+
+  const computed = rentabiliteLmnp.calculate({
+    investissement: invest,
+    loyerMensuel: loyer,
+    charges,
+    regime,
+  });
+
+  const readPercent = (pattern: string): number =>
+    findPercent(computed, pattern) ??
+    (result.primary && new RegExp(pattern, "i").test(result.primary.label)
+      ? parsePercent(result.primary.value)
+      : null) ??
+    findPercent(result, pattern) ??
+    0;
+
+  const readText = (pattern: string): string =>
+    lineText(computed, pattern) ?? lineText(result, pattern) ?? "";
+
+  const readAmount = (pattern: string): number =>
+    findNumber(computed, pattern) ?? findNumber(result, pattern) ?? 0;
+
+  const pct = readPercent("rentabilité");
+  const recettes = readAmount("recettes annuelles");
+  const revenuFiscal = readAmount("revenu fiscal");
+  const regimeLabel = readText("régime fiscal") || (regime === "micro" ? "Micro-BIC" : "Réel simplifié");
+  const abattement = readText("abattement appliqué");
+
+  const narrative = `Avec un investissement de ${formatCurrency(invest)}, un loyer meublé de ${formatCurrency(loyer)}/mois (${formatCurrency(recettes)} de recettes annuelles) et le régime ${regimeLabel}, la rentabilité estimée ressort à ${formatPercent(pct, 2)}. Le revenu imposable estimé est de ${formatCurrency(revenuFiscal)} avant impôt sur le revenu.`;
+
+  const regimeAlt = regime === "micro" ? "reel" : "micro";
+  const regimeAltLabel = regimeAlt === "micro" ? "Micro-BIC" : "Réel simplifié";
+  const computedAlt = rentabiliteLmnp.calculate({
+    investissement: invest,
+    loyerMensuel: loyer,
+    charges,
+    regime: regimeAlt,
+  });
+  const pctAlt = findPercent(computedAlt, "rentabilité") ?? 0;
+  const revenuAlt = findNumber(computedAlt, "revenu fiscal") ?? 0;
+  const ecartPoints = pctAlt - pct;
+
+  const calculLmnpText = [
+    `Investissement : ${formatCurrency(invest)}`,
+    `Recettes annuelles : ${formatCurrency(recettes)} (${formatCurrency(loyer)}/mois)`,
+    `Charges annuelles : ${formatCurrency(charges)}`,
+    `Régime fiscal : ${regimeLabel}`,
+    `Abattement appliqué : ${abattement}`,
+    `Revenu fiscal estimé : ${formatCurrency(revenuFiscal)}`,
+    `Rentabilité estimée : ${formatPercent(pct, 2)}`,
+  ].join(" · ");
+
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: `Régime actuel (${regimeLabel})`,
+      value: formatPercent(pct, 2),
+      detail: `Revenu fiscal ${formatCurrency(revenuFiscal)}/an`,
+    },
+    {
+      scenario: `Si vous passiez au régime ${regimeAltLabel}`,
+      value: formatPercent(pctAlt, 2),
+      detail: `Revenu fiscal ${formatCurrency(revenuAlt)}/an`,
+    },
+    {
+      scenario: "Écart de rentabilité",
+      value: `${ecartPoints >= 0 ? "+" : ""}${formatPercent(ecartPoints, 2)} point${Math.abs(ecartPoints) >= 2 ? "s" : ""}`,
+      detail: `Nouvelle rentabilité : ${formatPercent(pctAlt, 2)}`,
+    },
+  ];
 
   return mergeResult(result, {
     primary: { label: "Rentabilité estimée", value: formatPercent(pct, 2) },
     narrative,
-    interpretation: rendementNetInterpretation(pct),
-    advice: {
-      title: "Pour optimiser un LMNP",
-      items: [
-        "Comparez micro-BIC et réel avec un expert-comptable si charges élevées",
-        "Respectez la liste des meubles obligatoires pour le statut meublé",
-        "L'amortissement au réel peut créer un déficit reportable",
-        "Les loyers meublés sont plus élevés mais la rotation locative aussi",
-      ],
-    },
+    interpretation: lmnpInterpretation(pct),
+    advice: lmnpAdvice(regime, pct),
+    lines: computed.lines.filter((line) => !line.highlight),
+    comparisons,
     callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculée la rentabilité LMNP ?",
+        text: calculLmnpText,
+      },
       {
         variant: "info",
         title: "Bon à savoir",
-        text: "Estimation fiscale simplifiée — le réel avec amortissement peut différer significativement.",
+        text: "Cette estimation compare recettes, charges et régime fiscal de façon simplifiée. Au régime réel, les amortissements peuvent réduire fortement le revenu imposable — faites valider le montage par un expert-comptable.",
       },
     ],
   });
@@ -2286,14 +2777,65 @@ function enrichRentabiliteLmnp(input: EnricherInput, result: SimulatorResult): S
 function enrichBudgetTravaux(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const surface = num(input.surface);
   const niveau = String(input.niveau);
-  const labels: Record<string, string> = {
-    legere: "légère (~400 €/m²)",
-    moyenne: "moyenne (~800 €/m²)",
-    lourde: "lourde (~1 200 €/m²)",
+  const niveauLabels: Record<string, string> = {
+    legere: "légère",
+    moyenne: "moyenne",
+    lourde: "lourde",
   };
-  const budget = findNumber(result, "budget") ?? 0;
+  const niveauPrix: Record<string, number> = {
+    legere: 400,
+    moyenne: 800,
+    lourde: 1200,
+  };
 
-  const narrative = `Pour ${surface} m² en rénovation ${labels[niveau] ?? niveau}, le budget travaux tourne autour de ${formatCurrency(budget)} — prévoyez 10 à 15 % de marge pour les imprévus.`;
+  const computed = budgetTravaux.calculate({ surface, niveau });
+
+  const readAmount = (pattern: string): number =>
+    findNumber(computed, pattern) ??
+    (result.primary && /budget total/i.test(result.primary.label)
+      ? parseFormattedNumber(result.primary.value)
+      : null) ??
+    findNumber(result, pattern) ??
+    0;
+
+  const budget = readAmount("budget total") || readAmount("budget estimé");
+  const pm2 = readAmount("prix moyen") || readAmount("prix au m²");
+  const marge10 = readAmount("marge imprévus 10");
+  const marge15 = readAmount("marge imprévus 15");
+  const budgetMarge10 = readAmount("budget avec marge 10");
+  const budgetMarge15 = readAmount("budget avec marge 15");
+  const niveauLabel = niveauLabels[niveau] ?? niveau;
+  const pm2Display = pm2 || niveauPrix[niveau] || 800;
+
+  const narrative = `Pour ${surface} m² en rénovation ${niveauLabel} à environ ${formatCurrency(pm2Display)}/m², le budget travaux est estimé à ${formatCurrency(budget)}. Prévoyez une marge de 10 à 15 % pour les imprévus, soit un budget prudent compris entre ${formatCurrency(budgetMarge10)} et ${formatCurrency(budgetMarge15)}.`;
+
+  const calculBudgetText = [
+    `Surface : ${surface} m²`,
+    `Prix moyen au m² : ${formatCurrency(pm2Display)}`,
+    `Formule : surface × prix au m²`,
+    `Budget estimé : ${surface} m² × ${formatCurrency(pm2Display)} = ${formatCurrency(budget)}`,
+    `Marge d'imprévus 10 % : ${formatCurrency(marge10)}`,
+    `Marge d'imprévus 15 % : ${formatCurrency(marge15)}`,
+    `Budget prudent : ${formatCurrency(budgetMarge10)} à ${formatCurrency(budgetMarge15)}`,
+  ].join(" · ");
+
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: "Budget de base",
+      value: formatCurrency(budget),
+      detail: `${surface} m² × ${formatCurrency(pm2Display)}/m²`,
+    },
+    {
+      scenario: "Avec une marge de 15 %",
+      value: formatCurrency(budgetMarge15),
+      detail: `Marge imprévus : ${formatCurrency(marge15)}`,
+    },
+    {
+      scenario: "Écart",
+      value: `+${formatCurrency(marge15)}`,
+      detail: `Budget prudent : ${formatCurrency(budgetMarge15)}`,
+    },
+  ];
 
   return mergeResult(result, {
     primary: { label: "Budget total", value: formatCurrency(budget) },
@@ -2301,147 +2843,503 @@ function enrichBudgetTravaux(input: EnricherInput, result: SimulatorResult): Sim
     interpretation: {
       level: "neutral",
       badge: "Estimation",
-      title: "Ordre de grandeur",
-      message: "Fourchette nationale — les devis locaux peuvent varier de ±20 %.",
+      title: "Budget à cadrer par devis",
+      message:
+        "Ce montant est un ordre de grandeur basé sur un coût moyen au m². Les devis peuvent varier selon l'état du bien, la région, les matériaux et les contraintes techniques.",
     },
     advice: {
       title: "Pour cadrer vos travaux",
       items: [
         "Demandez au minimum 3 devis détaillés par corps de métier",
-        "Prévoyez 10 à 15 % de marge pour les imprévus",
-        "Vérifiez l'éligibilité TVA réduite (10 %) en rénovation énergétique",
-        "Croisez avec le simulateur rentabilité après travaux",
+        "Gardez 10 à 15 % de marge pour les imprévus",
+        "Vérifiez la TVA applicable (5,5 %, 10 % ou 20 % selon les travaux)",
+        "Distinguez travaux esthétiques, rénovation complète et rénovation énergétique",
+        "Comparez ce budget avec votre capacité de financement",
       ],
     },
-  });
-}
-
-function enrichRentabiliteApresTravaux(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const netApres = findPercent(result, "après travaux") ?? 0;
-  const netAvant = findPercent(result, "avant travaux") ?? 0;
-  const travaux = num(input.travaux);
-  const surloyer = num(input.loyerApres) - num(input.loyerAvant);
-  const delta = netApres - netAvant;
-
-  const narrative = `En investissant ${formatCurrency(travaux)} de travaux pour un surloyer de ${formatCurrency(surloyer)}/mois, le rendement net passe de ${formatPercent(netAvant, 2)} à ${formatPercent(netApres, 2)} (${delta >= 0 ? "+" : ""}${formatPercent(delta, 2)}).`;
-
-  return mergeResult(result, {
-    primary: { label: "Rendement net après travaux", value: formatPercent(netApres, 2) },
-    narrative,
-    interpretation:
-      delta >= 1
-        ? {
-            level: "favorable",
-            badge: "Amélioration",
-            title: "Travaux rentables",
-            message: "La rénovation améliore nettement la rentabilité locative.",
-          }
-        : delta >= 0
-          ? {
-              level: "intermediate",
-              badge: "Marginal",
-              title: "Gain modeste",
-              message: "Le surloyer compense à peine le surcoût — vérifiez le ROI sur la durée.",
-            }
-          : {
-              level: "warning",
-              badge: "Dégradation",
-              title: "Travaux peu rentables",
-              message: "Le surloyer ne compense pas le surinvestissement — revoyez le budget ou le loyer cible.",
-            },
-    advice: {
-      title: "Pour rentabiliser les travaux",
-      items: [
-        "Priorisez cuisine, salle de bain et isolation — fort impact sur le loyer",
-        "Estimez le surloyer avec des annonces comparables, pas à l'optimisme",
-        "Intégrez la vacance locative pendant les travaux",
-        "Certaines dépenses sont déductibles fiscalement en location nue",
-      ],
-    },
-    comparisons: [
-      { scenario: "Rendement net avant travaux", value: formatPercent(netAvant, 2) },
-      { scenario: "Rendement net après travaux", value: formatPercent(netApres, 2) },
-    ],
-  });
-}
-
-function enrichRentabiliteScpi(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const pct = findPercent(result, "rendement") ?? 0;
-  const montant = num(input.montantInvesti);
-  const frais = num(input.fraisSouscription);
-  const distribution = findNumber(result, "revenus annuels") ?? 0;
-
-  const narrative = `En investissant ${formatCurrency(montant)} (${formatPercent(frais, 1)} de frais de souscription), une SCPI distribuant ${formatPercent(num(input.tauxDistribution), 1)} génère environ ${formatCurrency(distribution)}/an — rendement brut ${formatPercent(pct, 2)} sur le montant versé.`;
-
-  return mergeResult(result, {
-    primary: { label: "Rendement brut estimé", value: formatPercent(pct, 2) },
-    narrative,
-    interpretation:
-      pct >= 4.5
-        ? {
-            level: "favorable",
-            badge: "Distribution",
-            title: "Rendement attractif",
-            message: "Proche de la moyenne historique des SCPI — analysez la solidité de la société de gestion.",
-          }
-        : pct >= 3.5
-          ? {
-              level: "intermediate",
-              badge: "Standard",
-              title: "Rendement moyen",
-              message: "Comparez avec l'achat direct et intégrez la fiscalité (IR ou IS).",
-            }
-          : {
-              level: "warning",
-              badge: "Faible",
-              title: "Rendement bas",
-              message: "Les frais de souscription pèsent sur le rendement réel — vérifiez l'historique sur 5 à 10 ans.",
-            },
-    advice: {
-      title: "Pour investir en SCPI",
-      items: [
-        "Analysez l'historique de distribution sur 5 à 10 ans, pas une seule année",
-        "Intégrez les 8 à 12 % de frais de souscription dans le rendement réel",
-        "Les SCPI entrent dans l'assiette IFI — simulez l'impact patrimonial",
-        "Comparez avec un achat locatif direct (effet de levier crédit)",
-      ],
-    },
+    lines: computed.lines.filter((line) => !line.highlight),
+    comparisons,
     callouts: [
       {
         variant: "note",
-        title: "À savoir",
-        text: "La revente des parts peut prendre 3 à 12 mois — liquidité inférieure à un achat direct.",
+        title: "Comment est calculé votre budget travaux ?",
+        text: calculBudgetText,
       },
     ],
   });
 }
 
-function enrichLocationCourteDuree(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const pct = findPercent(result, "rendement net") ?? 0;
-  const occupation = num(input.occupation);
-  const prixNuit = num(input.prixNuit);
-  const invest = num(input.investissement);
+function rentabiliteApresTravauxInterpretation(gain: number): ResultInterpretation {
+  if (gain < 0) {
+    return {
+      level: "warning",
+      badge: "Dégradation",
+      title: "Rentabilité dégradée",
+      message:
+        "Les travaux réduisent le rendement net estimé — revoyez le budget, le surloyer cible ou la nature des travaux.",
+    };
+  }
+  if (gain < 0.5) {
+    return {
+      level: "intermediate",
+      badge: "Limitée",
+      title: "Amélioration limitée",
+      message:
+        "Le surloyer compense partiellement le surcoût. Vérifiez le retour sur investissement sur plusieurs années.",
+    };
+  }
+  if (gain <= 1.5) {
+    return {
+      level: "favorable",
+      badge: "Amélioration",
+      title: "Rentabilité améliorée",
+      message:
+        "Les travaux améliorent le rendement grâce au surloyer obtenu. Vérifiez toutefois que le gain compense bien le coût, les délais et le risque de vacance pendant les travaux.",
+    };
+  }
+  return {
+    level: "favorable",
+    badge: "Forte amélioration",
+    title: "Forte amélioration",
+    message:
+      "La rénovation améliore nettement la rentabilité locative — confirmez le surloyer avec le marché local et le budget réel des travaux.",
+  };
+}
 
-  const narrative = `Avec ${formatCurrency(prixNuit)}/nuit et ${formatPercent(occupation, 0)} d'occupation sur ${formatCurrency(invest)} investis, la LCD affiche un rendement net de ${formatPercent(pct, 2)} — souvent supérieur au bail classique, mais avec plus de charges et de gestion.`;
+function rentabiliteApresTravauxAdvice(gain: number): ResultAdvice {
+  const items: string[] = [
+    "Estimez le surloyer avec des annonces comparables, pas à l'optimisme.",
+    "Intégrez la vacance locative pendant les travaux dans votre plan de trésorerie.",
+    "Gardez 10 à 15 % de marge sur le budget travaux pour couvrir les imprévus.",
+    "Priorisez les travaux qui augmentent réellement le loyer ou réduisent les charges (cuisine, SdB, isolation).",
+    "Vérifiez l'impact fiscal des travaux selon votre régime de location (nu, meublé, LMNP).",
+  ];
+
+  if (gain < 0) {
+    items.unshift(
+      "Revoyez le montant des travaux ou le loyer cible avant de vous engager."
+    );
+  } else if (gain >= 1.5) {
+    items.push(
+      "Un fort gain de rendement peut masquer un budget travaux sous-estimé — croisez avec le simulateur budget travaux."
+    );
+  }
+
+  return { title: "Pour rentabiliser les travaux", items: items.slice(0, 5) };
+}
+
+function enrichRentabiliteApresTravaux(input: EnricherInput, result: SimulatorResult): SimulatorResult {
+  const prix = num(input.prix);
+  const notaire = num(input.notaire);
+  const travaux = num(input.travaux);
+  const loyerApres = num(input.loyerApres);
+  const loyerAvant = num(input.loyerAvant);
+  const charges = num(input.charges);
+
+  const computed = rentabiliteApresTravaux.calculate({
+    prix,
+    notaire,
+    travaux,
+    loyerApres,
+    loyerAvant,
+    charges,
+  });
+
+  const readPercent = (pattern: string): number =>
+    findPercent(computed, pattern) ??
+    (result.primary && new RegExp(pattern, "i").test(result.primary.label)
+      ? parsePercent(result.primary.value)
+      : null) ??
+    findPercent(result, pattern) ??
+    0;
+
+  const readAmount = (pattern: string): number =>
+    findNumber(computed, pattern) ?? findNumber(result, pattern) ?? 0;
+
+  const netApres = readPercent("rendement net après travaux");
+  const netAvant = readPercent("rendement net avant travaux");
+  const total = readAmount("investissement total");
+  const surloyerMensuel = readAmount("surloyer mensuel");
+  const revenuNetApres = readAmount("revenu net annuel après");
+  const gainRendement = netApres - netAvant;
+
+  const formatPoints = (v: number) =>
+    `${v >= 0 ? "+" : ""}${v.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} point${Math.abs(v) >= 2 ? "s" : ""}`;
+
+  const narrative = `Avec ${formatCurrency(travaux)} de travaux, l'investissement total atteint ${formatCurrency(total)}. Le loyer passe de ${formatCurrency(loyerAvant)} à ${formatCurrency(loyerApres)}/mois, soit ${surloyerMensuel >= 0 ? "+" : ""}${formatCurrency(surloyerMensuel)}/mois. Le rendement net passe d'environ ${formatPercent(netAvant, 2)} à ${formatPercent(netApres, 2)}, soit une amélioration de ${formatPoints(gainRendement)}.`;
+
+  const travauxReduits = travaux * 0.9;
+  const computedTravauxMoins10 = rentabiliteApresTravaux.calculate({
+    prix,
+    notaire,
+    travaux: travauxReduits,
+    loyerApres,
+    loyerAvant,
+    charges,
+  });
+  const netApresAlt = findPercent(computedTravauxMoins10, "rendement net après travaux") ?? 0;
+  const totalAlt = findNumber(computedTravauxMoins10, "investissement total") ?? 0;
+  const ecartPoints = netApresAlt - netApres;
+
+  const calculRentabiliteText = [
+    `Prix d'achat : ${formatCurrency(prix)}`,
+    `Frais de notaire : ${formatCurrency(notaire)}`,
+    `Travaux : ${formatCurrency(travaux)}`,
+    `Investissement total : ${formatCurrency(total)}`,
+    `Loyer annuel après travaux : ${formatCurrency(loyerApres * 12)}`,
+    `Charges annuelles : ${formatCurrency(charges)}`,
+    `Revenu net annuel après travaux : ${formatCurrency(revenuNetApres)}`,
+    `Formule : revenu net annuel / investissement total`,
+    `Rendement net après travaux : ${formatPercent(netApres, 2)}`,
+  ].join(" · ");
+
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: "Rendement net avant travaux",
+      value: formatPercent(netAvant, 2),
+      detail: `Investissement hors travaux : ${formatCurrency(prix + notaire)}`,
+    },
+    {
+      scenario: "Rendement net après travaux",
+      value: formatPercent(netApres, 2),
+      detail: `Investissement total : ${formatCurrency(total)}`,
+    },
+    {
+      scenario: "Gain de rendement",
+      value: formatPoints(gainRendement),
+      detail: `Surloyer : ${surloyerMensuel >= 0 ? "+" : ""}${formatCurrency(surloyerMensuel)}/mois`,
+    },
+    {
+      scenario: "Si les travaux coûtaient 10 % de moins",
+      value: formatPercent(netApresAlt, 2),
+      detail: `Travaux ${formatCurrency(travauxReduits)} · investissement ${formatCurrency(totalAlt)} · écart ${formatPoints(ecartPoints)}`,
+    },
+  ];
+
+  return mergeResult(result, {
+    primary: { label: "Rendement net après travaux", value: formatPercent(netApres, 2) },
+    narrative,
+    interpretation: rentabiliteApresTravauxInterpretation(gainRendement),
+    advice: rentabiliteApresTravauxAdvice(gainRendement),
+    lines: computed.lines.filter((line) => !line.highlight),
+    comparisons,
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculée votre rentabilité après travaux ?",
+        text: calculRentabiliteText,
+      },
+    ],
+  });
+}
+
+function scpiInterpretation(pct: number): ResultInterpretation {
+  if (pct < 3) {
+    return {
+      level: "warning",
+      badge: "Faible",
+      title: "Rendement faible",
+      message:
+        "Le rendement estimé reste modeste — les frais de souscription pèsent fortement sur le rendement réel.",
+    };
+  }
+  if (pct < 4) {
+    return {
+      level: "intermediate",
+      badge: "Correct",
+      title: "Rendement correct",
+      message:
+        "Le rendement est dans une fourchette courante pour une SCPI, sous réserve d'analyser l'historique de distribution.",
+    };
+  }
+  if (pct <= 5) {
+    return {
+      level: "favorable",
+      badge: "Bon",
+      title: "Bon rendement",
+      message:
+        "Le rendement estimé est cohérent avec une SCPI de rendement, mais il doit être analysé avec les frais, la liquidité, la qualité du patrimoine et l'historique de distribution.",
+    };
+  }
+  return {
+    level: "favorable",
+    badge: "Élevé",
+    title: "Rendement élevé",
+    message:
+      "Le rendement estimé est attractif — vérifiez sa durabilité et la solidité de la société de gestion.",
+  };
+}
+
+function scpiAdvice(pct: number, fraisPct: number): ResultAdvice {
+  const items: string[] = [
+    "Analysez l'historique de distribution sur 5 à 10 ans, pas une seule année.",
+    "Intégrez les frais de souscription dans le rendement réel sur le montant versé.",
+    "Vérifiez le taux d'occupation financier et la qualité du patrimoine sous-jacent.",
+    "Regardez la valeur de retrait et la liquidité des parts (délai de revente variable).",
+    "Comparez SCPI comptant, SCPI à crédit et immobilier locatif direct — ne vous limitez pas au rendement affiché.",
+  ];
+
+  if (fraisPct >= 10) {
+    items.unshift(
+      "Des frais de souscription élevés réduisent le rendement net — comparez plusieurs SCPI avant d'investir."
+    );
+  }
+  if (pct >= 5) {
+    items.push(
+      "Un rendement élevé peut refléter un risque patrimonial plus marqué — creusez la politique de distribution."
+    );
+  }
+
+  return { title: "Pour investir en SCPI", items: items.slice(0, 5) };
+}
+
+function enrichRentabiliteScpi(input: EnricherInput, result: SimulatorResult): SimulatorResult {
+  const montant = num(input.montantInvesti);
+  const prixPart = num(input.prixPart);
+  const tauxDistribution = num(input.tauxDistribution);
+  const fraisPct = num(input.fraisSouscription);
+
+  const computed = rentabiliteScpi.calculate({
+    montantInvesti: montant,
+    prixPart,
+    tauxDistribution,
+    fraisSouscription: fraisPct,
+  });
+
+  const readPercent = (pattern: string): number =>
+    findPercent(computed, pattern) ??
+    (result.primary && new RegExp(pattern, "i").test(result.primary.label)
+      ? parsePercent(result.primary.value)
+      : null) ??
+    findPercent(result, pattern) ??
+    0;
+
+  const readAmount = (pattern: string): number =>
+    findNumber(computed, pattern) ?? findNumber(result, pattern) ?? 0;
+
+  const pct = readPercent("rendement brut");
+  const frais = readAmount("frais de souscription");
+  const capitalNet = readAmount("capital net");
+  const distribution = readAmount("revenus annuels");
+  const distributionMensuelle = readAmount("revenus mensuels");
+
+  const narrative = `En investissant ${formatCurrency(montant)} avec ${formatPercent(fraisPct, 1)} de frais de souscription, le capital réellement placé est estimé à ${formatCurrency(capitalNet)}. Avec un taux de distribution de ${formatPercent(tauxDistribution, 1)}, la SCPI génère environ ${formatCurrency(distribution)}/an, soit ${formatCurrency(distributionMensuelle)}/mois, pour un rendement brut estimé de ${formatPercent(pct, 2)} sur le montant versé.`;
+
+  const fraisAlt = 8;
+  const computedFrais8 = rentabiliteScpi.calculate({
+    montantInvesti: montant,
+    prixPart,
+    tauxDistribution,
+    fraisSouscription: fraisAlt,
+  });
+  const pctAlt = findPercent(computedFrais8, "rendement brut") ?? 0;
+  const capitalNetAlt = findNumber(computedFrais8, "capital net") ?? 0;
+  const distributionAlt = findNumber(computedFrais8, "revenus annuels") ?? 0;
+  const fraisMontantAlt = findNumber(computedFrais8, "frais de souscription") ?? 0;
+  const ecartPoints = pctAlt - pct;
+
+  const formatPoints = (v: number) =>
+    `${v >= 0 ? "+" : ""}${v.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} point${Math.abs(v) >= 2 ? "s" : ""}`;
+
+  const calculScpiText = [
+    `Montant investi : ${formatCurrency(montant)}`,
+    `Frais de souscription : ${formatCurrency(montant)} × ${formatPercent(fraisPct, 1)} = ${formatCurrency(frais)}`,
+    `Capital net investi : ${formatCurrency(montant)} − ${formatCurrency(frais)} = ${formatCurrency(capitalNet)}`,
+    `Taux de distribution : ${formatPercent(tauxDistribution, 1)}`,
+    `Revenus annuels estimés : ${formatCurrency(capitalNet)} × ${formatPercent(tauxDistribution, 1)} = ${formatCurrency(distribution)}`,
+    `Revenus mensuels estimés : ${formatCurrency(distributionMensuelle)}`,
+    `Rendement sur montant versé : ${formatCurrency(distribution)} / ${formatCurrency(montant)} = ${formatPercent(pct, 2)}`,
+  ].join(" · ");
+
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: "Situation actuelle",
+      value: formatPercent(pct, 2),
+      detail: `Frais ${formatPercent(fraisPct, 1)} · revenus ${formatCurrency(distribution)}/an`,
+    },
+    {
+      scenario: "Si les frais de souscription étaient de 8 %",
+      value: formatPercent(pctAlt, 2),
+      detail: `Frais ${formatCurrency(fraisMontantAlt)} · capital net ${formatCurrency(capitalNetAlt)} · revenus ${formatCurrency(distributionAlt)}/an`,
+    },
+    {
+      scenario: "Écart de rendement",
+      value: formatPoints(ecartPoints),
+      detail: `Nouveau rendement : ${formatPercent(pctAlt, 2)}`,
+    },
+  ];
+
+  return mergeResult(result, {
+    primary: { label: "Rendement brut estimé", value: formatPercent(pct, 2) },
+    narrative,
+    interpretation: scpiInterpretation(pct),
+    advice: scpiAdvice(pct, fraisPct),
+    lines: computed.lines.filter((line) => !line.highlight),
+    comparisons,
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculée votre rentabilité SCPI ?",
+        text: calculScpiText,
+      },
+      {
+        variant: "note",
+        title: "À savoir",
+        text: "La revente des parts peut prendre 3 à 12 mois selon la SCPI — la liquidité reste inférieure à un achat immobilier direct ou à des titres cotés.",
+      },
+    ],
+  });
+}
+
+function lcdInterpretation(pct: number): ResultInterpretation {
+  if (pct < 3) {
+    return {
+      level: "warning",
+      badge: "Faible",
+      title: "Rentabilité faible",
+      message:
+        "Le rendement net reste modeste — vérifiez le prix par nuit, l'occupation réelle et le niveau de charges.",
+    };
+  }
+  if (pct < 5) {
+    return {
+      level: "intermediate",
+      badge: "Correcte",
+      title: "Rentabilité correcte",
+      message:
+        "Le rendement net est cohérent pour une LCD, sous réserve de valider l'occupation hors haute saison.",
+    };
+  }
+  if (pct <= 7) {
+    return {
+      level: "favorable",
+      badge: "Bon",
+      title: "Bonne rentabilité",
+      message:
+        "La location courte durée offre ici un rendement net attractif, mais il faut vérifier la saisonnalité, la réglementation locale, la charge de gestion et la vacance réelle.",
+    };
+  }
+  return {
+    level: "favorable",
+    badge: "Élevée",
+    title: "Rentabilité élevée",
+    message:
+      "Le rendement net estimé est élevé — confirmez-le avec un scénario basse saison et le temps de gestion réel.",
+  };
+}
+
+function lcdAdvice(pct: number): ResultAdvice {
+  const items: string[] = [
+    "Estimez prudemment l'occupation hors haute saison (50 à 65 % en moyenne annuelle).",
+    "Intégrez ménage, blanchisserie, conciergerie et taxe de séjour dans vos charges.",
+    "Vérifiez la réglementation locale (limites de nuitées, autorisation mairie, résidence principale).",
+    "Vérifiez le règlement de copropriété avant de passer en location courte durée.",
+    "Comparez avec une location meublée classique et testez un scénario basse saison.",
+  ];
+
+  if (pct >= 5) {
+    items.push(
+      "Un bon rendement net peut masquer un temps de gestion élevé — comparez le rendement horaire réel."
+    );
+  }
+
+  return { title: "Pour réussir en location courte durée", items: items.slice(0, 6) };
+}
+
+function enrichLocationCourteDuree(input: EnricherInput, result: SimulatorResult): SimulatorResult {
+  const invest = num(input.investissement);
+  const prixNuit = num(input.prixNuit);
+  const occupation = num(input.occupation);
+  const charges = num(input.chargesAnnuelles);
+  const commissionPct = num(input.commissionPlateforme);
+
+  const computed = rentabiliteLocationCourteDuree.calculate({
+    investissement: invest,
+    prixNuit,
+    occupation,
+    chargesAnnuelles: charges,
+    commissionPlateforme: commissionPct,
+  });
+
+  const readPercent = (pattern: string): number =>
+    findPercent(computed, pattern) ??
+    (result.primary && new RegExp(pattern, "i").test(result.primary.label)
+      ? parsePercent(result.primary.value)
+      : null) ??
+    findPercent(result, pattern) ??
+    0;
+
+  const readAmount = (pattern: string): number =>
+    findNumber(computed, pattern) ?? findNumber(result, pattern) ?? 0;
+
+  const pct = readPercent("rendement net");
+  const brut = readAmount("revenus bruts");
+  const commission = readAmount("commission annuelle");
+  const net = readAmount("revenus nets annuels");
+
+  const narrative = `Avec ${formatCurrency(prixNuit)}/nuit et ${formatPercent(occupation, 0)} d'occupation, la location courte durée génère environ ${formatCurrency(brut)} de revenus bruts par an. Après ${formatPercent(commissionPct, 0)} de commission plateforme et ${formatCurrency(charges)} de charges, le revenu net annuel est estimé à ${formatCurrency(net)}, soit un rendement net de ${formatPercent(pct, 2)} sur ${formatCurrency(invest)} investis.`;
+
+  const occupationAlt = 55;
+  const computedAlt = rentabiliteLocationCourteDuree.calculate({
+    investissement: invest,
+    prixNuit,
+    occupation: occupationAlt,
+    chargesAnnuelles: charges,
+    commissionPlateforme: commissionPct,
+  });
+  const pctAlt = findPercent(computedAlt, "rendement net") ?? 0;
+  const netAlt = findNumber(computedAlt, "revenus nets annuels") ?? 0;
+  const ecartPoints = pctAlt - pct;
+
+  const formatPoints = (v: number) =>
+    `${v >= 0 ? "+" : ""}${v.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} point${Math.abs(v) >= 2 ? "s" : ""}`;
+
+  const nuitsArrondies = Math.round(365 * (occupation / 100));
+  const nuitsAlt = Math.round(365 * (occupationAlt / 100));
+
+  const calculLcdText = [
+    `Nuits louées = 365 × ${formatPercent(occupation, 0)} = ${nuitsArrondies} nuits`,
+    `Revenus bruts = ${nuitsArrondies} × ${formatCurrency(prixNuit)} = ${formatCurrency(brut)}`,
+    `Commission plateforme = ${formatCurrency(brut)} × ${formatPercent(commissionPct, 0)} = ${formatCurrency(commission)}`,
+    `Revenus nets = ${formatCurrency(brut)} − ${formatCurrency(commission)} − ${formatCurrency(charges)} = ${formatCurrency(net)}`,
+    `Rendement net = ${formatCurrency(net)} / ${formatCurrency(invest)} = ${formatPercent(pct, 2)}`,
+  ].join(" · ");
+
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: "Situation actuelle",
+      value: formatPercent(pct, 2),
+      detail: `Occupation ${formatPercent(occupation, 0)} · revenus nets ${formatCurrency(net)}/an`,
+    },
+    {
+      scenario: "Si le taux d'occupation baissait à 55 %",
+      value: formatPercent(pctAlt, 2),
+      detail: `${nuitsAlt} nuits · revenus nets ${formatCurrency(netAlt)}/an`,
+    },
+    {
+      scenario: "Écart de rendement",
+      value: formatPoints(ecartPoints),
+      detail: `Nouveau rendement : ${formatPercent(pctAlt, 2)}`,
+    },
+  ];
 
   return mergeResult(result, {
     primary: { label: "Rendement net", value: formatPercent(pct, 2) },
     narrative,
-    interpretation: rendementNetInterpretation(pct),
-    advice: {
-      title: "Pour réussir en location courte durée",
-      items: [
-        "Estimez prudemment l'occupation hors haute saison (50 à 65 % en moyenne)",
-        "Intégrez ménage, blanchisserie, conciergerie et taxe de séjour",
-        "Vérifiez la réglementation locale (120 jours/an à Paris, autorisation mairie…)",
-        "Comparez avec une location meublée classique sur le même bien",
-      ],
-    },
+    interpretation: lcdInterpretation(pct),
+    advice: lcdAdvice(pct),
+    lines: computed.lines.filter((line) => !line.highlight),
+    comparisons,
     callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculée la rentabilité courte durée ?",
+        text: calculLcdText,
+      },
       {
         variant: "warning",
         title: "Attention",
-        text: "La réglementation varie fortement selon les communes — renseignez-vous avant d'investir.",
+        text: "La réglementation varie fortement selon les communes — renseignez-vous avant d'investir (limites de nuitées, autorisation, copropriété).",
       },
     ],
   });

@@ -39,20 +39,26 @@ export const rentabiliteScpi: SimulatorDefinition = {
   ]),
   calculate(input) {
     const montant = num(input.montantInvesti);
-    const frais = montant * (num(input.fraisSouscription) / 100);
+    const prixPart = num(input.prixPart);
+    const tauxDistribution = num(input.tauxDistribution);
+    const fraisPct = num(input.fraisSouscription);
+    const frais = montant * (fraisPct / 100);
     const capitalNet = montant - frais;
-    const distribution = capitalNet * (num(input.tauxDistribution) / 100);
+    const distribution = capitalNet * (tauxDistribution / 100);
     const rendement = montant > 0 ? (distribution / montant) * 100 : 0;
-    const nbParts = num(input.prixPart) > 0 ? Math.floor(montant / num(input.prixPart)) : 0;
+    const nbParts = prixPart > 0 ? Math.floor(montant / prixPart) : 0;
     return {
       summary: `Rendement SCPI estimé : ${formatPercent(rendement, 2)} — ${formatCurrency(distribution)}/an.`,
       lines: [
         { label: "Rendement brut estimé", value: formatPercent(rendement, 2), highlight: true },
-        { label: "Revenus annuels estimés", value: formatCurrency(distribution), highlight: true },
-        { label: "Revenus mensuels estimés", value: formatCurrency(distribution / 12) },
-        { label: "Capital net investi", value: formatCurrency(capitalNet) },
+        { label: "Montant investi", value: formatCurrency(montant) },
         { label: "Frais de souscription", value: formatCurrency(frais) },
-        { label: "Nombre de parts (estimé)", value: String(nbParts) },
+        { label: "Capital net investi", value: formatCurrency(capitalNet) },
+        { label: "Prix de souscription / part", value: formatCurrency(prixPart) },
+        { label: "Nombre de parts estimé", value: String(nbParts) },
+        { label: "Taux de distribution annuel", value: formatPercent(tauxDistribution, 1) },
+        { label: "Revenus annuels estimés", value: formatCurrency(distribution) },
+        { label: "Revenus mensuels estimés", value: formatCurrency(distribution / 12) },
       ],
     };
   },
@@ -92,20 +98,29 @@ export const rentabiliteLocationCourteDuree: SimulatorDefinition = {
   ]),
   calculate(input) {
     const invest = num(input.investissement);
-    const nuits = 365 * (num(input.occupation) / 100);
-    const brut = nuits * num(input.prixNuit);
-    const apresCommission = brut * (1 - num(input.commissionPlateforme) / 100);
-    const net = apresCommission - num(input.chargesAnnuelles);
+    const prixNuit = num(input.prixNuit);
+    const occupation = num(input.occupation);
+    const charges = num(input.chargesAnnuelles);
+    const commissionPct = num(input.commissionPlateforme);
+    const nuits = 365 * (occupation / 100);
+    const brut = nuits * prixNuit;
+    const commissionMontant = brut * (commissionPct / 100);
+    const apresCommission = brut - commissionMontant;
+    const net = apresCommission - charges;
     const rendement = invest > 0 ? (net / invest) * 100 : 0;
     return {
       summary: `Rendement net LCD : ${formatPercent(rendement, 2)} — ${formatCurrency(net)}/an.`,
       lines: [
         { label: "Rendement net", value: formatPercent(rendement, 2), highlight: true },
-        { label: "Revenus nets annuels", value: formatCurrency(net), highlight: true },
-        { label: "Revenus bruts annuels", value: formatCurrency(brut) },
-        { label: "Nuits louées / an", value: `${Math.round(nuits)} nuits` },
-        { label: "Charges annuelles", value: formatCurrency(num(input.chargesAnnuelles)) },
         { label: "Investissement total", value: formatCurrency(invest) },
+        { label: "Prix moyen par nuit", value: formatCurrency(prixNuit) },
+        { label: "Taux d'occupation", value: formatPercent(occupation, 0) },
+        { label: "Nuits louées par an", value: `${Math.round(nuits)} nuits` },
+        { label: "Revenus bruts annuels", value: formatCurrency(brut) },
+        { label: "Commission plateforme", value: formatPercent(commissionPct, 0) },
+        { label: "Commission annuelle estimée", value: formatCurrency(commissionMontant) },
+        { label: "Charges annuelles", value: formatCurrency(charges) },
+        { label: "Revenus nets annuels", value: formatCurrency(net) },
       ],
     };
   },
