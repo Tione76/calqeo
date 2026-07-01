@@ -14,6 +14,8 @@ import { SimulatorFAQ } from "@/components/simulator/SimulatorFAQ";
 import { RelatedSimulators } from "@/components/simulator/RelatedSimulators";
 import { RegulatorySourcesNotice } from "@/components/simulator/RegulatorySourcesNotice";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { ADSENSE_ENABLED } from "@/lib/ads";
+import { cn } from "@/lib/utils/cn";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -91,7 +93,12 @@ export default async function SimulatorPage({ params }: PageProps) {
           icon={simulator.icon}
         />
 
-        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start lg:gap-8">
+        <div
+          className={cn(
+            ADSENSE_ENABLED &&
+              "lg:grid lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start lg:gap-8"
+          )}
+        >
           <div className="min-w-0">
             <FormComponent />
 
@@ -109,11 +116,13 @@ export default async function SimulatorPage({ params }: PageProps) {
             </div>
           </div>
 
-          <div className="hidden lg:block">
-            <div className="sticky top-24">
-              <AdSlot placement="simulator-sidebar" />
+          {ADSENSE_ENABLED && (
+            <div className="hidden lg:block">
+              <div className="sticky top-24">
+                <AdSlot placement="simulator-sidebar" />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </>

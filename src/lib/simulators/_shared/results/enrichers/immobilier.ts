@@ -20,7 +20,10 @@ import {
   budgetTravaux,
   rentabiliteApresTravaux,
 } from "../../../additional/investissement";
-import { rentabiliteScpi, rentabiliteLocationCourteDuree } from "../../../additional/investissement-2";
+import { rentabiliteScpi, rentabiliteLocationCourteDuree, colocationRentabilite } from "../../../additional/investissement-2";
+import { impotRevenusFonciers, taxeFonciere, deficitFoncier, donationSuccession, locationMeubleeVsNue, ifiFortuneImmobiliere } from "../../../additional/fiscalite-2";
+import { encadrementLoyers, depotGarantieLocatif, chargesRecuperables, loyerChargesComprises } from "../../../additional/gestion-2";
+import { PFU_TAUX_PS } from "@/lib/config/fiscalite";
 import { monthlyPaymentFromLoan } from "@/lib/utils/format";
 import { IFI_SEUIL } from "@/data/regulations/ifi";
 import { estimerPtz } from "@/data/regulations/ptz";
@@ -3345,18 +3348,138 @@ function enrichLocationCourteDuree(input: EnricherInput, result: SimulatorResult
   });
 }
 
-function enrichColocation(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const pct = findPercent(result, "rendement net") ?? 0;
-  const nb = num(input.nbChambres);
-  const loyerChambre = num(input.loyerChambre);
-  const loyerTotal = loyerChambre * nb;
+function colocationInterpretation(pct: number): ResultInterpretation {
+  if (pct < 3) {
+    return {
+      level: "warning",
+      badge: "Faible",
+      title: "Rendement faible",
+      message:
+        "Le rendement net reste modeste — vérifiez le loyer par chambre, la vacance locative et le niveau de charges.",
+    };
+  }
+  if (pct < 5) {
+    return {
+      level: "intermediate",
+      badge: "Correcte",
+      title: "Rentabilité correcte",
+      message:
+        "Le rendement net est cohérent pour une colocation, sous réserve de valider la rotation locative et les charges réelles.",
+    };
+  }
+  if (pct <= 7) {
+    return {
+      level: "favorable",
+      badge: "Bonne",
+      title: "Bonne rentabilité",
+      message:
+        "La colocation offre ici un rendement net attractif — confirmez-le avec la vacance réelle et le temps de gestion.",
+    };
+  }
+  return {
+    level: "favorable",
+    badge: "Excellente",
+    title: "Excellente rentabilité",
+    message:
+      "Le rendement net estimé est élevé — vérifiez la réglementation locale, la surface minimum par chambre et la stabilité des locataires.",
+  };
+}
 
-  const narrative = `En colocation (${nb} chambres à ${formatCurrency(loyerChambre)}/mois), le loyer total atteint ${formatCurrency(loyerTotal)}/mois — le rendement net est de ${formatPercent(pct, 2)}, souvent supérieur à un bail unique au même loyer global.`;
+function enrichColocation(input: EnricherInput, result: SimulatorResult): SimulatorResult {
+  const prix = num(input.prix);
+  const notaire = num(input.notaire);
+  const travaux = num(input.travaux);
+  const nbChambres = num(input.nbChambres);
+  const loyerChambre = num(input.loyerChambre);
+  const charges = num(input.charges);
+  const vacance = num(input.vacance);
+
+  const computed = colocationRentabilite.calculate({
+    prix,
+    notaire,
+    travaux,
+    nbChambres,
+    loyerChambre,
+    charges,
+    vacance,
+  });
+
+  const readPercent = (pattern: string): number =>
+    findPercent(computed, pattern) ??
+    (result.primary && new RegExp(pattern, "i").test(result.primary.label)
+      ? parsePercent(result.primary.value)
+      : null) ??
+    0;
+
+  const readAmount = (pattern: string): number =>
+    findNumber(computed, pattern) ?? 0;
+
+  const pct = readPercent("rendement net");
+  const loyerMensuelTotal = readAmount("loyer mensuel total");
+  const loyersBruts = readAmount("loyers bruts annuels");
+  const perteVacance = readAmount("perte liée à la vacance");
+  const loyerEffectif = loyersBruts - perteVacance;
+  const net = readAmount("revenu net annuel");
+  const total = readAmount("investissement total");
+
+  const narrative = `En colocation (${nbChambres} chambres louées ${formatCurrency(loyerChambre)}/mois chacune), le loyer total atteint ${formatCurrency(loyerMensuelTotal)}/mois. Après prise en compte de la vacance locative et des charges, le rendement net est estimé à ${formatPercent(pct, 2)}.`;
+
+  const vacanceAlt = 8;
+  const computedVacanceAlt = colocationRentabilite.calculate({
+    prix,
+    notaire,
+    travaux,
+    nbChambres,
+    loyerChambre,
+    charges,
+    vacance: vacanceAlt,
+  });
+  const pctVacanceAlt = findPercent(computedVacanceAlt, "rendement net") ?? 0;
+  const ecartVacancePoints = pctVacanceAlt - pct;
+
+  const loyerAlt = 500;
+  const computedLoyerAlt = colocationRentabilite.calculate({
+    prix,
+    notaire,
+    travaux,
+    nbChambres,
+    loyerChambre: loyerAlt,
+    charges,
+    vacance,
+  });
+  const pctLoyerAlt = findPercent(computedLoyerAlt, "rendement net") ?? 0;
+  const gainLoyerPoints = pctLoyerAlt - pct;
+
+  const formatPoints = (v: number) =>
+    `${v >= 0 ? "+" : ""}${v.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} point${Math.abs(v) >= 2 ? "s" : ""}`;
+
+  const calculColocationText = [
+    `Loyers bruts annuels = ${formatCurrency(loyerChambre)} × ${nbChambres} × 12 = ${formatCurrency(loyersBruts)}`,
+    `Vacance locative = ${formatPercent(vacance, 0)} → perte ${formatCurrency(perteVacance)}`,
+    `Revenu après vacance = ${formatCurrency(loyersBruts)} − ${formatCurrency(perteVacance)} = ${formatCurrency(loyerEffectif)}`,
+    `Charges annuelles = ${formatCurrency(charges)}`,
+    `Revenu net annuel = ${formatCurrency(loyerEffectif)} − ${formatCurrency(charges)} = ${formatCurrency(net)}`,
+    `Investissement total = ${formatCurrency(total)}`,
+    `Rendement net = ${formatCurrency(net)} / ${formatCurrency(total)} = ${formatPercent(pct, 2)}`,
+  ].join(" · ");
+
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: `Vacance locative : ${formatPercent(vacance, 0)} → ${formatPercent(vacanceAlt, 0)}`,
+      value: formatPercent(pctVacanceAlt, 2),
+      detail: `Perte : ${formatPoints(ecartVacancePoints)}`,
+    },
+    {
+      scenario: `Loyer par chambre : ${formatCurrency(loyerChambre)} → ${formatCurrency(loyerAlt)}`,
+      value: formatPercent(pctLoyerAlt, 2),
+      detail: `Gain : ${formatPoints(gainLoyerPoints)}`,
+    },
+  ];
 
   return mergeResult(result, {
     primary: { label: "Rendement net", value: formatPercent(pct, 2) },
     narrative,
-    interpretation: rendementNetInterpretation(pct),
+    interpretation: colocationInterpretation(pct),
     advice: {
       title: "Pour investir en colocation",
       items: [
@@ -3364,40 +3487,143 @@ function enrichColocation(input: EnricherInput, result: SimulatorResult): Simula
         "Prévoyez plus de rotation locative qu'un bail classique",
         "Comparez bail unique colocation et baux individuels selon votre gestion",
         "Aménagez les espaces communs pour limiter les conflits",
+        "Prévoyez un mobilier robuste et facilement remplaçable",
+        "Anticipez les périodes de vacance entre deux colocataires",
+        "Optimisez les espaces communs (cuisine, salon) pour limiter les tensions",
       ],
     },
+    lines: computed.lines.filter((line) => !line.highlight),
+    comparisons,
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculée la rentabilité en colocation ?",
+        text: calculColocationText,
+      },
+    ],
   });
 }
 
 // ─── Fiscalité immobilière ─────────────────────────────────────────
 
+function impotFoncierInterpretation(
+  isMicro: boolean,
+  chosenIsBest: boolean,
+  economie: number,
+  charges: number
+): ResultInterpretation {
+  const ECART_FAIBLE = 150;
+
+  if (!chosenIsBest) {
+    const autreLabel = isMicro ? "Réel" : "Micro-foncier";
+    return {
+      level: "intermediate",
+      badge: autreLabel,
+      title: "Autre régime plus avantageux",
+      message: isMicro
+        ? `Avec ${formatCurrency(charges)} de charges déductibles, le régime réel réduit davantage la base imposable que le micro-foncier. L'économie estimée est d'environ ${formatCurrency(economie)}.`
+        : `Vos charges déductibles restent inférieures à l'abattement forfaitaire de 30 %. Le micro-foncier serait plus avantageux d'environ ${formatCurrency(economie)}.`,
+    };
+  }
+
+  if (economie <= ECART_FAIBLE) {
+    return {
+      level: "intermediate",
+      badge: "Proche",
+      title: "Écart limité",
+      message: `Les deux régimes se situent à moins de ${formatCurrency(economie)} d'écart — le choix peut aussi dépendre de la simplicité déclarative.`,
+    };
+  }
+
+  return {
+    level: "favorable",
+    badge: "Adapté",
+    title: "Régime adapté",
+    message: `Le ${isMicro ? "micro-foncier" : "régime réel"} choisi est le plus avantageux sur ce scénario, avec une économie estimée d'environ ${formatCurrency(economie)} par rapport à l'autre option.`,
+  };
+}
+
 function enrichImpotRevenusFonciers(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const loyers = num(input.loyersAnnuels);
   const charges = num(input.charges);
   const tmi = num(input.tmi);
-  const regime = String(input.regime) === "micro" ? "micro-foncier" : "régime réel";
-  const impot = findNumber(result, "impôt") ?? 0;
-  const impotAutre = findNumber(result, "autre régime") ?? 0;
-  const autreMoinsCher = impotAutre < impot;
+  const isMicro = String(input.regime) === "micro";
 
-  const narrative = `Sur ${formatCurrency(loyers)} de loyers annuels, ${formatCurrency(charges)} de charges déductibles en ${regime} (TMI ${formatPercent(tmi, 0)}), l'impôt estimé est de ${formatCurrency(impot)}/an${autreMoinsCher ? ` — l'autre régime serait plus avantageux (${formatCurrency(impotAutre)})` : ""}.`;
+  const computed = impotRevenusFonciers.calculate({
+    loyersAnnuels: loyers,
+    charges,
+    tmi,
+    regime: isMicro ? "micro" : "reel",
+  });
+
+  const readAmount = (pattern: string): number => {
+    const fromComputed = findNumber(computed, pattern);
+    if (fromComputed != null) return fromComputed;
+    if (
+      result.primary &&
+      new RegExp(pattern, "i").test(result.primary.label)
+    ) {
+      return parseFormattedNumber(result.primary.value) ?? 0;
+    }
+    return 0;
+  };
+
+  const readText = (pattern: string): string =>
+    findLine(computed, pattern)?.value ??
+    findLine(result, pattern)?.value ??
+    "";
+
+  const impotTotal = readAmount("impôt total estimé");
+  const baseMicro = readAmount("base imposable micro-foncier");
+  const baseReel = readAmount("base imposable régime réel");
+  const irMicro = readAmount("ir micro-foncier");
+  const psMicro = readAmount("ps micro-foncier");
+  const irReel = readAmount("ir régime réel");
+  const psReel = readAmount("ps régime réel");
+  const impotMicro = readAmount("impôt total micro-foncier");
+  const impotReel = readAmount("impôt total régime réel");
+  const economie = readAmount("économie estimée");
+  const meilleurRegime = readText("régime le plus avantageux");
+  const chosenIsBest =
+    meilleurRegime === (isMicro ? "Micro-foncier" : "Régime réel");
+
+  const baseChoisie = isMicro ? baseMicro : baseReel;
+  const narrativeMicro = `Sur ${formatCurrency(loyers)} de loyers annuels, le micro-foncier applique un abattement forfaitaire de 30 %, soit une base imposable de ${formatCurrency(baseChoisie)}. Avec une TMI de ${formatPercent(tmi, 0)} et les prélèvements sociaux de ${formatPercent(PFU_TAUX_PS * 100, 1)}, l'impôt total estimé est de ${formatCurrency(impotTotal)}/an.`;
+  const narrativeReel = `Sur ${formatCurrency(loyers)} de loyers annuels, le régime réel déduit ${formatCurrency(charges)} de charges déductibles, soit une base imposable de ${formatCurrency(baseChoisie)}. Avec une TMI de ${formatPercent(tmi, 0)} et les prélèvements sociaux de ${formatPercent(PFU_TAUX_PS * 100, 1)}, l'impôt total estimé est de ${formatCurrency(impotTotal)}/an.`;
+  const narrativeSuffix = !chosenIsBest
+    ? meilleurRegime === "Régime réel"
+      ? ` Dans ce cas, le régime réel serait plus avantageux d'environ ${formatCurrency(economie)} grâce aux charges déductibles.`
+      : ` Dans ce cas, le micro-foncier serait plus avantageux d'environ ${formatCurrency(economie)} grâce à l'abattement forfaitaire de 30 %.`
+    : "";
+  const narrative = `${isMicro ? narrativeMicro : narrativeReel}${narrativeSuffix}`;
+
+  const calculImpotText = [
+    `Micro-foncier : base = ${formatCurrency(loyers)} × 70 % = ${formatCurrency(baseMicro)} · IR = ${formatCurrency(baseMicro)} × ${formatPercent(tmi, 0)} = ${formatCurrency(irMicro)} · PS = ${formatCurrency(baseMicro)} × ${formatPercent(PFU_TAUX_PS * 100, 1)} = ${formatCurrency(psMicro)} · total = ${formatCurrency(impotMicro)}`,
+    `Régime réel : base = ${formatCurrency(loyers)} − ${formatCurrency(charges)} = ${formatCurrency(baseReel)} · IR = ${formatCurrency(baseReel)} × ${formatPercent(tmi, 0)} = ${formatCurrency(irReel)} · PS = ${formatCurrency(baseReel)} × ${formatPercent(PFU_TAUX_PS * 100, 1)} = ${formatCurrency(psReel)} · total = ${formatCurrency(impotReel)}`,
+  ].join(" · ");
+
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: "Impôt en micro-foncier",
+      value: formatCurrency(impotMicro),
+      detail: `IR ${formatCurrency(irMicro)} + PS ${formatCurrency(psMicro)}`,
+    },
+    {
+      scenario: "Impôt au régime réel",
+      value: formatCurrency(impotReel),
+      detail: `IR ${formatCurrency(irReel)} + PS ${formatCurrency(psReel)}`,
+    },
+    {
+      scenario: "Régime le plus avantageux",
+      value: meilleurRegime,
+      detail: `Économie estimée : ${formatCurrency(economie)}`,
+    },
+  ];
 
   return mergeResult(result, {
-    primary: { label: "Impôt estimé", value: formatCurrency(impot) },
+    primary: { label: "Impôt total estimé", value: formatCurrency(impotTotal) },
     narrative,
-    interpretation: autreMoinsCher
-      ? {
-          level: "intermediate",
-          badge: "Optimisable",
-          title: "Régime sous-optimal",
-          message: "L'autre régime fiscal réduirait votre impôt — comparez avant la déclaration.",
-        }
-      : {
-          level: "favorable",
-          badge: "Adapté",
-          title: "Régime cohérent",
-          message: "Le régime choisi semble adapté à votre niveau de charges.",
-        },
+    interpretation: impotFoncierInterpretation(isMicro, chosenIsBest, economie, charges),
     advice: {
       title: "Pour optimiser vos revenus fonciers",
       items: [
@@ -3405,39 +3631,134 @@ function enrichImpotRevenusFonciers(input: EnricherInput, result: SimulatorResul
         "Conservez toutes les factures de charges en régime réel",
         "Les intérêts d'emprunt ne sont déductibles qu'au réel",
         "Anticipez les prélèvements sociaux (17,2 %) en plus de l'IR",
+        "Vérifiez le plafond de 15 000 € de loyers pour rester au micro-foncier",
+        "Au réel, l'option est valable 3 ans — le retour au micro reste possible si éligible",
       ],
     },
-    comparisons: [
+    lines: computed.lines.filter((line) => !line.highlight),
+    comparisons,
+    callouts: [
       {
-        scenario: `Impôt en ${regime}`,
-        value: formatCurrency(impot),
-      },
-      {
-        scenario: "Impôt avec l'autre régime",
-        value: formatCurrency(impotAutre),
-        detail: autreMoinsCher ? "Régime alternatif plus avantageux" : undefined,
+        variant: "note",
+        title: "Comment est calculé l'impôt sur les revenus fonciers ?",
+        text: calculImpotText,
       },
     ],
   });
 }
 
+function taxeFonciereInterpretation(taxe: number): ResultInterpretation {
+  if (taxe < 700) {
+    return {
+      level: "favorable",
+      badge: "Faible",
+      title: "Charge faible",
+      message:
+        "La taxe foncière estimée reste modeste — intégrez-la tout de même dans votre budget propriétaire.",
+    };
+  }
+  if (taxe < 1500) {
+    return {
+      level: "intermediate",
+      badge: "Modérée",
+      title: "Charge modérée",
+      message:
+        "Le montant se situe dans une fourchette courante pour un bien locatif — vérifiez les exonérations possibles.",
+    };
+  }
+  if (taxe <= 2500) {
+    return {
+      level: "intermediate",
+      badge: "Élevée",
+      title: "Charge élevée",
+      message:
+        "La taxe foncière pèse sensiblement sur la rentabilité — comparez les communes avant d'investir.",
+    };
+  }
+  return {
+    level: "warning",
+    badge: "Très élevée",
+    title: "Charge très élevée",
+    message:
+      "Le montant estimé est élevé — vérifiez la VLC sur votre avis et l'évolution récente des taux locaux.",
+  };
+}
+
 function enrichTaxeFonciere(input: EnricherInput, result: SimulatorResult): SimulatorResult {
   const vlc = num(input.vlc);
-  const taxe = findNumber(result, "taxe foncière") ?? 0;
   const tauxCommune = num(input.tauxCommune);
   const tauxInterco = num(input.tauxInterco);
+  const tauxDepartement = 10;
 
-  const narrative = `Avec une VLC de ${formatCurrency(vlc)} et des taux locaux de ${formatPercent(tauxCommune + tauxInterco + 10, 1)} (commune + interco + département estimé), la taxe foncière tourne autour de ${formatCurrency(taxe)}/an — charge à intégrer en rendement net locatif.`;
+  const computed = taxeFonciere.calculate({ vlc, tauxCommune, tauxInterco });
+
+  const readAmount = (pattern: string): number => {
+    const fromComputed = findNumber(computed, pattern);
+    if (fromComputed != null) return fromComputed;
+    if (
+      result.primary &&
+      new RegExp(pattern, "i").test(result.primary.label)
+    ) {
+      return parseFormattedNumber(result.primary.value) ?? 0;
+    }
+    return 0;
+  };
+
+  const taxe = readAmount("taxe foncière estimée");
+  const base = readAmount("base imposable");
+  const tauxGlobal = tauxCommune + tauxInterco + tauxDepartement;
+
+  const narrative = `Avec une valeur locative cadastrale de ${formatCurrency(vlc)} et un taux global de ${formatPercent(tauxGlobal, 1)}, la taxe foncière estimée est d'environ ${formatCurrency(taxe)}/an.`;
+
+  const tauxCommuneAlt = 30;
+  const computedTauxAlt = taxeFonciere.calculate({
+    vlc,
+    tauxCommune: tauxCommuneAlt,
+    tauxInterco,
+  });
+  const taxeTauxAlt = findNumber(computedTauxAlt, "taxe foncière estimée") ?? 0;
+  const ecartTaux = taxeTauxAlt - taxe;
+
+  const vlcAlt = vlc * 1.1;
+  const computedVlcAlt = taxeFonciere.calculate({
+    vlc: vlcAlt,
+    tauxCommune,
+    tauxInterco,
+  });
+  const taxeVlcAlt = findNumber(computedVlcAlt, "taxe foncière estimée") ?? 0;
+  const ecartVlc = taxeVlcAlt - taxe;
+
+  const formatEcart = (ecart: number) =>
+    `${ecart >= 0 ? "+" : ""}${formatCurrency(ecart)}/an`;
+
+  const calculTaxeText = [
+    `Valeur locative cadastrale : ${formatCurrency(vlc)}`,
+    `abattement légal 50 %`,
+    `Base imposable : ${formatCurrency(base)}`,
+    `Taux communal : ${formatPercent(tauxCommune, 1)}`,
+    `Taux intercommunal : ${formatPercent(tauxInterco, 1)}`,
+    `Taux départemental estimé : ${formatPercent(tauxDepartement, 0)}`,
+    `Taux global : ${formatPercent(tauxGlobal, 1)}`,
+    `Taxe foncière estimée : ${formatCurrency(taxe)}`,
+  ].join(" · ");
+
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: `Si le taux communal passait à ${formatPercent(tauxCommuneAlt, 0)}`,
+      value: formatCurrency(taxeTauxAlt),
+      detail: `Écart : ${formatEcart(ecartTaux)}`,
+    },
+    {
+      scenario: "Si la valeur locative cadastrale augmentait de 10 %",
+      value: formatCurrency(taxeVlcAlt),
+      detail: `Écart : ${formatEcart(ecartVlc)} · VLC ${formatCurrency(vlcAlt)}`,
+    },
+  ];
 
   return mergeResult(result, {
     primary: { label: "Taxe foncière estimée", value: formatCurrency(taxe) },
     narrative,
-    interpretation: {
-      level: "neutral",
-      badge: "Charge propriétaire",
-      title: "Impôt local",
-      message: "La taxe foncière est due par le propriétaire — déductible au régime réel, pas au micro-foncier.",
-    },
+    interpretation: taxeFonciereInterpretation(taxe),
     advice: {
       title: "Pour maîtriser la taxe foncière",
       items: [
@@ -3445,29 +3766,97 @@ function enrichTaxeFonciere(input: EnricherInput, result: SimulatorResult): Simu
         "Vérifiez les exonérations possibles (neuf, seniors, rénovation énergétique…)",
         "Intégrez-la dans le calcul du rendement net locatif",
         "Les taux varient fortement selon la commune — comparez avant d'acheter",
+        "La révision triennale des valeurs cadastrales peut augmenter la taxe indépendamment des taux",
       ],
     },
+    lines: computed.lines.filter((line) => !line.highlight),
+    comparisons,
     callouts: [
       {
-        variant: "info",
-        title: "Bon à savoir",
-        text: "La révision triennale des valeurs cadastrales peut faire augmenter la taxe indépendamment des taux locaux.",
+        variant: "note",
+        title: "Comment est calculée la taxe foncière ?",
+        text: calculTaxeText,
       },
     ],
   });
 }
 
+function readComputedAmount(
+  computed: SimulatorResult,
+  result: SimulatorResult,
+  pattern: string | RegExp
+): number {
+  const fromComputed = findNumber(computed, pattern);
+  if (fromComputed != null) return fromComputed;
+  const re = typeof pattern === "string" ? pattern : pattern.source;
+  if (result.primary && new RegExp(re, "i").test(result.primary.label)) {
+    return parseFormattedNumber(result.primary.value) ?? 0;
+  }
+  return 0;
+}
+
+function readComputedPercent(
+  computed: SimulatorResult,
+  result: SimulatorResult,
+  pattern: string | RegExp
+): number {
+  const fromComputed = findPercent(computed, pattern);
+  if (fromComputed != null) return fromComputed;
+  const re = typeof pattern === "string" ? pattern : pattern.source;
+  if (result.primary && new RegExp(re, "i").test(result.primary.label)) {
+    return parsePercent(result.primary.value) ?? parseFormattedNumber(result.primary.value) ?? 0;
+  }
+  return 0;
+}
+
+function readComputedText(
+  computed: SimulatorResult,
+  result: SimulatorResult,
+  pattern: string | RegExp
+): string {
+  return (
+    findLine(computed, pattern)?.value ??
+    findLine(result, pattern)?.value ??
+    ""
+  );
+}
+
 function enrichDeficitFoncier(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const deficit = findNumber(result, "déficit foncier") ?? 0;
-  const imputable = findNumber(result, "imputable") ?? 0;
-  const eco = findNumber(result, "économie") ?? 0;
-  const travaux = num(input.travaux);
   const tmi = num(input.tmi);
+  const computed = deficitFoncier.calculate({
+    loyers: num(input.loyers),
+    charges: num(input.charges),
+    interets: num(input.interets),
+    travaux: num(input.travaux),
+    tmi,
+  });
+
+  const readAmount = (pattern: string) => readComputedAmount(computed, result, pattern);
+
+  const deficit = readAmount("déficit foncier total");
+  const imputable = readAmount("imputable sur revenu global");
+  const eco = readAmount("économie");
+  const reportable = readAmount("reportable");
+  const loyers = readAmount("loyers annuels");
+  const charges = readAmount("charges hors intérêts");
+  const interets = readAmount("intérêts");
+  const travaux = readAmount("travaux");
 
   const narrative =
     deficit > 0
-      ? `Vos ${formatCurrency(travaux)} de travaux (TMI ${formatPercent(tmi, 0)}) génèrent un déficit de ${formatCurrency(deficit)} — ${formatCurrency(imputable)} imputables sur le revenu global, soit ${formatCurrency(eco)} d'économie d'impôt estimée.`
-      : `Vos loyers couvrent les charges cette année — pas de déficit foncier imputable sur le revenu global.`;
+      ? `Sur ${formatCurrency(loyers)} de loyers, ${formatCurrency(charges)} de charges, ${formatCurrency(interets)} d'intérêts et ${formatCurrency(travaux)} de travaux, le déficit foncier atteint ${formatCurrency(deficit)} — dont ${formatCurrency(imputable)} imputables sur le revenu global (TMI ${formatPercent(tmi, 0)}), soit ${formatCurrency(eco)} d'économie d'impôt estimée.`
+      : `Vos loyers de ${formatCurrency(loyers)} couvrent les charges cette année — pas de déficit foncier imputable sur le revenu global.`;
+
+  const calculText = [
+    `Loyers : ${formatCurrency(loyers)}`,
+    `Charges hors intérêts : ${formatCurrency(charges)}`,
+    `Intérêts : ${formatCurrency(interets)}`,
+    `Travaux : ${formatCurrency(travaux)}`,
+    `Déficit total : ${formatCurrency(deficit)}`,
+    `Imputable revenu global (max 10 700 €) : ${formatCurrency(imputable)}`,
+    `Reportable sur revenus fonciers : ${formatCurrency(reportable)}`,
+    `Économie d'impôt : ${formatCurrency(eco)}`,
+  ].join(" · ");
 
   return mergeResult(result, {
     primary: {
@@ -3498,7 +3887,13 @@ function enrichDeficitFoncier(input: EnricherInput, result: SimulatorResult): Si
         "L'excédent au-delà de 10 700 € est reportable 10 ans sur les revenus fonciers",
       ],
     },
+    lines: computed.lines.filter((line) => !line.highlight),
     callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculé le déficit foncier ?",
+        text: calculText,
+      },
       {
         variant: "note",
         title: "À savoir",
@@ -3509,10 +3904,19 @@ function enrichDeficitFoncier(input: EnricherInput, result: SimulatorResult): Si
 }
 
 function enrichDonationSuccession(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const valeur = num(input.valeurBien);
+  const computed = donationSuccession.calculate({
+    valeurBien: num(input.valeurBien),
+    lien: String(input.lien),
+    abattementUtilise: num(input.abattementUtilise),
+  });
+
+  const readAmount = (pattern: string) => readComputedAmount(computed, result, pattern);
+
+  const valeur = readAmount("valeur transmise") || num(input.valeurBien);
   const lien = String(input.lien);
-  const droits = findNumber(result, "droits") ?? 0;
-  const base = findNumber(result, "base taxable") ?? 0;
+  const droits = readAmount("droits");
+  const base = readAmount("base taxable");
+  const abattement = readAmount("abattement");
   const exonere = lien === "conjoint";
 
   const liensLabel: Record<string, string> = {
@@ -3524,7 +3928,16 @@ function enrichDonationSuccession(input: EnricherInput, result: SimulatorResult)
 
   const narrative = exonere
     ? `La transmission de ${formatCurrency(valeur)} entre conjoints ou partenaires PACS est exonérée de droits de mutation.`
-    : `Transmettre un bien de ${formatCurrency(valeur)} (${liensLabel[lien] ?? lien}) génère ${formatCurrency(droits)} de droits estimés sur une base taxable de ${formatCurrency(base)} après abattements.`;
+    : `Transmettre un bien de ${formatCurrency(valeur)} (${liensLabel[lien] ?? lien}) génère ${formatCurrency(droits)} de droits estimés sur une base taxable de ${formatCurrency(base)} après abattement de ${formatCurrency(abattement)}.`;
+
+  const calculText = exonere
+    ? `Valeur transmise : ${formatCurrency(valeur)} · Exonération totale conjoint/PACS`
+    : [
+        `Valeur transmise : ${formatCurrency(valeur)}`,
+        `Abattement : ${formatCurrency(abattement)}`,
+        `Base taxable : ${formatCurrency(base)}`,
+        `Droits estimés (barème progressif) : ${formatCurrency(droits)}`,
+      ].join(" · ");
 
   return mergeResult(result, {
     primary: { label: "Droits estimés", value: formatCurrency(droits) },
@@ -3558,7 +3971,13 @@ function enrichDonationSuccession(input: EnricherInput, result: SimulatorResult)
         "Complétez avec l'assurance-vie pour transmettre hors immobilier",
       ],
     },
+    lines: computed.lines.filter((line) => !line.highlight),
     callouts: [
+      {
+        variant: "note",
+        title: "Comment sont calculés les droits ?",
+        text: calculText,
+      },
       {
         variant: "note",
         title: "À savoir",
@@ -3569,13 +3988,35 @@ function enrichDonationSuccession(input: EnricherInput, result: SimulatorResult)
 }
 
 function enrichLocationMeubleeVsNue(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const rendNue = findPercent(result, "nue") ?? 0;
-  const rendMeublee = findPercent(result, "meublée") ?? 0;
+  const computed = locationMeubleeVsNue.calculate({
+    investissement: num(input.investissement),
+    loyerNue: num(input.loyerNue),
+    loyerMeublee: num(input.loyerMeublee),
+    chargesNue: num(input.chargesNue),
+    chargesMeublee: num(input.chargesMeublee),
+    tmi: num(input.tmi),
+  });
+
+  const readPercent = (pattern: string) => readComputedPercent(computed, result, pattern);
+
+  const rendNue = readPercent("rendement net nue");
+  const rendMeublee = readPercent("rendement net meublée");
+  const ecart = readPercent("écart");
   const loyerNue = num(input.loyerNue);
   const loyerMeublee = num(input.loyerMeublee);
   const gagnant = rendMeublee > rendNue ? "meublée" : "nue";
 
-  const narrative = `À ${formatCurrency(loyerNue)}/mois en nu vs ${formatCurrency(loyerMeublee)}/mois en meublé, le rendement net après impôt est de ${formatPercent(rendNue, 2)} (nu) et ${formatPercent(rendMeublee, 2)} (meublé) — la location ${gagnant} ressort plus performante sur ce scénario.`;
+  const narrative = `À ${formatCurrency(loyerNue)}/mois en nu vs ${formatCurrency(loyerMeublee)}/mois en meublé, le rendement net après impôt est de ${formatPercent(rendNue, 2)} (nu) et ${formatPercent(rendMeublee, 2)} (meublé) — la location ${gagnant} ressort plus performante (écart ${formatPercent(ecart, 2)}).`;
+
+  const calculText = [
+    `Investissement : ${readComputedText(computed, result, "investissement")}`,
+    `Loyers annuels nue : ${readComputedText(computed, result, "loyers annuels nue")}`,
+    `Loyers annuels meublée : ${readComputedText(computed, result, "loyers annuels meublée")}`,
+    `Impôt nue (micro-foncier) : ${readComputedText(computed, result, "impôt nue")}`,
+    `Impôt meublée (micro-BIC) : ${readComputedText(computed, result, "impôt meublée")}`,
+    `Rendement net nue : ${formatPercent(rendNue, 2)}`,
+    `Rendement net meublée : ${formatPercent(rendMeublee, 2)}`,
+  ].join(" · ");
 
   return mergeResult(result, {
     primary: {
@@ -3601,24 +4042,54 @@ function enrichLocationMeubleeVsNue(input: EnricherInput, result: SimulatorResul
         "Vérifiez la demande locative meublée vs nue dans votre secteur",
       ],
     },
+    lines: computed.lines.filter((line) => !line.highlight),
     comparisons: [
       { scenario: "Rendement net nue (après impôt)", value: formatPercent(rendNue, 2) },
       { scenario: "Rendement net meublée (après impôt)", value: formatPercent(rendMeublee, 2) },
+      {
+        scenario: "Écart meublée vs nue",
+        value: formatPercent(ecart, 2),
+        detail: `Impôt nue : ${readComputedText(computed, result, "impôt nue")} · Impôt meublée : ${readComputedText(computed, result, "impôt meublée")}`,
+      },
+    ],
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculé le rendement net ?",
+        text: calculText,
+      },
     ],
   });
 }
 
 function enrichIfi(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const brut = num(input.patrimoineBrut);
-  const dettes = num(input.dettes);
-  const rp = num(input.valeurRP);
-  const ifi = findNumber(result, "IFI") ?? 0;
-  const net = findNumber(result, "net taxable") ?? 0;
+  const computed = ifiFortuneImmobiliere.calculate({
+    patrimoineBrut: num(input.patrimoineBrut),
+    dettes: num(input.dettes),
+    valeurRP: num(input.valeurRP),
+  });
+
+  const readAmount = (pattern: string) => readComputedAmount(computed, result, pattern);
+
+  const brut = readAmount("patrimoine brut") || num(input.patrimoineBrut);
+  const dettes = readAmount("dettes") || num(input.dettes);
+  const abattementRP = readAmount("abattement");
+  const net = readAmount("patrimoine net taxable");
+  const ifi = readAmount("IFI");
   const sousSeuil = net <= IFI_SEUIL;
 
   const narrative = sousSeuil
-    ? `Avec ${formatCurrency(brut)} de patrimoine brut, ${formatCurrency(dettes)} de dettes et ${formatCurrency(rp)} de résidence principale (abattement 30 %), le patrimoine net taxable (${formatCurrency(net)}) reste sous le seuil de 1,3 M€ — pas d'IFI.`
-    : `Patrimoine net taxable de ${formatCurrency(net)} (après abattement RP et dettes) — l'IFI estimé est de ${formatCurrency(ifi)}/an sur ${formatCurrency(brut)} de patrimoine immobilier brut.`;
+    ? `Avec ${formatCurrency(brut)} de patrimoine brut, ${formatCurrency(dettes)} de dettes et un abattement RP de ${formatCurrency(abattementRP)}, le patrimoine net taxable (${formatCurrency(net)}) reste sous le seuil de 1,3 M€ — pas d'IFI.`
+    : `Patrimoine net taxable de ${formatCurrency(net)} (après abattement RP de ${formatCurrency(abattementRP)} et ${formatCurrency(dettes)} de dettes) — l'IFI estimé est de ${formatCurrency(ifi)}/an sur ${formatCurrency(brut)} de patrimoine immobilier brut.`;
+
+  const calculText = [
+    `Patrimoine brut : ${formatCurrency(brut)}`,
+    `Abattement résidence principale (30 %) : ${formatCurrency(abattementRP)}`,
+    `Dettes déductibles : ${formatCurrency(dettes)}`,
+    `Patrimoine net taxable : ${formatCurrency(net)}`,
+    `Seuil IFI : ${formatCurrency(IFI_SEUIL)}`,
+    `IFI estimé : ${formatCurrency(ifi)}`,
+  ].join(" · ");
 
   return mergeResult(result, {
     primary: { label: "IFI estimé", value: formatCurrency(ifi) },
@@ -3652,7 +4123,13 @@ function enrichIfi(input: EnricherInput, result: SimulatorResult): SimulatorResu
         "Consultez un conseiller patrimonial pour une stratégie globale",
       ],
     },
+    lines: computed.lines.filter((line) => !line.highlight),
     callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculé l'IFI ?",
+        text: calculText,
+      },
       {
         variant: "info",
         title: "Bon à savoir",
@@ -3703,16 +4180,38 @@ function enrichRevisionIrl(input: EnricherInput, result: SimulatorResult): Simul
 }
 
 function enrichEncadrementLoyers(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const plafond = findNumber(result, "maximum") ?? 0;
-  const actuel = num(input.loyerActuel);
-  const depassement = findNumber(result, "dépassement") ?? 0;
+  const computed = encadrementLoyers.calculate({
+    loyerReference: num(input.loyerReference),
+    surface: num(input.surface),
+    complementLoyer: num(input.complementLoyer),
+    loyerActuel: num(input.loyerActuel),
+    zone: String(input.zone),
+  });
+
+  const readAmount = (pattern: string) => readComputedAmount(computed, result, pattern);
+
+  const plafond = readAmount("loyer maximum");
+  const actuel = readAmount("loyer actuel") || num(input.loyerActuel);
+  const depassement = readAmount("dépassement");
+  const refTotal = readAmount("référence \\(total\\)");
   const conforme = actuel <= plafond;
   const surface = num(input.surface);
   const ref = num(input.loyerReference);
+  const majoration = readComputedText(computed, result, "majoration");
+  const complement = readAmount("complément");
 
   const narrative = conforme
-    ? `Pour ${surface} m² à ${formatCurrency(ref)}/m² de référence, votre loyer de ${formatCurrency(actuel)}/mois reste sous le plafond de ${formatCurrency(plafond)}.`
-    : `Avec un loyer de référence de ${formatCurrency(ref)}/m² sur ${surface} m², le plafond est ${formatCurrency(plafond)}/mois — votre loyer de ${formatCurrency(actuel)} le dépasse de ${formatCurrency(depassement)}.`;
+    ? `Pour ${surface} m² à ${formatCurrency(ref)}/m² de référence (${majoration}), votre loyer de ${formatCurrency(actuel)}/mois reste sous le plafond de ${formatCurrency(plafond)}.`
+    : `Avec un loyer de référence de ${formatCurrency(ref)}/m² sur ${surface} m² (${majoration}), le plafond est ${formatCurrency(plafond)}/mois — votre loyer de ${formatCurrency(actuel)} le dépasse de ${formatCurrency(depassement)}.`;
+
+  const calculText = [
+    `Loyer de référence : ${formatCurrency(ref)}/m² × ${surface} m² = ${formatCurrency(refTotal)}`,
+    `Majoration : ${majoration}`,
+    `Complément de loyer : ${formatCurrency(complement)}`,
+    `Plafond : ${formatCurrency(plafond)}`,
+    `Loyer actuel : ${formatCurrency(actuel)}`,
+    `Dépassement : ${formatCurrency(depassement)}`,
+  ].join(" · ");
 
   return mergeResult(result, {
     primary: { label: "Loyer maximum autorisé", value: formatCurrency(plafond) },
@@ -3739,20 +4238,45 @@ function enrichEncadrementLoyers(input: EnricherInput, result: SimulatorResult):
         "En cas de doute, contactez la commission de conciliation locale",
       ],
     },
+    lines: computed.lines.filter((line) => !line.highlight),
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculé le plafond ?",
+        text: calculText,
+      },
+    ],
   });
 }
 
 function enrichDepotGarantie(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const plafond = findNumber(result, "maximum") ?? 0;
-  const loyer = num(input.loyerHC);
+  const computed = depotGarantieLocatif.calculate({
+    loyerHC: num(input.loyerHC),
+    typeBail: String(input.typeBail),
+    depotDemande: num(input.depotDemande),
+  });
+
+  const readAmount = (pattern: string) => readComputedAmount(computed, result, pattern);
+
+  const plafond = readAmount("dépôt maximum");
+  const loyer = readAmount("loyer hors charges") || num(input.loyerHC);
   const type = String(input.typeBail) === "meuble" ? "meublé" : "nu";
-  const demande = num(input.depotDemande);
+  const demande = readAmount("dépôt demandé") || num(input.depotDemande);
   const conforme = demande <= 0 || demande <= plafond;
 
   const narrative =
     demande > 0
       ? `En location ${type}, le plafond légal est ${formatCurrency(plafond)} (${type === "meublé" ? "1 mois" : "2 mois"} HC sur ${formatCurrency(loyer)}/mois) — le dépôt demandé de ${formatCurrency(demande)} est ${conforme ? "conforme" : "non conforme"}.`
       : `Pour un loyer de ${formatCurrency(loyer)}/mois en location ${type}, le dépôt de garantie ne peut excéder ${formatCurrency(plafond)} (${type === "meublé" ? "1 mois" : "2 mois"} hors charges).`;
+
+  const calculText = [
+    `Type de bail : ${type}`,
+    `Loyer hors charges : ${formatCurrency(loyer)}`,
+    `Plafond légal : ${type === "meublé" ? "1 mois" : "2 mois"} HC = ${formatCurrency(plafond)}`,
+    demande > 0 ? `Dépôt demandé : ${formatCurrency(demande)}` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return mergeResult(result, {
     primary: { label: "Dépôt maximum légal", value: formatCurrency(plafond) },
@@ -3779,14 +4303,42 @@ function enrichDepotGarantie(input: EnricherInput, result: SimulatorResult): Sim
         "Les retenues pour dégradations doivent être justifiées",
       ],
     },
+    lines: computed.lines.filter((line) => !line.highlight),
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculé le dépôt maximum ?",
+        text: calculText,
+      },
+    ],
   });
 }
 
 function enrichChargesRecuperables(input: EnricherInput, result: SimulatorResult): SimulatorResult {
-  const total = findNumber(result, "total") ?? 0;
-  const mensuel = findNumber(result, "mensuelle") ?? total / 12;
+  const computed = chargesRecuperables.calculate({
+    chargesCopro: num(input.chargesCopro),
+    eau: num(input.eau),
+    chauffage: num(input.chauffage),
+    ordures: num(input.ordures),
+    entretien: num(input.entretien),
+  });
+
+  const readAmount = (pattern: string) => readComputedAmount(computed, result, pattern);
+
+  const total = readAmount("total charges");
+  const mensuel = readAmount("provision mensuelle") || total / 12;
 
   const narrative = `Entre copropriété (${formatCurrency(num(input.chargesCopro))}), eau (${formatCurrency(num(input.eau))}), chauffage (${formatCurrency(num(input.chauffage))}), TEOM (${formatCurrency(num(input.ordures))}) et entretien (${formatCurrency(num(input.entretien))}), ${formatCurrency(total)}/an sont récupérables — soit ${formatCurrency(mensuel)}/mois de provision.`;
+
+  const calculText = [
+    `Copropriété : ${formatCurrency(num(input.chargesCopro))}`,
+    `Eau : ${formatCurrency(num(input.eau))}`,
+    `Chauffage : ${formatCurrency(num(input.chauffage))}`,
+    `TEOM : ${formatCurrency(num(input.ordures))}`,
+    `Entretien : ${formatCurrency(num(input.entretien))}`,
+    `Total annuel : ${formatCurrency(total)}`,
+    `Provision mensuelle : ${formatCurrency(mensuel)}`,
+  ].join(" · ");
 
   return mergeResult(result, {
     primary: { label: "Total charges récupérables", value: formatCurrency(total) },
@@ -3806,7 +4358,13 @@ function enrichChargesRecuperables(input: EnricherInput, result: SimulatorResult
         "Conservez les factures et répartitions de copropriété",
       ],
     },
+    lines: computed.lines.filter((line) => !line.highlight),
     callouts: [
+      {
+        variant: "note",
+        title: "Comment sont calculées les charges récupérables ?",
+        text: calculText,
+      },
       {
         variant: "info",
         title: "Bon à savoir",
@@ -3846,15 +4404,33 @@ function enrichRevisionLoyerCommercial(input: EnricherInput, result: SimulatorRe
 }
 
 function enrichLoyerChargesComprises(input: EnricherInput, result: SimulatorResult): SimulatorResult {
+  const computed = loyerChargesComprises.calculate({
+    mode: String(input.mode),
+    loyer: num(input.loyer),
+    charges: num(input.charges),
+  });
+
+  const readAmount = (pattern: string) => readComputedAmount(computed, result, pattern);
+
   const loyer = num(input.loyer);
   const charges = num(input.charges);
   const mode = String(input.mode) === "cc_vers_hc" ? "CC → HC" : "HC → CC";
-  const resultat = findNumber(result, mode.includes("HC") ? "hors charges" : "charges comprises") ?? 0;
+  const hc = readAmount("loyer hors charges");
+  const cc = readAmount("loyer charges comprises");
+  const resultat = mode === "CC → HC" ? hc : cc;
 
   const narrative =
     mode === "CC → HC"
       ? `Un loyer CC de ${formatCurrency(loyer)}/mois moins ${formatCurrency(charges)} de provision charges donne ${formatCurrency(resultat)}/mois HC — base pour l'IRL et le dépôt de garantie.`
       : `Un loyer HC de ${formatCurrency(loyer)}/mois plus ${formatCurrency(charges)} de charges donne ${formatCurrency(resultat)}/mois CC — montant affiché en annonce locative.`;
+
+  const calculText = [
+    `Conversion : ${mode}`,
+    `Montant initial : ${formatCurrency(loyer)}`,
+    `Provision charges : ${formatCurrency(charges)}`,
+    `Loyer hors charges : ${formatCurrency(hc)}`,
+    `Loyer charges comprises : ${formatCurrency(cc)}`,
+  ].join(" · ");
 
   return mergeResult(result, {
     primary: {
@@ -3877,6 +4453,14 @@ function enrichLoyerChargesComprises(input: EnricherInput, result: SimulatorResu
         "En meublé, les charges forfaitaires sont plafonnées à 20 % du HC",
       ],
     },
+    lines: computed.lines.filter((line) => !line.highlight),
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculée la conversion ?",
+        text: calculText,
+      },
+    ],
   });
 }
 

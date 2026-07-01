@@ -6,6 +6,13 @@ import { generalSimulators } from "./general";
 import { getSimulatorDomain, DOMAIN_LABELS, type SimulatorDefinition } from "./types";
 import { applyContentEnrichment } from "./_shared/content";
 import { applySeoEnrichment } from "./_shared/seo";
+import {
+  buildRecommendationMap,
+  getRecommendedSlugs,
+  RECOMMENDATION_MAX,
+  RECOMMENDATION_MIN,
+  RECOMMENDATION_TARGET,
+} from "./_shared/recommendations";
 import { getSimulatorRegulationIds } from "./regulation-ids";
 import { ACTIVATED_DRAFTS } from "./drafts/activation";
 
@@ -40,6 +47,10 @@ export const simulators = rawSimulators.map((sim) =>
   enrichSimulator(sim as SimulatorDefinition)
 ) as unknown as typeof rawSimulators;
 
+const recommendationMap = buildRecommendationMap(
+  simulators as unknown as SimulatorDefinition[]
+);
+
 export type RegisteredSimulator = (typeof simulators)[number];
 
 export function getSimulatorBySlug(
@@ -58,33 +69,27 @@ export { REJECTED_DRAFT_IDEAS, getRejectedDraftCount } from "./drafts/catalog";
 
 export function getRelatedSimulators(
   currentSlug: string,
-  limit = 3
+  limit?: number
 ): RegisteredSimulator[] {
-  const current = simulators.find((s) => s.slug === currentSlug);
-  if (!current) return [];
+  const slugs = getRecommendedSlugs(recommendationMap, currentSlug, {
+    min: limit != null ? Math.min(limit, RECOMMENDATION_MIN) : RECOMMENDATION_MIN,
+    max: limit ?? RECOMMENDATION_MAX,
+    target: limit ?? RECOMMENDATION_TARGET,
+  });
 
-  const explicit = (current.relatedSlugs ?? [])
-    .map((slug) => simulators.find((s) => s.slug === slug))
-    .filter((s): s is RegisteredSimulator => !!s && s.slug !== currentSlug);
-
-  const rest = simulators
-    .filter(
-      (s) =>
-        s.slug !== currentSlug &&
-        !explicit.some((e) => e.slug === s.slug)
-    )
-    .sort((a, b) => {
-      const score = (s: RegisteredSimulator) => {
-        const domainMatch =
-          getSimulatorDomain(s) === getSimulatorDomain(current!) ? 0 : 1;
-        const categoryMatch = s.category === current.category ? 0 : 1;
-        return domainMatch * 2 + categoryMatch;
-      };
-      return score(a) - score(b);
-    });
-
-  return [...explicit, ...rest].slice(0, limit);
+  return slugs
+    .map((slug) => simulators.find((sim) => sim.slug === slug))
+    .filter((sim): sim is RegisteredSimulator => !!sim);
 }
+
+export {
+  buildRecommendationMap,
+  getRecommendedSlugs,
+  averageRecommendationCount,
+  RECOMMENDATION_MIN,
+  RECOMMENDATION_MAX,
+  RECOMMENDATION_TARGET,
+} from "./_shared/recommendations";
 
 export function searchSimulators(query: string): RegisteredSimulator[] {
   const normalized = query.toLowerCase().trim();

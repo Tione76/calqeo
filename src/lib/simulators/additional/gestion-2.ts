@@ -59,9 +59,13 @@ export const encadrementLoyers: SimulatorDefinition = {
       lines: [
         { label: "Loyer maximum autorisé", value: formatCurrency(plafond), highlight: true },
         { label: "Loyer actuel", value: formatCurrency(actuel) },
-        { label: "Dépassement", value: formatCurrency(depassement), highlight: !conforme },
-        { label: "Conformité", value: conforme ? "Conforme" : "Non conforme" },
+        { label: "Dépassement", value: formatCurrency(depassement) },
         { label: "Loyer de référence (total)", value: formatCurrency(ref) },
+        { label: "Loyer de référence", value: `${formatCurrency(num(input.loyerReference))}/m²` },
+        { label: "Surface", value: `${num(input.surface)} m²` },
+        { label: "Majoration autorisée", value: String(input.zone) === "30" ? "+20 %" : "+0 %" },
+        { label: "Complément de loyer", value: formatCurrency(num(input.complementLoyer)) },
+        { label: "Conformité", value: conforme ? "Conforme" : "Non conforme" },
       ],
     };
   },
@@ -172,11 +176,12 @@ export const chargesRecuperables: SimulatorDefinition = {
       summary: `Charges récupérables : ${formatCurrency(total)}/an (${formatCurrency(mensuel)}/mois).`,
       lines: [
         { label: "Total charges récupérables", value: formatCurrency(total), highlight: true },
-        { label: "Provision mensuelle", value: formatCurrency(mensuel), highlight: true },
+        { label: "Provision mensuelle", value: formatCurrency(mensuel) },
         { label: "Copropriété", value: formatCurrency(num(input.chargesCopro)) },
         { label: "Eau", value: formatCurrency(num(input.eau)) },
         { label: "Chauffage", value: formatCurrency(num(input.chauffage)) },
         { label: "TEOM", value: formatCurrency(num(input.ordures)) },
+        { label: "Entretien parties communes", value: formatCurrency(num(input.entretien)) },
       ],
     };
   },
@@ -283,12 +288,16 @@ export const loyerChargesComprises: SimulatorDefinition = {
     const loyer = num(input.loyer);
     const charges = num(input.charges);
     const mode = String(input.mode);
-    const result = mode === "cc_vers_hc" ? loyer - charges : loyer + charges;
+    const hc = mode === "cc_vers_hc" ? loyer - charges : loyer;
+    const cc = mode === "hc_vers_cc" ? loyer + charges : loyer;
+    const resultat = mode === "cc_vers_hc" ? hc : cc;
     const label = mode === "cc_vers_hc" ? "Loyer hors charges" : "Loyer charges comprises";
     return {
-      summary: `${label} : ${formatCurrency(result)}/mois.`,
+      summary: `${label} : ${formatCurrency(resultat)}/mois.`,
       lines: [
-        { label, value: formatCurrency(result), highlight: true },
+        { label, value: formatCurrency(resultat), highlight: true },
+        { label: "Loyer hors charges", value: formatCurrency(hc) },
+        { label: "Loyer charges comprises", value: formatCurrency(cc) },
         { label: "Loyer initial", value: formatCurrency(loyer) },
         { label: "Provision charges", value: formatCurrency(charges) },
         { label: "Type de conversion", value: mode === "cc_vers_hc" ? "CC → HC" : "HC → CC" },

@@ -161,20 +161,36 @@ export const colocationRentabilite: SimulatorDefinition = {
     { question: "Colocation ou location classique ?", answer: "Colocation si vous acceptez plus de gestion. Classique si vous visez la simplicité." },
   ]),
   calculate(input) {
-    const total = num(input.prix) + num(input.notaire) + num(input.travaux);
-    const loyerTotal = num(input.loyerChambre) * num(input.nbChambres) * 12;
-    const loyerEffectif = loyerTotal * (1 - num(input.vacance) / 100);
-    const net = loyerEffectif - num(input.charges);
+    const prix = num(input.prix);
+    const notaire = num(input.notaire);
+    const travaux = num(input.travaux);
+    const nbChambres = num(input.nbChambres);
+    const loyerChambre = num(input.loyerChambre);
+    const charges = num(input.charges);
+    const vacance = num(input.vacance);
+    const total = prix + notaire + travaux;
+    const loyerMensuelTotal = loyerChambre * nbChambres;
+    const loyerTotal = loyerMensuelTotal * 12;
+    const loyerEffectif = loyerTotal * (1 - vacance / 100);
+    const perteVacance = loyerTotal - loyerEffectif;
+    const net = loyerEffectif - charges;
     const rendement = total > 0 ? (net / total) * 100 : 0;
     return {
-      summary: `Rendement net colocation : ${formatPercent(rendement, 2)} (${num(input.nbChambres)} chambres × ${formatCurrency(num(input.loyerChambre))}/mois).`,
+      summary: `Rendement net colocation : ${formatPercent(rendement, 2)} (${nbChambres} chambres × ${formatCurrency(loyerChambre)}/mois).`,
       lines: [
         { label: "Rendement net", value: formatPercent(rendement, 2), highlight: true },
-        { label: "Loyer mensuel total", value: formatCurrency(num(input.loyerChambre) * num(input.nbChambres)) },
-        { label: "Revenu net annuel", value: formatCurrency(net) },
         { label: "Investissement total", value: formatCurrency(total) },
-        { label: "Nombre de chambres", value: String(num(input.nbChambres)) },
-        { label: "Loyer par chambre", value: formatCurrency(num(input.loyerChambre)) },
+        { label: "Prix d'achat", value: formatCurrency(prix) },
+        { label: "Frais de notaire", value: formatCurrency(notaire) },
+        { label: "Travaux", value: formatCurrency(travaux) },
+        { label: "Nombre de chambres", value: String(nbChambres) },
+        { label: "Loyer par chambre", value: formatCurrency(loyerChambre) },
+        { label: "Loyer mensuel total", value: formatCurrency(loyerMensuelTotal) },
+        { label: "Loyers bruts annuels", value: formatCurrency(loyerTotal) },
+        { label: "Vacance locative", value: formatPercent(vacance, 0) },
+        { label: "Perte liée à la vacance", value: formatCurrency(perteVacance) },
+        { label: "Charges annuelles", value: formatCurrency(charges) },
+        { label: "Revenu net annuel", value: formatCurrency(net) },
       ],
     };
   },

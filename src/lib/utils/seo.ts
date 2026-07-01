@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 
 import type { FAQItem, SimulatorDefinition } from "@/lib/simulators/types";
+import {
+  clampMetaDescription,
+  clampMetaTitle,
+} from "@/lib/simulators/_shared/seo";
 
 import { blocksToPlainText } from "@/lib/utils/content";
 
@@ -51,16 +55,19 @@ const defaultOpenGraphImages = [
 export function createSimulatorMetadata(
   simulator: SimulatorMetadataSource
 ): Metadata {
+  const title = clampMetaTitle(simulator.metaTitle);
+  const description = clampMetaDescription(simulator.metaDescription);
+
   return {
-    title: simulator.metaTitle,
-    description: simulator.metaDescription,
+    title,
+    description,
     keywords: simulator.keywords,
     alternates: {
       canonical: `/simulateurs/${simulator.slug}`,
     },
     openGraph: {
-      title: simulator.metaTitle,
-      description: simulator.metaDescription,
+      title,
+      description,
       url: `/simulateurs/${simulator.slug}`,
       siteName: SITE.name,
       locale: SITE.locale,
@@ -69,8 +76,8 @@ export function createSimulatorMetadata(
     },
     twitter: {
       card: "summary_large_image",
-      title: simulator.metaTitle,
-      description: simulator.metaDescription,
+      title,
+      description,
       images: ["/twitter-image"],
     },
   };
@@ -78,15 +85,17 @@ export function createSimulatorMetadata(
 
 export function createHomeMetadata(): Metadata {
   const defaultTitle = `${SITE.name} — ${SITE.tagline}`;
-  const ogDescription =
-    "Plus de 100 outils gratuits pour simuler un crédit, calculer un impôt, estimer des travaux ou vérifier votre IMC. Résultats instantanés.";
+  const ogDescription = clampMetaDescription(
+    "Plus de 100 outils gratuits pour simuler un crédit, calculer un impôt, estimer des travaux ou vérifier votre IMC. Résultats instantanés."
+  );
+  const homeDescription = clampMetaDescription(SITE.description);
 
   return {
     title: {
       default: defaultTitle,
       template: `%s | ${SITE.name}`,
     },
-    description: SITE.description,
+    description: homeDescription,
     keywords: [
       "simulateur en ligne",
       "calculateur gratuit",
@@ -125,13 +134,16 @@ export function createLegalMetadata(
   description: string,
   pathname: string
 ): Metadata {
+  const safeTitle = clampMetaTitle(title);
+  const safeDescription = clampMetaDescription(description);
+
   return {
-    title,
-    description,
+    title: safeTitle,
+    description: safeDescription,
     alternates: { canonical: pathname },
     openGraph: {
-      title,
-      description,
+      title: safeTitle,
+      description: safeDescription,
       url: pathname,
       siteName: SITE.name,
       locale: SITE.locale,
@@ -140,8 +152,8 @@ export function createLegalMetadata(
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
+      title: safeTitle,
+      description: safeDescription,
       images: ["/twitter-image"],
     },
     robots: { index: true, follow: true },

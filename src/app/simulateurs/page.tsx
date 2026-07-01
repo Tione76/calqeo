@@ -8,8 +8,8 @@ import { Card } from "@/components/ui/Card";
 import { SimulatorIconComponent } from "@/components/ui/SimulatorIcon";
 
 export const metadata: Metadata = {
-  title: "Simulateurs et calculateurs en ligne — Tous les outils gratuits",
-  description: `${SIMULATOR_COUNT} simulateurs et calculateurs gratuits : crédit immobilier, impôts, travaux, santé, budget. Estimez et calculez en ligne sans inscription.`,
+  title: "Simulateurs et calculateurs gratuits en ligne",
+  description: `${SIMULATOR_COUNT} simulateurs et calculateurs gratuits : crédit immobilier, impôts, travaux, santé, budget. Estimez en ligne sans inscription.`,
   alternates: { canonical: "/simulateurs" },
 };
 

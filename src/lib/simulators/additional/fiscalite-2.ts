@@ -7,6 +7,7 @@ import {
   MICRO_FONCIER_ABATTEMENT,
   MICRO_MEUBLE_ABATTEMENT,
   DONATION_ABATTEMENTS,
+  PFU_TAUX_PS,
 } from "@/lib/config/fiscalite";
 
 const num = (v: number | string) =>
@@ -88,22 +89,45 @@ export const impotRevenusFonciers: SimulatorDefinition = {
     const charges = num(input.charges);
     const tmi = num(input.tmi) / 100;
     const regime = String(input.regime);
-    const base = regime === "micro" ? loyers * MICRO_FONCIER_ABATTEMENT : Math.max(0, loyers - charges);
-    const impot = base * tmi;
-    const autreRegime = regime === "micro" ? Math.max(0, loyers - charges) : loyers * MICRO_FONCIER_ABATTEMENT;
-    const impotAutre = autreRegime * tmi;
+    const isMicro = regime === "micro";
+
+    const baseMicro = loyers * MICRO_FONCIER_ABATTEMENT;
+    const baseReel = Math.max(0, loyers - charges);
+
+    const calcImpot = (base: number) => {
+      const ir = base * tmi;
+      const ps = base * PFU_TAUX_PS;
+      return { base, ir, ps, total: ir + ps };
+    };
+
+    const micro = calcImpot(baseMicro);
+    const reel = calcImpot(baseReel);
+    const chosen = isMicro ? micro : reel;
+    const other = isMicro ? reel : micro;
+    const meilleurRegime = micro.total <= reel.total ? "Micro-foncier" : "Régime réel";
+    const economie = Math.abs(micro.total - reel.total);
+
     return {
-      summary: `Impôt estimé (${regime === "micro" ? "micro-foncier" : "réel"}) : ${formatCurrency(impot)}/an.`,
+      summary: `Impôt total estimé (${isMicro ? "micro-foncier" : "réel"}) : ${formatCurrency(chosen.total)}/an.`,
       lines: [
-        { label: "Impôt estimé", value: formatCurrency(impot), highlight: true },
-        { label: "Base imposable", value: formatCurrency(base) },
+        { label: "Impôt total estimé", value: formatCurrency(chosen.total), highlight: true },
         { label: "Loyers annuels", value: formatCurrency(loyers) },
-        { label: "Régime choisi", value: regime === "micro" ? "Micro-foncier" : "Régime réel" },
-        {
-          label: "Impôt avec l'autre régime",
-          value: formatCurrency(impotAutre),
-          description: impotAutre < impot ? "L'autre régime serait plus avantageux" : undefined,
-        },
+        { label: "Charges déductibles", value: formatCurrency(charges) },
+        { label: "Régime choisi", value: isMicro ? "Micro-foncier" : "Régime réel" },
+        { label: "Abattement micro-foncier", value: formatPercent((1 - MICRO_FONCIER_ABATTEMENT) * 100, 0) },
+        { label: "Base imposable micro-foncier", value: formatCurrency(baseMicro) },
+        { label: "Base imposable régime réel", value: formatCurrency(baseReel) },
+        { label: "IR estimé", value: formatCurrency(chosen.ir) },
+        { label: "Prélèvements sociaux", value: formatCurrency(chosen.ps) },
+        { label: "IR micro-foncier", value: formatCurrency(micro.ir) },
+        { label: "PS micro-foncier", value: formatCurrency(micro.ps) },
+        { label: "IR régime réel", value: formatCurrency(reel.ir) },
+        { label: "PS régime réel", value: formatCurrency(reel.ps) },
+        { label: "Impôt total micro-foncier", value: formatCurrency(micro.total) },
+        { label: "Impôt total régime réel", value: formatCurrency(reel.total) },
+        { label: "Impôt avec l'autre régime", value: formatCurrency(other.total) },
+        { label: "Régime le plus avantageux", value: meilleurRegime },
+        { label: "Économie estimée", value: formatCurrency(economie) },
       ],
     };
   },
@@ -141,16 +165,23 @@ export const taxeFonciere: SimulatorDefinition = {
     { question: "Pourquoi la taxe augmente-t-elle ?", answer: "Révision des valeurs cadastrales, hausse des taux locaux ou revalorisation de la VLC." },
   ]),
   calculate(input) {
-    const base = num(input.vlc) * 0.5;
-    const taux = (num(input.tauxCommune) + num(input.tauxInterco) + 10) / 100;
-    const taxe = base * taux;
+    const vlc = num(input.vlc);
+    const tauxCommune = num(input.tauxCommune);
+    const tauxInterco = num(input.tauxInterco);
+    const tauxDepartement = 10;
+    const base = vlc * 0.5;
+    const tauxGlobal = tauxCommune + tauxInterco + tauxDepartement;
+    const taxe = base * (tauxGlobal / 100);
     return {
       summary: `Taxe foncière estimée : ${formatCurrency(taxe)}/an.`,
       lines: [
         { label: "Taxe foncière estimée", value: formatCurrency(taxe), highlight: true },
-        { label: "Base imposable (VLC × 50 %)", value: formatCurrency(base) },
-        { label: "Taux global estimé", value: formatPercent(taux * 100, 1) },
-        { label: "Valeur locative cadastrale", value: formatCurrency(num(input.vlc)) },
+        { label: "Valeur locative cadastrale", value: formatCurrency(vlc) },
+        { label: "Base imposable", value: formatCurrency(base) },
+        { label: "Taux communal", value: formatPercent(tauxCommune, 1) },
+        { label: "Taux intercommunal", value: formatPercent(tauxInterco, 1) },
+        { label: "Taux départemental estimé", value: formatPercent(tauxDepartement, 0) },
+        { label: "Taux global", value: formatPercent(tauxGlobal, 1) },
       ],
     };
   },
@@ -190,20 +221,29 @@ export const deficitFoncier: SimulatorDefinition = {
   ]),
   calculate(input) {
     const loyers = num(input.loyers);
-    const totalCharges = num(input.charges) + num(input.travaux) + num(input.interets);
+    const charges = num(input.charges);
+    const interets = num(input.interets);
+    const travaux = num(input.travaux);
+    const tmi = num(input.tmi);
+    const totalCharges = charges + travaux + interets;
     const resultat = loyers - totalCharges;
     const deficit = Math.max(0, -resultat);
-    const horsInterets = Math.max(0, num(input.charges) + num(input.travaux) - loyers);
+    const horsInterets = Math.max(0, charges + travaux - loyers);
     const imputable = Math.min(horsInterets, 10700);
-    const ecoImpot = imputable * (num(input.tmi) / 100);
+    const reportable = Math.max(0, deficit - imputable);
+    const ecoImpot = imputable * (tmi / 100);
     return {
       summary: deficit > 0 ? `Déficit foncier : ${formatCurrency(deficit)} — Économie d'impôt estimée : ${formatCurrency(ecoImpot)}.` : "Pas de déficit foncier sur cette période.",
       lines: [
-        { label: "Déficit foncier total", value: formatCurrency(deficit), highlight: true },
         { label: "Imputable sur revenu global", value: formatCurrency(imputable), highlight: true },
+        { label: "Déficit foncier total", value: formatCurrency(deficit) },
         { label: "Économie d'impôt estimée", value: formatCurrency(ecoImpot) },
+        { label: "Déficit reportable sur revenus fonciers", value: formatCurrency(reportable) },
         { label: "Résultat foncier", value: formatCurrency(resultat) },
         { label: "Loyers annuels", value: formatCurrency(loyers) },
+        { label: "Charges hors intérêts", value: formatCurrency(charges) },
+        { label: "Intérêts d'emprunt", value: formatCurrency(interets) },
+        { label: "Travaux déductibles", value: formatCurrency(travaux) },
       ],
     };
   },
@@ -272,13 +312,15 @@ export const donationSuccession: SimulatorDefinition = {
     }
     const base = Math.max(0, valeur - abattement);
     const droits = calculerDroitsMutation(base);
+    const abattementApplique = Math.min(abattement, valeur);
     return {
       summary: `Droits estimés : ${formatCurrency(droits)} (base taxable : ${formatCurrency(base)}).`,
       lines: [
         { label: "Droits estimés", value: formatCurrency(droits), highlight: true },
+        { label: "Valeur transmise", value: formatCurrency(valeur) },
+        { label: "Abattement appliqué", value: formatCurrency(abattementApplique) },
         { label: "Base taxable", value: formatCurrency(base) },
-        { label: "Abattement appliqué", value: formatCurrency(Math.min(abattement, valeur)) },
-        { label: "Valeur du bien", value: formatCurrency(valeur) },
+        { label: "Lien de parenté", value: lien === "enfant" ? "Parent → enfant" : lien === "petitenfant" ? "Grand-parent → petit-enfant" : "Autre lien" },
       ],
     };
   },
@@ -320,22 +362,30 @@ export const locationMeubleeVsNue: SimulatorDefinition = {
   calculate(input) {
     const invest = num(input.investissement);
     const tmi = num(input.tmi) / 100;
+    const chargesNue = num(input.chargesNue);
+    const chargesMeublee = num(input.chargesMeublee);
     const recettesNue = num(input.loyerNue) * 12;
     const recettesMeublee = num(input.loyerMeublee) * 12;
     const impotNue = Math.max(0, recettesNue * MICRO_FONCIER_ABATTEMENT) * tmi;
     const impotMeublee = Math.max(0, recettesMeublee * MICRO_MEUBLE_ABATTEMENT) * tmi;
-    const rendNue = invest > 0 ? ((recettesNue - num(input.chargesNue) - impotNue) / invest) * 100 : 0;
-    const rendMeublee = invest > 0 ? ((recettesMeublee - num(input.chargesMeublee) - impotMeublee) / invest) * 100 : 0;
+    const rendNue = invest > 0 ? ((recettesNue - chargesNue - impotNue) / invest) * 100 : 0;
+    const rendMeublee = invest > 0 ? ((recettesMeublee - chargesMeublee - impotMeublee) / invest) * 100 : 0;
     const gagnant = rendMeublee > rendNue ? "Meublée" : "Nue";
+    const ecart = rendMeublee - rendNue;
     return {
       summary: `Meilleur rendement net après impôt : ${gagnant} (${formatPercent(Math.max(rendNue, rendMeublee), 2)}).`,
       lines: [
-        { label: "Rendement net meublée (après impôt)", value: formatPercent(rendMeublee, 2), highlight: rendMeublee >= rendNue },
-        { label: "Rendement net nue (après impôt)", value: formatPercent(rendNue, 2), highlight: rendNue > rendMeublee },
-        { label: "Impôt meublée estimé", value: formatCurrency(impotMeublee) },
-        { label: "Impôt nue estimé", value: formatCurrency(impotNue) },
-        { label: "Loyers annuels meublée", value: formatCurrency(recettesMeublee) },
+        { label: "Meilleur rendement net", value: formatPercent(Math.max(rendNue, rendMeublee), 2), highlight: true },
+        { label: "Rendement net nue (après impôt)", value: formatPercent(rendNue, 2) },
+        { label: "Rendement net meublée (après impôt)", value: formatPercent(rendMeublee, 2) },
+        { label: "Écart meublée vs nue", value: formatPercent(ecart, 2) },
+        { label: "Investissement total", value: formatCurrency(invest) },
         { label: "Loyers annuels nue", value: formatCurrency(recettesNue) },
+        { label: "Loyers annuels meublée", value: formatCurrency(recettesMeublee) },
+        { label: "Charges annuelles nue", value: formatCurrency(chargesNue) },
+        { label: "Charges annuelles meublée", value: formatCurrency(chargesMeublee) },
+        { label: "Impôt nue estimé", value: formatCurrency(impotNue) },
+        { label: "Impôt meublée estimé", value: formatCurrency(impotMeublee) },
       ],
     };
   },
@@ -373,14 +423,18 @@ export const ifiFortuneImmobiliere: SimulatorDefinition = {
   ]),
   calculate(input) {
     const brut = num(input.patrimoineBrut);
+    const dettes = num(input.dettes);
     const rp = num(input.valeurRP);
     const abattementRP = rp * IFI_ABATTEMENT_RP;
-    const net = brut - abattementRP - num(input.dettes);
+    const net = brut - abattementRP - dettes;
     if (net <= IFI_SEUIL) {
       return {
         summary: "Patrimoine net sous le seuil de 1,3 M€ — IFI non dû.",
         lines: [
           { label: "IFI estimé", value: formatCurrency(0), highlight: true },
+          { label: "Patrimoine brut", value: formatCurrency(brut) },
+          { label: "Dettes déductibles", value: formatCurrency(dettes) },
+          { label: "Abattement résidence principale", value: formatCurrency(abattementRP) },
           { label: "Patrimoine net taxable", value: formatCurrency(Math.max(0, net)) },
           { label: "Seuil IFI", value: formatCurrency(IFI_SEUIL) },
         ],
@@ -391,10 +445,11 @@ export const ifiFortuneImmobiliere: SimulatorDefinition = {
       summary: `IFI estimé : ${formatCurrency(ifi)}/an.`,
       lines: [
         { label: "IFI estimé", value: formatCurrency(ifi), highlight: true },
-        { label: "Patrimoine net taxable", value: formatCurrency(net) },
-        { label: "Abattement RP (30 %)", value: formatCurrency(abattementRP) },
         { label: "Patrimoine brut", value: formatCurrency(brut) },
-        { label: "Dettes déductibles", value: formatCurrency(num(input.dettes)) },
+        { label: "Dettes déductibles", value: formatCurrency(dettes) },
+        { label: "Abattement résidence principale", value: formatCurrency(abattementRP) },
+        { label: "Patrimoine net taxable", value: formatCurrency(net) },
+        { label: "Seuil IFI", value: formatCurrency(IFI_SEUIL) },
       ],
     };
   },

@@ -37,33 +37,15 @@ export function AdSlot({ placement, className }: AdSlotProps) {
     ? BREAKPOINT_CLASSES[config.minBreakpoint]
     : undefined;
 
-  if (ADSENSE_ENABLED && !hasAdConsent) {
+  if (!ADSENSE_ENABLED || !hasAdConsent) {
     return null;
-  }
-
-  if (ADSENSE_ENABLED && hasAdConsent) {
-    return (
-      <aside
-        aria-label="Publicité"
-        className={cn(
-          "ad-slot ad-slot--live",
-          SIZE_CLASSES[placement],
-          breakpointClass,
-          className
-        )}
-        data-ad-placement={placement}
-        data-adsense-slot={config.adsenseSlotId}
-      >
-        {/* Unité AdSense — chargée après consentement publicitaire */}
-      </aside>
-    );
   }
 
   return (
     <aside
-      aria-label="Espace publicitaire (démonstration)"
+      aria-label="Publicité"
       className={cn(
-        "ad-slot ad-slot--demo",
+        "ad-slot ad-slot--live",
         SIZE_CLASSES[placement],
         breakpointClass,
         className
@@ -71,14 +53,7 @@ export function AdSlot({ placement, className }: AdSlotProps) {
       data-ad-placement={placement}
       data-adsense-slot={config.adsenseSlotId}
     >
-      <div className="flex h-full min-h-[inherit] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-5 text-center">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-          Publicité · Démonstration
-        </p>
-        <p className="mt-2 text-sm font-medium text-slate-600">{config.label}</p>
-        <p className="mt-1 text-xs text-slate-500">{config.format}</p>
-        <p className="mt-0.5 font-mono text-xs text-slate-400">{config.dimensions}</p>
-      </div>
+      {/* Unité AdSense — chargée après consentement publicitaire */}
     </aside>
   );
 }

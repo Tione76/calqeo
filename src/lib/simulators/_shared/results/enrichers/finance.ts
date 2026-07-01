@@ -1,3 +1,4 @@
+import { mensualiteCreditConsommation } from "../../../general/finance";
 import {
   PFU_TAUX_GLOBAL,
   PEA_PS_APRES_5_ANS,
@@ -18,76 +19,153 @@ import {
   findLine,
   findValue,
   interpretThreshold,
+  mergeResult,
   num,
+  parseFormattedNumber,
   primaryFromLine,
   type Enricher,
 } from "./helpers";
 
-function creditTauxInterpretation(taux: number): ResultInterpretation {
-  return interpretThreshold(taux, [
-    {
-      max: 4,
+function creditConsoTauxInterpretation(taux: number): ResultInterpretation {
+  if (taux < 3) {
+    return {
       level: "favorable",
-      badge: "Compétitif",
+      badge: "Attractif",
       title: "Taux attractif",
       message: `À ${formatPercent(taux, 1)}, ce taux se situe dans une fourchette compétitive pour un crédit consommation.`,
-    },
-    {
-      max: 7,
+    };
+  }
+  if (taux < 5) {
+    return {
+      level: "favorable",
+      badge: "Correct",
+      title: "Taux correct",
+      message: `Un taux de ${formatPercent(taux, 1)} reste raisonnable — comparez tout de même le TAEG de plusieurs organismes.`,
+    };
+  }
+  if (taux <= 7) {
+    return {
       level: "intermediate",
       badge: "Moyen",
       title: "Taux dans la moyenne",
-      message: `Un taux de ${formatPercent(taux, 1)} est courant — comparez le TAEG de plusieurs établissements.`,
-    },
-    {
-      max: Infinity,
-      level: "warning",
-      badge: "Élevé",
-      title: "Coût du crédit élevé",
-      message: `Au-delà de 7-8 %, le coût du crédit pèse fortement sur le budget — négociez ou réduisez le montant.`,
-    },
-  ]);
+      message: `Un taux de ${formatPercent(taux, 1)} est courant pour un crédit consommation — comparez le TAEG de plusieurs organismes avant de signer.`,
+    };
+  }
+  return {
+    level: "warning",
+    badge: "Élevé",
+    title: "Taux élevé",
+    message: `Au-delà de 7-8 %, le coût du crédit pèse fortement sur le budget — négociez ou réduisez le montant emprunté.`,
+  };
 }
 
 const enrichMensualiteCreditConsommation: Enricher = (input, result) => {
   const montant = num(input.montant);
   const taux = num(input.taux);
   const duree = num(input.duree);
-  const mensualite = findValue(result, /mensualit/i) ?? 0;
-  const interets = findValue(result, /intérêts|interets/i) ?? 0;
 
-  const comparisons: ResultComparison[] = [];
+  const computed = mensualiteCreditConsommation.calculate({ montant, taux, duree });
+
+  const readAmount = (pattern: RegExp | string): number => {
+    const fromComputed = findValue(computed, pattern);
+    if (fromComputed != null) return fromComputed;
+    if (result.primary && new RegExp(typeof pattern === "string" ? pattern : pattern.source, "i").test(result.primary.label)) {
+      return parseFormattedNumber(result.primary.value.replace(/\/mois$/i, "")) ?? 0;
+    }
+    return findValue(result, pattern) ?? 0;
+  };
+
+  const mensualite = readAmount(/mensualit/i);
+  const total = readAmount(/coût total/i);
+  const interets = readAmount(/intérêts|interets/i);
+  const mensualiteAffichage = `${formatCurrency(mensualite)}/mois`;
+
+  const computedTaux6 = mensualiteCreditConsommation.calculate({
+    montant,
+    taux: 6,
+    duree,
+  });
+  const mensualiteTaux6 = findValue(computedTaux6, /mensualit/i) ?? 0;
+
   const dureePlus1 = duree + 1;
-  if (dureePlus1 <= 10) {
-    const mAlt = monthlyPaymentFromLoan(montant, taux, dureePlus1);
+  const computedDureeAlt =
+    dureePlus1 <= 10
+      ? mensualiteCreditConsommation.calculate({ montant, taux, duree: dureePlus1 })
+      : null;
+  const mensualiteDureeAlt = computedDureeAlt
+    ? findValue(computedDureeAlt, /mensualit/i) ?? 0
+    : 0;
+  const totalDureeAlt = computedDureeAlt
+    ? findValue(computedDureeAlt, /coût total/i) ?? 0
+    : 0;
+
+  const ecartMensualite = (alt: number) => alt - mensualite;
+  const formatEcartMensualite = (alt: number) => {
+    const ecart = ecartMensualite(alt);
+    return `environ ${ecart >= 0 ? "+" : ""}${formatCurrency(ecart)}/mois`;
+  };
+
+  const narrative = `Pour emprunter ${formatCurrency(montant)} sur ${duree} ans à ${formatPercent(taux, 1)}, votre mensualité est d'environ ${mensualiteAffichage}. Le coût total du crédit est estimé à ${formatCurrency(total)}, soit ${formatCurrency(interets)} d'intérêts.`;
+
+  const tauxMensuel = taux / 12;
+  const calculMensualiteText = [
+    `Montant emprunté : ${formatCurrency(montant)}`,
+    `Taux annuel : ${formatPercent(taux, 1)}`,
+    `Taux mensuel : ${formatPercent(tauxMensuel, 2)}`,
+    `Durée : ${duree * 12} mois`,
+    `Mensualité estimée : ${mensualiteAffichage}`,
+    `Coût total : ${formatCurrency(total)}`,
+    `Intérêts totaux : ${formatCurrency(interets)}`,
+  ].join(" · ");
+
+  const comparisons: ResultComparison[] = [
+    {
+      scenario: "Mensualité actuelle",
+      value: mensualiteAffichage,
+      detail: `${formatPercent(taux, 1)} sur ${duree} ans`,
+    },
+    {
+      scenario: "Si le taux passait à 6,0 %",
+      value: `${formatCurrency(mensualiteTaux6)}/mois`,
+      detail: `Écart : ${formatEcartMensualite(mensualiteTaux6)}`,
+    },
+  ];
+
+  if (computedDureeAlt) {
     comparisons.push({
       scenario: `Si la durée passait à ${dureePlus1} ans`,
-      value: formatCurrency(mAlt),
-      detail: `${formatCurrency(mAlt - mensualite)}/mois vs. ${duree} ans`,
+      value: `${formatCurrency(mensualiteDureeAlt)}/mois`,
+      detail: `Écart : ${formatEcartMensualite(mensualiteDureeAlt)} · coût total ${formatCurrency(totalDureeAlt)}`,
     });
   }
-  const tauxPlus = taux + 0.5;
-  const mTaux = monthlyPaymentFromLoan(montant, tauxPlus, duree);
-  comparisons.push({
-    scenario: `Si le taux passait à ${formatPercent(tauxPlus, 1)}`,
-    value: formatCurrency(mTaux),
-    detail: `+${formatCurrency(mTaux - mensualite)}/mois`,
-  });
 
-  return buildPatch(result, {
-    primary: primaryFromLine(result, /mensualit/i, "Mensualité estimée"),
-    narrative: `Pour emprunter ${formatCurrency(montant)} sur ${duree} ans à ${formatPercent(taux, 1)}, vous rembourserez environ ${formatCurrency(mensualite)}/mois, soit ${formatCurrency(interets)} d'intérêts au total.`,
-    interpretation: creditTauxInterpretation(taux),
+  return mergeResult(result, {
+    primary: { label: "Mensualité estimée", value: mensualiteAffichage },
+    narrative,
+    interpretation: creditConsoTauxInterpretation(taux),
     advice: {
       title: "Optimiser ce crédit consommation",
       items: [
-        "Demandez le TAEG (pas seulement le taux nominal) à au moins 3 organismes",
-        "Testez une durée plus courte si la mensualité reste supportable",
-        "Vérifiez l'absence d'assurance emprunteur superflue sur ce type de prêt",
+        "Comparez le TAEG, pas seulement le taux nominal, auprès d'au moins 3 organismes",
+        "Vérifiez les frais de dossier inclus ou non dans le TAEG",
+        "Vérifiez si l'assurance emprunteur est facultative sur ce type de prêt",
+        "Testez plusieurs durées pour arbitrer entre mensualité et coût total",
         "Anticipez l'impact sur votre reste à vivre avant de signer",
+        "Vérifiez les conditions de remboursement anticipé",
       ],
     },
+    lines: [
+      { label: "Mensualité estimée", value: mensualiteAffichage },
+      ...computed.lines.filter((line) => !line.highlight),
+    ],
     comparisons,
+    callouts: [
+      {
+        variant: "note",
+        title: "Comment est calculée votre mensualité ?",
+        text: calculMensualiteText,
+      },
+    ],
   });
 };
 

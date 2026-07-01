@@ -63,17 +63,24 @@ export const mensualiteCreditConsommation: SimulatorDefinition = {
   ]),
   calculate(input) {
     const montant = num(input.montant);
+    const taux = num(input.taux);
     const duree = num(input.duree);
-    const mensualite = monthlyPaymentFromLoan(montant, num(input.taux), duree);
-    const total = mensualite * duree * 12;
+    const mois = duree * 12;
+    const mensualite = monthlyPaymentFromLoan(montant, taux, duree);
+    const total = mensualite * mois;
+    const interets = total - montant;
+    const coutPctCapital = montant > 0 ? (interets / montant) * 100 : 0;
     return {
       summary: `Mensualité estimée : ${formatCurrency(mensualite)}/mois.`,
       lines: [
-        { label: "Mensualité", value: formatCurrency(mensualite), highlight: true },
-        { label: "Coût total du crédit", value: formatCurrency(total) },
-        { label: "Intérêts totaux", value: formatCurrency(total - montant) },
+        { label: "Mensualité estimée", value: `${formatCurrency(mensualite)}/mois`, highlight: true },
         { label: "Montant emprunté", value: formatCurrency(montant) },
+        { label: "Taux annuel", value: formatPercent(taux, 1) },
         { label: "Durée", value: `${duree} ans` },
+        { label: "Nombre de mensualités", value: String(mois) },
+        { label: "Coût total du crédit", value: formatCurrency(total) },
+        { label: "Intérêts totaux", value: formatCurrency(interets) },
+        { label: "Coût du crédit (% du capital)", value: formatPercent(coutPctCapital, 1) },
       ],
     };
   },

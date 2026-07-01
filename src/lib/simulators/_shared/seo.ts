@@ -1,6 +1,14 @@
-import type { SimulatorDefinition, SiteDomain } from "../types";
-import { getSimulatorDomain, DOMAIN_LABELS } from "../types";
+import {
+  getSimulatorDomain,
+  type SimulatorDefinition,
+  type SiteDomain,
+} from "../types";
 import { SITE } from "@/lib/site/config";
+
+/** Longueur cible SERP (title final incluant le suffixe de marque du layout). */
+export const META_TITLE_EFFECTIVE_MAX = 60;
+export const META_DESCRIPTION_MAX = 155;
+const TITLE_BRAND_SUFFIX = ` | ${SITE.name}`;
 
 type ToolKind = "simulateur" | "calculateur";
 
@@ -23,163 +31,157 @@ const CALCULATEUR_CATEGORIES = new Set([
 const SEO_OVERRIDES: Record<string, SeoOverride> = {
   "capacite-emprunt": {
     title: "Simulateur de capacité d'emprunt immobilier",
-    metaTitle:
-      "Simulateur de capacité d'emprunt immobilier — Calcul gratuit en ligne",
+    metaTitle: "Simulateur capacité d'emprunt immobilier",
     metaDescription:
-      "Estimez votre capacité d'emprunt et votre budget d'achat immobilier selon vos revenus, apport et taux d'endettement. Simulateur gratuit pour calculer combien emprunter.",
+      "Estimez votre capacité d'emprunt et votre budget d'achat selon vos revenus, apport et taux d'endettement. Simulateur gratuit.",
   },
   "mensualite-pret-immobilier": {
     title: "Simulateur de mensualité de prêt immobilier",
-    metaTitle:
-      "Simulateur de mensualité de prêt immobilier — Calcul gratuit en ligne",
+    metaTitle: "Simulateur mensualité prêt immobilier",
     metaDescription:
-      "Calculez la mensualité de votre crédit immobilier : capital, taux, durée et assurance. Estimation instantanée du coût total des intérêts.",
+      "Calculez la mensualité de votre crédit immobilier : capital, taux, durée et assurance. Estimation instantanée du coût total.",
   },
   "rendement-locatif": {
     title: "Simulateur de rendement locatif",
-    metaTitle:
-      "Simulateur de rendement locatif — Calcul brut et net gratuit",
+    metaTitle: "Simulateur rendement locatif brut et net",
     metaDescription:
-      "Calculez le rendement locatif brut et net de votre investissement immobilier. Outil gratuit pour estimer la rentabilité locative et le cash-flow.",
+      "Calculez le rendement locatif brut et net de votre investissement immobilier. Estimez la rentabilité locative et le cash-flow.",
   },
   "rendement-locatif-brut": {
     title: "Calculateur de rendement locatif brut",
-    metaTitle:
-      "Calculateur de rendement locatif brut — Avant charges et vacance",
+    metaTitle: "Rendement locatif brut — Avant charges",
     metaDescription:
-      "Estimez le rendement locatif brut avant charges : loyers annuels rapportés au coût total d'acquisition. Idéal pour comparer rapidement plusieurs biens.",
+      "Estimez le rendement locatif brut avant charges : loyers annuels rapportés au coût d'acquisition. Idéal pour comparer des biens.",
   },
   "rendement-locatif-net": {
     title: "Calculateur de rendement locatif net",
-    metaTitle:
-      "Calculateur de rendement locatif net — Après charges et vacance",
+    metaTitle: "Rendement locatif net — Après charges",
     metaDescription:
-      "Calculez le rendement locatif net après charges courantes et vacance locative. Affinez la rentabilité réelle de votre investissement locatif.",
+      "Calculez le rendement locatif net après charges courantes et vacance locative. Affinez la rentabilité réelle de votre investissement.",
   },
   "rentabilite-lmnp": {
     title: "Simulateur de rentabilité LMNP",
-    metaTitle:
-      "Simulateur de rentabilité LMNP — Location meublée non professionnelle",
+    metaTitle: "Simulateur rentabilité LMNP meublé",
     metaDescription:
-      "Estimez la rentabilité d'une location meublée (LMNP) : loyers, charges, fiscalité simplifiée. Simulateur gratuit pour investisseurs en meublé.",
+      "Estimez la rentabilité d'une location meublée (LMNP) : loyers, charges, fiscalité simplifiée. Simulateur gratuit pour investisseurs.",
   },
   "cash-flow-immobilier": {
     title: "Simulateur de cash-flow immobilier",
-    metaTitle: "Simulateur de cash-flow immobilier — Trésorerie locative",
+    metaTitle: "Simulateur cash-flow immobilier locatif",
     metaDescription:
-      "Calculez le cash-flow mensuel de votre investissement locatif après loyer, crédit et charges. Outil gratuit pour évaluer l'autofinancement.",
+      "Calculez le cash-flow mensuel de votre investissement locatif après loyer, crédit et charges. Évaluez l'autofinancement.",
   },
   "frais-de-notaire": {
     title: "Calculateur de frais de notaire",
-    metaTitle: "Calculateur de frais de notaire — Estimation achat immobilier",
+    metaTitle: "Calculateur frais de notaire immobilier",
     metaDescription:
       "Estimez les frais de notaire lors d'un achat immobilier neuf ou ancien. Calcul gratuit des droits de mutation et émoluments.",
   },
   "plus-value-immobiliere": {
     title: "Simulateur de plus-value immobilière",
-    metaTitle: "Simulateur de plus-value immobilière — Impôt et abattements",
+    metaTitle: "Simulateur plus-value immobilière",
     metaDescription:
       "Estimez la plus-value immobilière et l'impôt associé lors d'une revente. Abattements pour durée de détention inclus.",
   },
   "tableau-amortissement": {
     title: "Simulateur de tableau d'amortissement",
-    metaTitle: "Tableau d'amortissement crédit immobilier — Calcul gratuit",
+    metaTitle: "Tableau d'amortissement crédit immobilier",
     metaDescription:
       "Générez le tableau d'amortissement de votre prêt immobilier : capital, intérêts et capital restant dû mois par mois.",
   },
   "taux-endettement": {
     title: "Simulateur de taux d'endettement",
-    metaTitle: "Simulateur de taux d'endettement — Plafond 35 % gratuit",
+    metaTitle: "Simulateur taux d'endettement — Plafond 35 %",
     metaDescription:
-      "Calculez votre taux d'endettement et vérifiez le respect du plafond de 35 %. Outil gratuit pour préparer votre dossier de crédit immobilier.",
+      "Calculez votre taux d'endettement et vérifiez le respect du plafond de 35 %. Préparez votre dossier de crédit immobilier.",
   },
   "impot-sur-le-revenu": {
     title: "Simulateur d'impôt sur le revenu",
-    metaTitle: "Simulateur impôt sur le revenu — Barème 2026 gratuit",
+    metaTitle: "Simulateur impôt sur le revenu 2026",
     metaDescription:
-      "Estimez votre impôt sur le revenu selon le barème progressif 2026, vos revenus et votre quotient familial. Calcul indicatif gratuit en ligne.",
+      "Estimez votre impôt sur le revenu selon le barème progressif 2026, vos revenus et votre quotient familial. Calcul indicatif gratuit.",
   },
   "micro-entrepreneur-charges": {
     title: "Simulateur charges micro-entrepreneur",
-    metaTitle: "Simulateur charges micro-entrepreneur — Cotisations URSSAF",
+    metaTitle: "Simulateur charges micro-entrepreneur URSSAF",
     metaDescription:
       "Calculez les cotisations sociales du régime micro-entrepreneur selon votre activité et votre chiffre d'affaires. Estimation gratuite.",
   },
   "calculateur-tva": {
     title: "Calculateur de TVA",
-    metaTitle: "Calculateur de TVA — HT, TTC et taux 20 %, 10 %, 5,5 %",
+    metaTitle: "Calculateur TVA HT, TTC — 20 %, 10 %, 5,5 %",
     metaDescription:
       "Calculez la TVA à partir d'un montant HT ou TTC. Outil gratuit pour les taux 20 %, 10 % et 5,5 %.",
   },
   "budget-reste-a-vivre": {
     title: "Simulateur de reste à vivre",
-    metaTitle: "Simulateur reste à vivre — Budget mensuel gratuit",
+    metaTitle: "Simulateur reste à vivre mensuel",
     metaDescription:
-      "Calculez votre reste à vivre après charges fixes et crédits. Outil gratuit pour préparer un projet immobilier ou ajuster votre budget.",
+      "Calculez votre reste à vivre après charges fixes et crédits. Préparez un projet immobilier ou ajustez votre budget.",
   },
   "taux-marginal-imposition": {
     title: "Simulateur de taux marginal d'imposition",
-    metaTitle: "Taux marginal d'imposition (TMI) — Calcul gratuit 2026",
+    metaTitle: "Taux marginal d'imposition (TMI) 2026",
     metaDescription:
       "Identifiez votre tranche marginale d'imposition (TMI) selon vos revenus et votre quotient familial. Barème 2026 indicatif.",
   },
   "quotient-familial": {
     title: "Simulateur de quotient familial",
-    metaTitle: "Simulateur quotient familial — Nombre de parts IR",
+    metaTitle: "Simulateur quotient familial — Parts IR",
     metaDescription:
       "Calculez votre quotient familial et le nombre de parts fiscales pour estimer votre impôt sur le revenu.",
   },
   "prelevement-a-la-source": {
     title: "Simulateur de prélèvement à la source",
-    metaTitle: "Simulateur prélèvement à la source — Taux personnalisé",
+    metaTitle: "Simulateur prélèvement à la source",
     metaDescription:
       "Estimez le montant prélevé à la source sur votre salaire ou vos revenus. Calcul gratuit du taux et des retenues mensuelles.",
   },
   "frais-kilometriques": {
     title: "Calculateur de frais kilométriques",
-    metaTitle: "Calculateur frais kilométriques — Barème fiscal 2026",
+    metaTitle: "Calculateur frais kilométriques 2026",
     metaDescription:
       "Estimez vos frais kilométriques déductibles selon le barème fiscal officiel. Calcul gratuit pour déclaration d'impôts.",
   },
   "maprimerenov": {
     title: "Simulateur MaPrimeRénov'",
-    metaTitle: "Simulateur MaPrimeRénov' — Aides rénovation énergétique",
+    metaTitle: "Simulateur MaPrimeRénov' rénovation",
     metaDescription:
       "Estimez le montant de MaPrimeRénov' pour vos travaux de rénovation énergétique selon vos revenus et le type de gestes.",
   },
   "quantite-peinture": {
     title: "Calculateur de quantité de peinture",
-    metaTitle: "Calculateur quantité de peinture — Litres et surfaces",
+    metaTitle: "Calculateur quantité de peinture m²",
     metaDescription:
-      "Estimez la quantité de peinture nécessaire pour vos murs et plafonds. Calcul gratuit en litres selon la surface et le nombre de couches.",
+      "Estimez la quantité de peinture nécessaire pour vos murs et plafonds. Calcul gratuit en litres selon la surface et les couches.",
   },
   "simulateur-retraite": {
     title: "Simulateur de retraite",
-    metaTitle: "Simulateur retraite — Estimation pension gratuite",
+    metaTitle: "Simulateur retraite — Estimation pension",
     metaDescription:
       "Estimez le montant de votre future pension de retraite selon vos cotisations et votre âge de départ. Projection indicative gratuite.",
   },
   "loa-vs-credit-auto": {
     title: "Simulateur LOA vs crédit auto",
-    metaTitle: "Simulateur LOA vs crédit auto — Comparaison gratuite",
+    metaTitle: "Simulateur LOA vs crédit auto",
     metaDescription:
       "Comparez le coût total d'une LOA et d'un crédit auto pour le même véhicule. Simulation gratuite pour choisir le meilleur financement.",
   },
   "salaire-brut-net": {
     title: "Simulateur salaire brut net",
-    metaTitle: "Simulateur salaire brut net — Calcul gratuit en ligne",
+    metaTitle: "Simulateur salaire brut net",
     metaDescription:
       "Calculez votre salaire net à partir du brut mensuel : cotisations sociales et CSG. Estimateur gratuit pour salariés et négociations.",
   },
   "calculateur-tjm-freelance": {
     title: "Calculateur TJM freelance",
-    metaTitle: "Calculateur TJM freelance — Taux journalier moyen gratuit",
+    metaTitle: "Calculateur TJM freelance — Taux journalier",
     metaDescription:
       "Calculez votre TJM pour atteindre votre revenu net cible : jours facturables, charges et frais. Outil gratuit pour indépendants.",
   },
   "calculateur-imc": {
     title: "Calculateur d'IMC",
-    metaTitle: "Calculateur d'IMC — Indice de masse corporelle gratuit",
+    metaTitle: "Calculateur IMC — Indice masse corporelle",
     metaDescription:
       "Calculez votre IMC (indice de masse corporelle) à partir de votre taille et poids. Interprétation instantanée et repères santé.",
   },
@@ -239,6 +241,83 @@ function capitalizeFirst(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
+function trimAtWord(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const slice = text.slice(0, max);
+  const lastSpace = slice.lastIndexOf(" ");
+  if (lastSpace > max * 0.55) {
+    return slice.slice(0, lastSpace).replace(/[,;:\-—\s]+$/u, "");
+  }
+  return slice.replace(/[,;:\-—\s]+$/u, "");
+}
+
+function metaTitleMaxLength(): number {
+  return META_TITLE_EFFECTIVE_MAX - TITLE_BRAND_SUFFIX.length;
+}
+
+/** Title affiché dans `<title>` (avant ajout du suffixe de marque du layout). */
+export function clampMetaTitle(title: string): string {
+  const t = title
+    .replace(/\s+/g, " ")
+    .replace(/ — Calcul gratuit en ligne$/iu, "")
+    .replace(/ — Calcul gratuit$/iu, "")
+    .replace(/ — Gratuit en ligne$/iu, "")
+    .replace(/ — Gratuit$/iu, "")
+    .trim();
+
+  const max = metaTitleMaxLength();
+  if (t.length <= max) return t;
+
+  const dashIdx = t.indexOf(" — ");
+  if (dashIdx > 0) {
+    const main = t.slice(0, dashIdx);
+    const subtitle = t.slice(dashIdx + 3);
+    const roomForSubtitle = max - main.length - 3;
+    if (roomForSubtitle >= 8) {
+      const candidate = `${main} — ${trimAtWord(subtitle, roomForSubtitle)}`;
+      if (candidate.length <= max) return candidate;
+    }
+    const mainOnly = trimAtWord(main, max);
+    if (mainOnly.length <= max) return mainOnly;
+  }
+
+  return trimAtWord(t, max);
+}
+
+/** Meta description affichée dans `<meta name="description">`. */
+export function clampMetaDescription(description: string): string {
+  let d = description.replace(/\s+/g, " ").trim();
+  if (d.length <= META_DESCRIPTION_MAX) return d;
+
+  // Retire les préfixes redondants ajoutés par d'anciens templates auto.
+  d = d.replace(
+    /^(Simulateur|Calculateur)\s+(de\s+|d')(.+?)\s*:\s*/iu,
+    (_, __prefix, rest: string) =>
+      `${rest.charAt(0).toUpperCase()}${rest.slice(1)} : `
+  );
+
+  if (d.length <= META_DESCRIPTION_MAX) return d;
+
+  d = d.replace(
+    /\s+(Simulez|Calculez)\s+en\s+ligne\s+gratuitement\s*—\s*estimation\s+instantanée[^.]*\.?/giu,
+    "."
+  );
+
+  if (d.length <= META_DESCRIPTION_MAX) return d.replace(/\.\.+$/u, ".");
+
+  const slice = d.slice(0, META_DESCRIPTION_MAX);
+  const lastSpace = slice.lastIndexOf(" ");
+  const trimmed = (lastSpace > 90 ? slice.slice(0, lastSpace) : slice).replace(
+    /[,;:\s]+$/u,
+    ""
+  );
+  return `${trimmed}.`;
+}
+
+export function effectiveMetaTitle(title: string): string {
+  return `${title}${TITLE_BRAND_SUFFIX}`;
+}
+
 export function buildSeoTitle(sim: SimulatorDefinition): string {
   const override = SEO_OVERRIDES[sim.slug]?.title;
   if (override) return override;
@@ -285,31 +364,33 @@ export function buildH1Title(sim: SimulatorDefinition): string {
 
 export function buildMetaTitle(sim: SimulatorDefinition, seoTitle: string): string {
   const override = SEO_OVERRIDES[sim.slug]?.metaTitle;
-  if (override) return override;
+  if (override) return clampMetaTitle(override);
 
-  if (/—/.test(sim.metaTitle) && sim.metaTitle.length >= 40) {
-    return sim.metaTitle;
+  const inline = sim.metaTitle.trim();
+  if (inline.length >= 30) {
+    return clampMetaTitle(inline);
   }
 
-  return `${seoTitle} — Calcul gratuit en ligne`;
+  return clampMetaTitle(seoTitle);
 }
 
-export function buildMetaDescription(
-  sim: SimulatorDefinition,
-  seoTitle: string
-): string {
+export function buildMetaDescription(sim: SimulatorDefinition): string {
   const override = SEO_OVERRIDES[sim.slug]?.metaDescription;
-  if (override) return override;
+  if (override) return clampMetaDescription(override);
 
-  if (sim.metaDescription.length >= 120) {
-    return sim.metaDescription;
+  const inline = sim.metaDescription?.trim();
+  if (inline && inline.length >= 40) {
+    return clampMetaDescription(inline);
   }
 
+  const sd = sim.shortDescription.trim().replace(/\.$/u, "");
   const kind = inferToolKind(sim);
-  const domain = DOMAIN_LABELS[getSimulatorDomain(sim)].toLowerCase();
-  const verb = kind === "calculateur" ? "Calculez" : "Simulez";
+  const cta =
+    kind === "calculateur"
+      ? "Calculateur gratuit en ligne."
+      : "Simulateur gratuit en ligne.";
 
-  return `${seoTitle} : ${sim.shortDescription} ${verb} en ligne gratuitement — estimation instantanée pour vos projets ${domain}.`;
+  return clampMetaDescription(`${sd}. ${cta}`);
 }
 
 export function buildSeoKeywords(sim: SimulatorDefinition): string[] {
@@ -331,14 +412,14 @@ export function buildSeoKeywords(sim: SimulatorDefinition): string[] {
 export function applySeoEnrichment(sim: SimulatorDefinition): SimulatorDefinition {
   const seoTitle = buildSeoTitle(sim);
   const metaTitle = buildMetaTitle(sim, seoTitle);
-  const metaDescription = buildMetaDescription(sim, seoTitle);
+  const metaDescription = buildMetaDescription(sim);
   const keywords = buildSeoKeywords(sim);
 
   return {
     ...sim,
     title: buildH1Title(sim),
-    metaTitle,
-    metaDescription,
+    metaTitle: clampMetaTitle(metaTitle),
+    metaDescription: clampMetaDescription(metaDescription),
     keywords,
   };
 }
