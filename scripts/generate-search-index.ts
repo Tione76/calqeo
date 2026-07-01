@@ -1,11 +1,10 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { resolve } from "node:path";
 import { simulators } from "../src/lib/simulators/index";
-import { FEATURED_SLUGS } from "../src/lib/simulators/featured-slugs";
+import { buildPortalTree } from "../src/lib/simulators/_shared/portal-tree";
 import {
   DOMAIN_ANCHORS,
   DOMAIN_LABELS,
-  DOMAIN_ORDER,
   getSimulatorDomain,
 } from "../src/lib/simulators/types";
 
@@ -17,6 +16,8 @@ const CUSTOM_FORM_SLUGS = new Set([
 
 const dataDir = resolve(import.meta.dirname, "../src/data");
 mkdirSync(dataDir, { recursive: true });
+
+const portalTree = buildPortalTree(simulators);
 
 const searchEntries = simulators.map((sim) => ({
   slug: sim.slug,
@@ -33,6 +34,7 @@ const searchEntries = simulators.map((sim) => ({
 
 function toCardRef(sim: (typeof simulators)[number]) {
   const domain = getSimulatorDomain(sim);
+  const portalEntry = portalTree.simulatorIndex[sim.slug];
   return {
     slug: sim.slug,
     title: sim.title,
@@ -41,6 +43,9 @@ function toCardRef(sim: (typeof simulators)[number]) {
     category: sim.category,
     domain,
     domainLabel: DOMAIN_LABELS[domain],
+    primaryCategory: portalEntry?.primaryCategory ?? sim.category,
+    primaryCategoryLabel: portalEntry?.primaryCategoryLabel,
+    categoryPath: portalEntry?.categoryPath,
   };
 }
 
@@ -48,19 +53,23 @@ function toNavRef(sim: (typeof simulators)[number]) {
   return { slug: sim.slug, title: sim.title };
 }
 
-const groups = DOMAIN_ORDER.map((domain) => {
-  const all = simulators.filter((s) => getSimulatorDomain(s) === domain);
-  const featured = FEATURED_SLUGS[domain]
-    .map((slug) => all.find((s) => s.slug === slug))
-    .filter((s): s is (typeof simulators)[number] => !!s)
-    .map(toNavRef);
+const groups = portalTree.domains.map((domainNode) => {
+  const all = simulators.filter((s) => getSimulatorDomain(s) === domainNode.id);
 
   return {
-    domain,
-    label: DOMAIN_LABELS[domain],
-    anchor: DOMAIN_ANCHORS[domain],
-    count: all.length,
-    featured: featured.length > 0 ? featured : all.slice(0, 4).map(toNavRef),
+    domain: domainNode.id,
+    label: domainNode.label,
+    anchor: DOMAIN_ANCHORS[domainNode.id],
+    path: domainNode.path,
+    count: domainNode.count,
+    featured: domainNode.featured,
+    categories: domainNode.categories.map((category) => ({
+      id: category.id,
+      label: category.label,
+      path: category.path,
+      count: category.count,
+      featured: category.featured,
+    })),
     preview: all.slice(0, 6).map(toCardRef),
     all: all.map(toCardRef),
   };
@@ -87,6 +96,14 @@ writeFileSync(
   `${JSON.stringify(manifest, null, 2)}\n`,
   "utf8"
 );
+writeFileSync(
+  resolve(dataDir, "portal-tree.json"),
+  `${JSON.stringify(portalTree, null, 2)}\n`,
+  "utf8"
+);
 
 console.log(`Generated ${searchEntries.length} search entries`);
 console.log(`Generated manifest with ${groups.length} domain groups`);
+console.log(
+  `Generated portal tree: ${portalTree.domainCount} domains, ${portalTree.categoryHubCount} category hubs`
+);

@@ -23,7 +23,7 @@ interface SimulatorProfile {
 }
 
 /** Affinités inter-catégories (parcours utilisateur), sans liste par slug. */
-const CATEGORY_AFFINITY: Partial<
+export const CATEGORY_AFFINITY: Partial<
   Record<SimulatorCategory, Partial<Record<SimulatorCategory, number>>>
 > = {
   financement: {

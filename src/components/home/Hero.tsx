@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { DOMAIN_ORDER, DOMAIN_LABELS, DOMAIN_ANCHORS } from "@/lib/simulators/types";
-import { SIMULATOR_COUNT } from "@/lib/simulators/navigation";
+import { DOMAIN_ORDER, DOMAIN_LABELS } from "@/lib/simulators/types";
+import { getDomainNavGroups, SIMULATOR_COUNT } from "@/lib/simulators/navigation";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { SITE } from "@/lib/site/config";
 
 export function Hero() {
+  const domainGroups = getDomainNavGroups();
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-brand-900 via-brand-800 to-brand-950 text-white">
       <div className="absolute inset-0 opacity-10">
@@ -45,15 +47,19 @@ export function Hero() {
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            {DOMAIN_ORDER.map((domain) => (
-              <Link
-                key={domain}
-                href={`/simulateurs#${DOMAIN_ANCHORS[domain]}`}
-                className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur-sm transition-colors hover:bg-white/20"
-              >
-                {DOMAIN_LABELS[domain]}
-              </Link>
-            ))}
+            {DOMAIN_ORDER.map((domain) => {
+              const group = domainGroups.find((entry) => entry.domain === domain);
+              if (!group) return null;
+              return (
+                <Link
+                  key={domain}
+                  href={group.path}
+                  className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur-sm transition-colors hover:bg-white/20"
+                >
+                  {DOMAIN_LABELS[domain]}
+                </Link>
+              );
+            })}
           </div>
 
           <div className="mt-8">

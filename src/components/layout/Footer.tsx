@@ -29,12 +29,24 @@ export function Footer() {
             <div key={group.domain}>
               <h4 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
                 <Link
-                  href={`/simulateurs#${group.anchor}`}
+                  href={group.path}
                   className="hover:text-brand-700"
                 >
                   {group.label}
                 </Link>
               </h4>
+              <ul className="mt-2 space-y-1">
+                {group.categories.slice(0, 2).map((category) => (
+                  <li key={category.id}>
+                    <Link
+                      href={category.path}
+                      className="text-xs text-slate-500 transition-colors hover:text-brand-700"
+                    >
+                      {category.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
               <ul className="mt-4 space-y-2">
                 {group.featured.slice(0, 3).map((sim) => (
                   <li key={sim.slug}>
@@ -48,7 +60,7 @@ export function Footer() {
                 ))}
               </ul>
               <Link
-                href={`/simulateurs#${group.anchor}`}
+                href={group.path}
                 className="mt-2 inline-block text-xs font-semibold text-brand-600 hover:text-brand-700"
               >
                 Voir les {group.count} →

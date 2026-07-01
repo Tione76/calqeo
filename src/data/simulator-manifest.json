@@ -5,23 +5,106 @@
       "domain": "immobilier",
       "label": "Immobilier",
       "anchor": "immobilier",
+      "path": "/simulateurs/immobilier",
       "count": 39,
       "featured": [
-        {
-          "slug": "capacite-emprunt",
-          "title": "Simulateur de capacité d'emprunt immobilier"
-        },
         {
           "slug": "mensualite-pret-immobilier",
           "title": "Simulateur de mensualité de prêt immobilier"
         },
         {
-          "slug": "rendement-locatif",
-          "title": "Simulateur de rendement locatif"
+          "slug": "capacite-emprunt",
+          "title": "Simulateur de capacité d'emprunt immobilier"
         },
         {
-          "slug": "impot-revenus-fonciers",
-          "title": "Simulateur d'impôt sur les revenus fonciers"
+          "slug": "rendement-locatif-net",
+          "title": "Simulateur de rendement locatif net"
+        },
+        {
+          "slug": "rendement-locatif",
+          "title": "Simulateur de rendement locatif"
+        }
+      ],
+      "categories": [
+        {
+          "id": "financement",
+          "label": "Financement",
+          "path": "/simulateurs/immobilier/financement",
+          "count": 16,
+          "featured": [
+            {
+              "slug": "mensualite-pret-immobilier",
+              "title": "Simulateur de mensualité de prêt immobilier"
+            },
+            {
+              "slug": "capacite-emprunt",
+              "title": "Simulateur de capacité d'emprunt immobilier"
+            },
+            {
+              "slug": "frais-de-notaire",
+              "title": "Calculateur de frais de notaire"
+            }
+          ]
+        },
+        {
+          "id": "fiscalite",
+          "label": "Fiscalité immobilière",
+          "path": "/simulateurs/immobilier/fiscalite",
+          "count": 8,
+          "featured": [
+            {
+              "slug": "rentabilite-lmnp",
+              "title": "Simulateur de rentabilité LMNP"
+            },
+            {
+              "slug": "impot-revenus-fonciers",
+              "title": "Simulateur d'impôt sur les revenus fonciers"
+            },
+            {
+              "slug": "plus-value-immobiliere",
+              "title": "Simulateur de plus-value immobilière"
+            }
+          ]
+        },
+        {
+          "id": "gestion",
+          "label": "Gestion locative",
+          "path": "/simulateurs/immobilier/gestion",
+          "count": 6,
+          "featured": [
+            {
+              "slug": "revision-loyer-irl",
+              "title": "Simulateur de révision de loyer (IRL)"
+            },
+            {
+              "slug": "charges-recuperables-locataire",
+              "title": "Simulateur de charges récupérables locataire"
+            },
+            {
+              "slug": "loyer-charges-comprises",
+              "title": "Simulateur de loyer CC vs hors charges"
+            }
+          ]
+        },
+        {
+          "id": "investissement",
+          "label": "Investissement",
+          "path": "/simulateurs/immobilier/investissement",
+          "count": 9,
+          "featured": [
+            {
+              "slug": "rendement-locatif-net",
+              "title": "Simulateur de rendement locatif net"
+            },
+            {
+              "slug": "rendement-locatif",
+              "title": "Simulateur de rendement locatif"
+            },
+            {
+              "slug": "cash-flow-immobilier",
+              "title": "Simulateur de cash-flow immobilier"
+            }
+          ]
         }
       ],
       "preview": [
@@ -32,7 +115,10 @@
           "icon": "wallet",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "rendement-locatif",
@@ -41,7 +127,10 @@
           "icon": "chart",
           "category": "investissement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "investissement",
+          "primaryCategoryLabel": "Investissement",
+          "categoryPath": "/simulateurs/immobilier/investissement"
         },
         {
           "slug": "mensualite-pret-immobilier",
@@ -50,7 +139,10 @@
           "icon": "home",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "frais-de-notaire",
@@ -59,7 +151,10 @@
           "icon": "calculator",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "taux-endettement",
@@ -68,7 +163,10 @@
           "icon": "percent",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "cout-total-credit-immobilier",
@@ -77,7 +175,10 @@
           "icon": "wallet",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         }
       ],
       "all": [
@@ -88,7 +189,10 @@
           "icon": "wallet",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "rendement-locatif",
@@ -97,7 +201,10 @@
           "icon": "chart",
           "category": "investissement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "investissement",
+          "primaryCategoryLabel": "Investissement",
+          "categoryPath": "/simulateurs/immobilier/investissement"
         },
         {
           "slug": "mensualite-pret-immobilier",
@@ -106,7 +213,10 @@
           "icon": "home",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "frais-de-notaire",
@@ -115,7 +225,10 @@
           "icon": "calculator",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "taux-endettement",
@@ -124,7 +237,10 @@
           "icon": "percent",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "cout-total-credit-immobilier",
@@ -133,7 +249,10 @@
           "icon": "wallet",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "tableau-amortissement",
@@ -142,7 +261,10 @@
           "icon": "calculator",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "remboursement-anticipe",
@@ -151,7 +273,10 @@
           "icon": "calculator",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "pret-taux-zero-ptz",
@@ -160,7 +285,10 @@
           "icon": "home",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "pret-relais",
@@ -169,7 +297,10 @@
           "icon": "home",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "rachat-credit-immobilier",
@@ -178,7 +309,10 @@
           "icon": "wallet",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "assurance-emprunteur",
@@ -187,7 +321,10 @@
           "icon": "wallet",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "frais-agence-immobiliere",
@@ -196,7 +333,10 @@
           "icon": "building",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "frais-garantie-emprunt",
@@ -205,7 +345,10 @@
           "icon": "wallet",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "effort-epargne-immobilier",
@@ -214,7 +357,10 @@
           "icon": "wallet",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "impact-hausse-taux",
@@ -223,7 +369,10 @@
           "icon": "percent",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "credit-travaux",
@@ -232,7 +381,10 @@
           "icon": "building",
           "category": "financement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "financement",
+          "primaryCategoryLabel": "Financement",
+          "categoryPath": "/simulateurs/immobilier/financement"
         },
         {
           "slug": "plus-value-immobiliere",
@@ -241,7 +393,10 @@
           "icon": "chart",
           "category": "fiscalite",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "fiscalite",
+          "primaryCategoryLabel": "Fiscalité immobilière",
+          "categoryPath": "/simulateurs/immobilier/fiscalite"
         },
         {
           "slug": "rendement-locatif-brut",
@@ -250,7 +405,10 @@
           "icon": "chart",
           "category": "investissement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "investissement",
+          "primaryCategoryLabel": "Investissement",
+          "categoryPath": "/simulateurs/immobilier/investissement"
         },
         {
           "slug": "rendement-locatif-net",
@@ -259,7 +417,10 @@
           "icon": "chart",
           "category": "investissement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "investissement",
+          "primaryCategoryLabel": "Investissement",
+          "categoryPath": "/simulateurs/immobilier/investissement"
         },
         {
           "slug": "cash-flow-immobilier",
@@ -268,7 +429,10 @@
           "icon": "wallet",
           "category": "investissement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "investissement",
+          "primaryCategoryLabel": "Investissement",
+          "categoryPath": "/simulateurs/immobilier/investissement"
         },
         {
           "slug": "rentabilite-lmnp",
@@ -277,7 +441,10 @@
           "icon": "chart",
           "category": "fiscalite",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "fiscalite",
+          "primaryCategoryLabel": "Fiscalité immobilière",
+          "categoryPath": "/simulateurs/immobilier/fiscalite"
         },
         {
           "slug": "budget-travaux",
@@ -286,7 +453,10 @@
           "icon": "building",
           "category": "investissement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "investissement",
+          "primaryCategoryLabel": "Investissement",
+          "categoryPath": "/simulateurs/immobilier/investissement"
         },
         {
           "slug": "rentabilite-apres-travaux",
@@ -295,7 +465,10 @@
           "icon": "chart",
           "category": "investissement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "investissement",
+          "primaryCategoryLabel": "Investissement",
+          "categoryPath": "/simulateurs/immobilier/investissement"
         },
         {
           "slug": "rentabilite-scpi",
@@ -304,7 +477,10 @@
           "icon": "chart",
           "category": "investissement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "investissement",
+          "primaryCategoryLabel": "Investissement",
+          "categoryPath": "/simulateurs/immobilier/investissement"
         },
         {
           "slug": "rentabilite-location-courte-duree",
@@ -313,7 +489,10 @@
           "icon": "chart",
           "category": "investissement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "investissement",
+          "primaryCategoryLabel": "Investissement",
+          "categoryPath": "/simulateurs/immobilier/investissement"
         },
         {
           "slug": "colocation-rentabilite",
@@ -322,7 +501,10 @@
           "icon": "chart",
           "category": "investissement",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "investissement",
+          "primaryCategoryLabel": "Investissement",
+          "categoryPath": "/simulateurs/immobilier/investissement"
         },
         {
           "slug": "impot-revenus-fonciers",
@@ -331,7 +513,10 @@
           "icon": "percent",
           "category": "fiscalite",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "fiscalite",
+          "primaryCategoryLabel": "Fiscalité immobilière",
+          "categoryPath": "/simulateurs/immobilier/fiscalite"
         },
         {
           "slug": "taxe-fonciere",
@@ -340,7 +525,10 @@
           "icon": "building",
           "category": "fiscalite",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "fiscalite",
+          "primaryCategoryLabel": "Fiscalité immobilière",
+          "categoryPath": "/simulateurs/immobilier/fiscalite"
         },
         {
           "slug": "deficit-foncier",
@@ -349,7 +537,10 @@
           "icon": "percent",
           "category": "fiscalite",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "fiscalite",
+          "primaryCategoryLabel": "Fiscalité immobilière",
+          "categoryPath": "/simulateurs/immobilier/fiscalite"
         },
         {
           "slug": "donation-succession-immobiliere",
@@ -358,7 +549,10 @@
           "icon": "building",
           "category": "fiscalite",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "fiscalite",
+          "primaryCategoryLabel": "Fiscalité immobilière",
+          "categoryPath": "/simulateurs/immobilier/fiscalite"
         },
         {
           "slug": "location-meublee-vs-nue",
@@ -367,7 +561,10 @@
           "icon": "chart",
           "category": "fiscalite",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "fiscalite",
+          "primaryCategoryLabel": "Fiscalité immobilière",
+          "categoryPath": "/simulateurs/immobilier/fiscalite"
         },
         {
           "slug": "ifi-impot-fortune-immobiliere",
@@ -376,7 +573,10 @@
           "icon": "percent",
           "category": "fiscalite",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "fiscalite",
+          "primaryCategoryLabel": "Fiscalité immobilière",
+          "categoryPath": "/simulateurs/immobilier/fiscalite"
         },
         {
           "slug": "revision-loyer-irl",
@@ -385,7 +585,10 @@
           "icon": "percent",
           "category": "gestion",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "gestion",
+          "primaryCategoryLabel": "Gestion locative",
+          "categoryPath": "/simulateurs/immobilier/gestion"
         },
         {
           "slug": "encadrement-loyers",
@@ -394,7 +597,10 @@
           "icon": "building",
           "category": "gestion",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "gestion",
+          "primaryCategoryLabel": "Gestion locative",
+          "categoryPath": "/simulateurs/immobilier/gestion"
         },
         {
           "slug": "depot-garantie-locatif",
@@ -403,7 +609,10 @@
           "icon": "wallet",
           "category": "gestion",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "gestion",
+          "primaryCategoryLabel": "Gestion locative",
+          "categoryPath": "/simulateurs/immobilier/gestion"
         },
         {
           "slug": "charges-recuperables-locataire",
@@ -412,7 +621,10 @@
           "icon": "calculator",
           "category": "gestion",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "gestion",
+          "primaryCategoryLabel": "Gestion locative",
+          "categoryPath": "/simulateurs/immobilier/gestion"
         },
         {
           "slug": "revision-loyer-commercial",
@@ -421,7 +633,10 @@
           "icon": "percent",
           "category": "gestion",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "gestion",
+          "primaryCategoryLabel": "Gestion locative",
+          "categoryPath": "/simulateurs/immobilier/gestion"
         },
         {
           "slug": "loyer-charges-comprises",
@@ -430,7 +645,10 @@
           "icon": "calculator",
           "category": "gestion",
           "domain": "immobilier",
-          "domainLabel": "Immobilier"
+          "domainLabel": "Immobilier",
+          "primaryCategory": "gestion",
+          "primaryCategoryLabel": "Gestion locative",
+          "categoryPath": "/simulateurs/immobilier/gestion"
         }
       ]
     },
@@ -438,23 +656,66 @@
       "domain": "finance",
       "label": "Finance personnelle",
       "anchor": "finance",
+      "path": "/simulateurs/finance",
       "count": 10,
       "featured": [
         {
-          "slug": "mensualite-credit-consommation",
-          "title": "Simulateur de mensualité crédit consommation"
+          "slug": "budget-reste-a-vivre",
+          "title": "Simulateur de reste à vivre"
         },
         {
           "slug": "interets-composes",
           "title": "Simulateur d'intérêts composés"
         },
         {
-          "slug": "simulateur-retraite",
-          "title": "Simulateur de retraite"
+          "slug": "simulateur-inflation",
+          "title": "Simulateur inflation"
         },
         {
-          "slug": "budget-reste-a-vivre",
-          "title": "Simulateur de reste à vivre"
+          "slug": "mensualite-credit-consommation",
+          "title": "Simulateur de mensualité crédit consommation"
+        }
+      ],
+      "categories": [
+        {
+          "id": "credit",
+          "label": "Crédit & emprunt",
+          "path": "/simulateurs/finance/credit",
+          "count": 4,
+          "featured": [
+            {
+              "slug": "mensualite-credit-consommation",
+              "title": "Simulateur de mensualité crédit consommation"
+            },
+            {
+              "slug": "frais-kilometriques",
+              "title": "Simulateur de frais kilométriques"
+            },
+            {
+              "slug": "loa-vs-credit-auto",
+              "title": "Simulateur LOA vs crédit auto"
+            }
+          ]
+        },
+        {
+          "id": "epargne",
+          "label": "Épargne & budget",
+          "path": "/simulateurs/finance/epargne",
+          "count": 6,
+          "featured": [
+            {
+              "slug": "budget-reste-a-vivre",
+              "title": "Simulateur de reste à vivre"
+            },
+            {
+              "slug": "interets-composes",
+              "title": "Simulateur d'intérêts composés"
+            },
+            {
+              "slug": "simulateur-inflation",
+              "title": "Simulateur inflation"
+            }
+          ]
         }
       ],
       "preview": [
@@ -465,7 +726,10 @@
           "icon": "wallet",
           "category": "credit",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "credit",
+          "primaryCategoryLabel": "Crédit & emprunt",
+          "categoryPath": "/simulateurs/finance/credit"
         },
         {
           "slug": "interets-composes",
@@ -474,7 +738,10 @@
           "icon": "chart",
           "category": "epargne",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "epargne",
+          "primaryCategoryLabel": "Épargne & budget",
+          "categoryPath": "/simulateurs/finance/epargne"
         },
         {
           "slug": "simulateur-inflation",
@@ -483,7 +750,10 @@
           "icon": "chart",
           "category": "epargne",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "epargne",
+          "primaryCategoryLabel": "Épargne & budget",
+          "categoryPath": "/simulateurs/finance/epargne"
         },
         {
           "slug": "budget-reste-a-vivre",
@@ -492,7 +762,10 @@
           "icon": "calculator",
           "category": "epargne",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "epargne",
+          "primaryCategoryLabel": "Épargne & budget",
+          "categoryPath": "/simulateurs/finance/epargne"
         },
         {
           "slug": "simulateur-retraite",
@@ -501,7 +774,10 @@
           "icon": "chart",
           "category": "epargne",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "epargne",
+          "primaryCategoryLabel": "Épargne & budget",
+          "categoryPath": "/simulateurs/finance/epargne"
         },
         {
           "slug": "rendement-livret-a",
@@ -510,7 +786,10 @@
           "icon": "percent",
           "category": "epargne",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "epargne",
+          "primaryCategoryLabel": "Épargne & budget",
+          "categoryPath": "/simulateurs/finance/epargne"
         }
       ],
       "all": [
@@ -521,7 +800,10 @@
           "icon": "wallet",
           "category": "credit",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "credit",
+          "primaryCategoryLabel": "Crédit & emprunt",
+          "categoryPath": "/simulateurs/finance/credit"
         },
         {
           "slug": "interets-composes",
@@ -530,7 +812,10 @@
           "icon": "chart",
           "category": "epargne",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "epargne",
+          "primaryCategoryLabel": "Épargne & budget",
+          "categoryPath": "/simulateurs/finance/epargne"
         },
         {
           "slug": "simulateur-inflation",
@@ -539,7 +824,10 @@
           "icon": "chart",
           "category": "epargne",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "epargne",
+          "primaryCategoryLabel": "Épargne & budget",
+          "categoryPath": "/simulateurs/finance/epargne"
         },
         {
           "slug": "budget-reste-a-vivre",
@@ -548,7 +836,10 @@
           "icon": "calculator",
           "category": "epargne",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "epargne",
+          "primaryCategoryLabel": "Épargne & budget",
+          "categoryPath": "/simulateurs/finance/epargne"
         },
         {
           "slug": "simulateur-retraite",
@@ -557,7 +848,10 @@
           "icon": "chart",
           "category": "epargne",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "epargne",
+          "primaryCategoryLabel": "Épargne & budget",
+          "categoryPath": "/simulateurs/finance/epargne"
         },
         {
           "slug": "rendement-livret-a",
@@ -566,7 +860,10 @@
           "icon": "percent",
           "category": "epargne",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "epargne",
+          "primaryCategoryLabel": "Épargne & budget",
+          "categoryPath": "/simulateurs/finance/epargne"
         },
         {
           "slug": "rendement-pea",
@@ -575,7 +872,10 @@
           "icon": "chart",
           "category": "epargne",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "epargne",
+          "primaryCategoryLabel": "Épargne & budget",
+          "categoryPath": "/simulateurs/finance/epargne"
         },
         {
           "slug": "cout-total-credit-consommation",
@@ -584,7 +884,10 @@
           "icon": "calculator",
           "category": "credit",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "credit",
+          "primaryCategoryLabel": "Crédit & emprunt",
+          "categoryPath": "/simulateurs/finance/credit"
         },
         {
           "slug": "loa-vs-credit-auto",
@@ -593,7 +896,10 @@
           "icon": "wallet",
           "category": "credit",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "credit",
+          "primaryCategoryLabel": "Crédit & emprunt",
+          "categoryPath": "/simulateurs/finance/credit"
         },
         {
           "slug": "frais-kilometriques",
@@ -602,7 +908,10 @@
           "icon": "calculator",
           "category": "credit",
           "domain": "finance",
-          "domainLabel": "Finance personnelle"
+          "domainLabel": "Finance personnelle",
+          "primaryCategory": "credit",
+          "primaryCategoryLabel": "Crédit & emprunt",
+          "categoryPath": "/simulateurs/finance/credit"
         }
       ]
     },
@@ -610,6 +919,7 @@
       "domain": "emploi",
       "label": "Emploi & salaire",
       "anchor": "emploi",
+      "path": "/simulateurs/emploi",
       "count": 10,
       "featured": [
         {
@@ -617,16 +927,58 @@
           "title": "Simulateur salaire brut net"
         },
         {
-          "slug": "salaire-net-brut",
-          "title": "Simulateur de salaire net brut"
+          "slug": "salaire-temps-partiel",
+          "title": "Simulateur de salaire temps partiel"
         },
         {
           "slug": "cout-total-embauche-salarie",
           "title": "Simulateur de coût total d'embauche"
         },
         {
-          "slug": "indemnites-licenciement",
-          "title": "Simulateur d'indemnités de licenciement"
+          "slug": "conges-payes-acquis",
+          "title": "Simulateur de congés payés acquis"
+        }
+      ],
+      "categories": [
+        {
+          "id": "social",
+          "label": "Protection sociale",
+          "path": "/simulateurs/emploi/social",
+          "count": 4,
+          "featured": [
+            {
+              "slug": "conges-payes-acquis",
+              "title": "Simulateur de congés payés acquis"
+            },
+            {
+              "slug": "allocation-chomage-are",
+              "title": "Simulateur d'allocation chômage ARE"
+            },
+            {
+              "slug": "ijss-arret-maladie",
+              "title": "Simulateur d'iJSS arrêt maladie"
+            }
+          ]
+        },
+        {
+          "id": "salaire",
+          "label": "Salaire & paie",
+          "path": "/simulateurs/emploi/salaire",
+          "count": 6,
+          "featured": [
+            {
+              "slug": "salaire-brut-net",
+              "title": "Simulateur salaire brut net"
+            },
+            {
+              "slug": "salaire-temps-partiel",
+              "title": "Simulateur de salaire temps partiel"
+            },
+            {
+              "slug": "cout-total-embauche-salarie",
+              "title": "Simulateur de coût total d'embauche"
+            }
+          ]
         }
       ],
       "preview": [
@@ -637,7 +989,10 @@
           "icon": "briefcase",
           "category": "salaire",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "salaire",
+          "primaryCategoryLabel": "Salaire & paie",
+          "categoryPath": "/simulateurs/emploi/salaire"
         },
         {
           "slug": "salaire-net-brut",
@@ -646,7 +1001,10 @@
           "icon": "briefcase",
           "category": "salaire",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "salaire",
+          "primaryCategoryLabel": "Salaire & paie",
+          "categoryPath": "/simulateurs/emploi/salaire"
         },
         {
           "slug": "cout-total-embauche-salarie",
@@ -655,7 +1013,10 @@
           "icon": "building",
           "category": "salaire",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "salaire",
+          "primaryCategoryLabel": "Salaire & paie",
+          "categoryPath": "/simulateurs/emploi/salaire"
         },
         {
           "slug": "indemnites-licenciement",
@@ -664,7 +1025,10 @@
           "icon": "scale",
           "category": "social",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "social",
+          "primaryCategoryLabel": "Protection sociale",
+          "categoryPath": "/simulateurs/emploi/social"
         },
         {
           "slug": "conges-payes-acquis",
@@ -673,7 +1037,10 @@
           "icon": "calculator",
           "category": "social",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "social",
+          "primaryCategoryLabel": "Protection sociale",
+          "categoryPath": "/simulateurs/emploi/social"
         },
         {
           "slug": "ijss-arret-maladie",
@@ -682,7 +1049,10 @@
           "icon": "heart",
           "category": "social",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "social",
+          "primaryCategoryLabel": "Protection sociale",
+          "categoryPath": "/simulateurs/emploi/social"
         }
       ],
       "all": [
@@ -693,7 +1063,10 @@
           "icon": "briefcase",
           "category": "salaire",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "salaire",
+          "primaryCategoryLabel": "Salaire & paie",
+          "categoryPath": "/simulateurs/emploi/salaire"
         },
         {
           "slug": "salaire-net-brut",
@@ -702,7 +1075,10 @@
           "icon": "briefcase",
           "category": "salaire",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "salaire",
+          "primaryCategoryLabel": "Salaire & paie",
+          "categoryPath": "/simulateurs/emploi/salaire"
         },
         {
           "slug": "cout-total-embauche-salarie",
@@ -711,7 +1087,10 @@
           "icon": "building",
           "category": "salaire",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "salaire",
+          "primaryCategoryLabel": "Salaire & paie",
+          "categoryPath": "/simulateurs/emploi/salaire"
         },
         {
           "slug": "indemnites-licenciement",
@@ -720,7 +1099,10 @@
           "icon": "scale",
           "category": "social",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "social",
+          "primaryCategoryLabel": "Protection sociale",
+          "categoryPath": "/simulateurs/emploi/social"
         },
         {
           "slug": "conges-payes-acquis",
@@ -729,7 +1111,10 @@
           "icon": "calculator",
           "category": "social",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "social",
+          "primaryCategoryLabel": "Protection sociale",
+          "categoryPath": "/simulateurs/emploi/social"
         },
         {
           "slug": "ijss-arret-maladie",
@@ -738,7 +1123,10 @@
           "icon": "heart",
           "category": "social",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "social",
+          "primaryCategoryLabel": "Protection sociale",
+          "categoryPath": "/simulateurs/emploi/social"
         },
         {
           "slug": "allocation-chomage-are",
@@ -747,7 +1135,10 @@
           "icon": "wallet",
           "category": "social",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "social",
+          "primaryCategoryLabel": "Protection sociale",
+          "categoryPath": "/simulateurs/emploi/social"
         },
         {
           "slug": "heures-supplementaires",
@@ -756,7 +1147,10 @@
           "icon": "percent",
           "category": "salaire",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "salaire",
+          "primaryCategoryLabel": "Salaire & paie",
+          "categoryPath": "/simulateurs/emploi/salaire"
         },
         {
           "slug": "salaire-temps-partiel",
@@ -765,7 +1159,10 @@
           "icon": "calculator",
           "category": "salaire",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "salaire",
+          "primaryCategoryLabel": "Salaire & paie",
+          "categoryPath": "/simulateurs/emploi/salaire"
         },
         {
           "slug": "smic-net",
@@ -774,7 +1171,10 @@
           "icon": "percent",
           "category": "salaire",
           "domain": "emploi",
-          "domainLabel": "Emploi & salaire"
+          "domainLabel": "Emploi & salaire",
+          "primaryCategory": "salaire",
+          "primaryCategoryLabel": "Salaire & paie",
+          "categoryPath": "/simulateurs/emploi/salaire"
         }
       ]
     },
@@ -782,23 +1182,66 @@
       "domain": "entreprise",
       "label": "Entreprises & indépendants",
       "anchor": "entreprise",
+      "path": "/simulateurs/entreprise",
       "count": 10,
       "featured": [
-        {
-          "slug": "calculateur-tjm-freelance",
-          "title": "Calculateur TJM freelance"
-        },
         {
           "slug": "revenu-net-independant",
           "title": "Simulateur de revenu net indépendant"
         },
         {
-          "slug": "sasu-remuneration-dividendes",
-          "title": "Simulateur de sASU salaire vs dividendes"
+          "slug": "calculateur-tjm-freelance",
+          "title": "Calculateur TJM freelance"
         },
         {
           "slug": "break-even-entreprise",
           "title": "Simulateur de seuil de rentabilité"
+        },
+        {
+          "slug": "facturation-objectif-revenu-net",
+          "title": "Simulateur de facturation objectif revenu net"
+        }
+      ],
+      "categories": [
+        {
+          "id": "independant",
+          "label": "Freelance & indépendants",
+          "path": "/simulateurs/entreprise/independant",
+          "count": 7,
+          "featured": [
+            {
+              "slug": "revenu-net-independant",
+              "title": "Simulateur de revenu net indépendant"
+            },
+            {
+              "slug": "calculateur-tjm-freelance",
+              "title": "Calculateur TJM freelance"
+            },
+            {
+              "slug": "facturation-objectif-revenu-net",
+              "title": "Simulateur de facturation objectif revenu net"
+            }
+          ]
+        },
+        {
+          "id": "entreprise-gestion",
+          "label": "Gestion d'entreprise",
+          "path": "/simulateurs/entreprise/entreprise-gestion",
+          "count": 3,
+          "featured": [
+            {
+              "slug": "break-even-entreprise",
+              "title": "Simulateur de seuil de rentabilité"
+            },
+            {
+              "slug": "marge-commerciale-taux",
+              "title": "Simulateur de marge commerciale"
+            },
+            {
+              "slug": "seuil-franchise-tva",
+              "title": "Simulateur de seuil franchise TVA"
+            }
+          ]
         }
       ],
       "preview": [
@@ -809,7 +1252,10 @@
           "icon": "briefcase",
           "category": "independant",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "independant",
+          "primaryCategoryLabel": "Freelance & indépendants",
+          "categoryPath": "/simulateurs/entreprise/independant"
         },
         {
           "slug": "revenu-net-independant",
@@ -818,7 +1264,10 @@
           "icon": "wallet",
           "category": "independant",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "independant",
+          "primaryCategoryLabel": "Freelance & indépendants",
+          "categoryPath": "/simulateurs/entreprise/independant"
         },
         {
           "slug": "sasu-remuneration-dividendes",
@@ -827,7 +1276,10 @@
           "icon": "chart",
           "category": "independant",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "independant",
+          "primaryCategoryLabel": "Freelance & indépendants",
+          "categoryPath": "/simulateurs/entreprise/independant"
         },
         {
           "slug": "portage-salarial-vs-freelance",
@@ -836,7 +1288,10 @@
           "icon": "scale",
           "category": "independant",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "independant",
+          "primaryCategoryLabel": "Freelance & indépendants",
+          "categoryPath": "/simulateurs/entreprise/independant"
         },
         {
           "slug": "seuil-franchise-tva",
@@ -845,7 +1300,10 @@
           "icon": "percent",
           "category": "entreprise-gestion",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "entreprise-gestion",
+          "primaryCategoryLabel": "Gestion d'entreprise",
+          "categoryPath": "/simulateurs/entreprise/entreprise-gestion"
         },
         {
           "slug": "break-even-entreprise",
@@ -854,7 +1312,10 @@
           "icon": "chart",
           "category": "entreprise-gestion",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "entreprise-gestion",
+          "primaryCategoryLabel": "Gestion d'entreprise",
+          "categoryPath": "/simulateurs/entreprise/entreprise-gestion"
         }
       ],
       "all": [
@@ -865,7 +1326,10 @@
           "icon": "briefcase",
           "category": "independant",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "independant",
+          "primaryCategoryLabel": "Freelance & indépendants",
+          "categoryPath": "/simulateurs/entreprise/independant"
         },
         {
           "slug": "revenu-net-independant",
@@ -874,7 +1338,10 @@
           "icon": "wallet",
           "category": "independant",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "independant",
+          "primaryCategoryLabel": "Freelance & indépendants",
+          "categoryPath": "/simulateurs/entreprise/independant"
         },
         {
           "slug": "sasu-remuneration-dividendes",
@@ -883,7 +1350,10 @@
           "icon": "chart",
           "category": "independant",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "independant",
+          "primaryCategoryLabel": "Freelance & indépendants",
+          "categoryPath": "/simulateurs/entreprise/independant"
         },
         {
           "slug": "portage-salarial-vs-freelance",
@@ -892,7 +1362,10 @@
           "icon": "scale",
           "category": "independant",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "independant",
+          "primaryCategoryLabel": "Freelance & indépendants",
+          "categoryPath": "/simulateurs/entreprise/independant"
         },
         {
           "slug": "seuil-franchise-tva",
@@ -901,7 +1374,10 @@
           "icon": "percent",
           "category": "entreprise-gestion",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "entreprise-gestion",
+          "primaryCategoryLabel": "Gestion d'entreprise",
+          "categoryPath": "/simulateurs/entreprise/entreprise-gestion"
         },
         {
           "slug": "break-even-entreprise",
@@ -910,7 +1386,10 @@
           "icon": "chart",
           "category": "entreprise-gestion",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "entreprise-gestion",
+          "primaryCategoryLabel": "Gestion d'entreprise",
+          "categoryPath": "/simulateurs/entreprise/entreprise-gestion"
         },
         {
           "slug": "marge-commerciale-taux",
@@ -919,7 +1398,10 @@
           "icon": "calculator",
           "category": "entreprise-gestion",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "entreprise-gestion",
+          "primaryCategoryLabel": "Gestion d'entreprise",
+          "categoryPath": "/simulateurs/entreprise/entreprise-gestion"
         },
         {
           "slug": "cout-horaire-charge-tns",
@@ -928,7 +1410,10 @@
           "icon": "tools",
           "category": "independant",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "independant",
+          "primaryCategoryLabel": "Freelance & indépendants",
+          "categoryPath": "/simulateurs/entreprise/independant"
         },
         {
           "slug": "exoneration-acre",
@@ -937,7 +1422,10 @@
           "icon": "percent",
           "category": "independant",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "independant",
+          "primaryCategoryLabel": "Freelance & indépendants",
+          "categoryPath": "/simulateurs/entreprise/independant"
         },
         {
           "slug": "facturation-objectif-revenu-net",
@@ -946,7 +1434,10 @@
           "icon": "chart",
           "category": "independant",
           "domain": "entreprise",
-          "domainLabel": "Entreprises & indépendants"
+          "domainLabel": "Entreprises & indépendants",
+          "primaryCategory": "independant",
+          "primaryCategoryLabel": "Freelance & indépendants",
+          "categoryPath": "/simulateurs/entreprise/independant"
         }
       ]
     },
@@ -954,6 +1445,7 @@
       "domain": "fiscalite",
       "label": "Fiscalité",
       "anchor": "fiscalite",
+      "path": "/simulateurs/fiscalite",
       "count": 10,
       "featured": [
         {
@@ -965,12 +1457,34 @@
           "title": "Simulateur charges micro-entrepreneur"
         },
         {
-          "slug": "flat-tax-30-pourcent",
-          "title": "Simulateur de flat tax 30 %"
+          "slug": "prelevement-a-la-source",
+          "title": "Simulateur de prélèvement à la source"
         },
         {
-          "slug": "quotient-familial",
-          "title": "Simulateur de quotient familial"
+          "slug": "taux-marginal-imposition",
+          "title": "Simulateur de taux marginal d'imposition"
+        }
+      ],
+      "categories": [
+        {
+          "id": "impots",
+          "label": "Impôts & charges",
+          "path": "/simulateurs/fiscalite/impots",
+          "count": 10,
+          "featured": [
+            {
+              "slug": "impot-sur-le-revenu",
+              "title": "Simulateur d'impôt sur le revenu"
+            },
+            {
+              "slug": "micro-entrepreneur-charges",
+              "title": "Simulateur charges micro-entrepreneur"
+            },
+            {
+              "slug": "prelevement-a-la-source",
+              "title": "Simulateur de prélèvement à la source"
+            }
+          ]
         }
       ],
       "preview": [
@@ -981,7 +1495,10 @@
           "icon": "percent",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         },
         {
           "slug": "quotient-familial",
@@ -990,7 +1507,10 @@
           "icon": "calculator",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         },
         {
           "slug": "prelevement-a-la-source",
@@ -999,7 +1519,10 @@
           "icon": "percent",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         },
         {
           "slug": "flat-tax-30-pourcent",
@@ -1008,7 +1531,10 @@
           "icon": "percent",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         },
         {
           "slug": "micro-entrepreneur-charges",
@@ -1017,7 +1543,10 @@
           "icon": "calculator",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         },
         {
           "slug": "credit-impot-emploi-domicile",
@@ -1026,7 +1555,10 @@
           "icon": "percent",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         }
       ],
       "all": [
@@ -1037,7 +1569,10 @@
           "icon": "percent",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         },
         {
           "slug": "quotient-familial",
@@ -1046,7 +1581,10 @@
           "icon": "calculator",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         },
         {
           "slug": "prelevement-a-la-source",
@@ -1055,7 +1593,10 @@
           "icon": "percent",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         },
         {
           "slug": "flat-tax-30-pourcent",
@@ -1064,7 +1605,10 @@
           "icon": "percent",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         },
         {
           "slug": "micro-entrepreneur-charges",
@@ -1073,7 +1617,10 @@
           "icon": "calculator",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         },
         {
           "slug": "credit-impot-emploi-domicile",
@@ -1082,7 +1629,10 @@
           "icon": "percent",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         },
         {
           "slug": "impot-dividendes",
@@ -1091,7 +1641,10 @@
           "icon": "percent",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         },
         {
           "slug": "taux-marginal-imposition",
@@ -1100,7 +1653,10 @@
           "icon": "calculator",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         },
         {
           "slug": "donation-numeraire",
@@ -1109,7 +1665,10 @@
           "icon": "calculator",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         },
         {
           "slug": "cesu-credit-impot",
@@ -1118,7 +1677,10 @@
           "icon": "percent",
           "category": "impots",
           "domain": "fiscalite",
-          "domainLabel": "Fiscalité"
+          "domainLabel": "Fiscalité",
+          "primaryCategory": "impots",
+          "primaryCategoryLabel": "Impôts & charges",
+          "categoryPath": "/simulateurs/fiscalite/impots"
         }
       ]
     },
@@ -1126,23 +1688,66 @@
       "domain": "travaux",
       "label": "Travaux & habitat",
       "anchor": "travaux",
+      "path": "/simulateurs/travaux",
       "count": 10,
       "featured": [
-        {
-          "slug": "quantite-peinture",
-          "title": "Calculateur de quantité de peinture"
-        },
         {
           "slug": "calcul-carrelage",
           "title": "Calculateur de calcul carrelage"
         },
         {
-          "slug": "maprimerenov",
-          "title": "Simulateur MaPrimeRénov'"
-        },
-        {
           "slug": "volume-surface-piece",
           "title": "Calculateur de volume et surface pièce"
+        },
+        {
+          "slug": "estimation-consommation-energie",
+          "title": "Simulateur d'estimation consommation énergie"
+        },
+        {
+          "slug": "quantite-peinture",
+          "title": "Calculateur de quantité de peinture"
+        }
+      ],
+      "categories": [
+        {
+          "id": "energie",
+          "label": "Énergie & rénovation",
+          "path": "/simulateurs/travaux/energie",
+          "count": 4,
+          "featured": [
+            {
+              "slug": "estimation-consommation-energie",
+              "title": "Simulateur d'estimation consommation énergie"
+            },
+            {
+              "slug": "economies-isolation",
+              "title": "Simulateur d'économies isolation"
+            },
+            {
+              "slug": "pompe-a-chaleur-economies",
+              "title": "Simulateur de pompe à chaleur économies"
+            }
+          ]
+        },
+        {
+          "id": "materiaux",
+          "label": "Matériaux & surfaces",
+          "path": "/simulateurs/travaux/materiaux",
+          "count": 6,
+          "featured": [
+            {
+              "slug": "calcul-carrelage",
+              "title": "Calculateur de calcul carrelage"
+            },
+            {
+              "slug": "volume-surface-piece",
+              "title": "Calculateur de volume et surface pièce"
+            },
+            {
+              "slug": "quantite-peinture",
+              "title": "Calculateur de quantité de peinture"
+            }
+          ]
         }
       ],
       "preview": [
@@ -1153,7 +1758,10 @@
           "icon": "tools",
           "category": "materiaux",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "materiaux",
+          "primaryCategoryLabel": "Matériaux & surfaces",
+          "categoryPath": "/simulateurs/travaux/materiaux"
         },
         {
           "slug": "calcul-carrelage",
@@ -1162,7 +1770,10 @@
           "icon": "tools",
           "category": "materiaux",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "materiaux",
+          "primaryCategoryLabel": "Matériaux & surfaces",
+          "categoryPath": "/simulateurs/travaux/materiaux"
         },
         {
           "slug": "volume-beton",
@@ -1171,7 +1782,10 @@
           "icon": "building",
           "category": "materiaux",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "materiaux",
+          "primaryCategoryLabel": "Matériaux & surfaces",
+          "categoryPath": "/simulateurs/travaux/materiaux"
         },
         {
           "slug": "surface-parquet",
@@ -1180,7 +1794,10 @@
           "icon": "tools",
           "category": "materiaux",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "materiaux",
+          "primaryCategoryLabel": "Matériaux & surfaces",
+          "categoryPath": "/simulateurs/travaux/materiaux"
         },
         {
           "slug": "maprimerenov",
@@ -1189,7 +1806,10 @@
           "icon": "building",
           "category": "energie",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "energie",
+          "primaryCategoryLabel": "Énergie & rénovation",
+          "categoryPath": "/simulateurs/travaux/energie"
         },
         {
           "slug": "estimation-consommation-energie",
@@ -1198,7 +1818,10 @@
           "icon": "building",
           "category": "energie",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "energie",
+          "primaryCategoryLabel": "Énergie & rénovation",
+          "categoryPath": "/simulateurs/travaux/energie"
         }
       ],
       "all": [
@@ -1209,7 +1832,10 @@
           "icon": "tools",
           "category": "materiaux",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "materiaux",
+          "primaryCategoryLabel": "Matériaux & surfaces",
+          "categoryPath": "/simulateurs/travaux/materiaux"
         },
         {
           "slug": "calcul-carrelage",
@@ -1218,7 +1844,10 @@
           "icon": "tools",
           "category": "materiaux",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "materiaux",
+          "primaryCategoryLabel": "Matériaux & surfaces",
+          "categoryPath": "/simulateurs/travaux/materiaux"
         },
         {
           "slug": "volume-beton",
@@ -1227,7 +1856,10 @@
           "icon": "building",
           "category": "materiaux",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "materiaux",
+          "primaryCategoryLabel": "Matériaux & surfaces",
+          "categoryPath": "/simulateurs/travaux/materiaux"
         },
         {
           "slug": "surface-parquet",
@@ -1236,7 +1868,10 @@
           "icon": "tools",
           "category": "materiaux",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "materiaux",
+          "primaryCategoryLabel": "Matériaux & surfaces",
+          "categoryPath": "/simulateurs/travaux/materiaux"
         },
         {
           "slug": "maprimerenov",
@@ -1245,7 +1880,10 @@
           "icon": "building",
           "category": "energie",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "energie",
+          "primaryCategoryLabel": "Énergie & rénovation",
+          "categoryPath": "/simulateurs/travaux/energie"
         },
         {
           "slug": "estimation-consommation-energie",
@@ -1254,7 +1892,10 @@
           "icon": "building",
           "category": "energie",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "energie",
+          "primaryCategoryLabel": "Énergie & rénovation",
+          "categoryPath": "/simulateurs/travaux/energie"
         },
         {
           "slug": "pompe-a-chaleur-economies",
@@ -1263,7 +1904,10 @@
           "icon": "building",
           "category": "energie",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "energie",
+          "primaryCategoryLabel": "Énergie & rénovation",
+          "categoryPath": "/simulateurs/travaux/energie"
         },
         {
           "slug": "volume-surface-piece",
@@ -1272,7 +1916,10 @@
           "icon": "tools",
           "category": "materiaux",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "materiaux",
+          "primaryCategoryLabel": "Matériaux & surfaces",
+          "categoryPath": "/simulateurs/travaux/materiaux"
         },
         {
           "slug": "quantite-mortier",
@@ -1281,7 +1928,10 @@
           "icon": "tools",
           "category": "materiaux",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "materiaux",
+          "primaryCategoryLabel": "Matériaux & surfaces",
+          "categoryPath": "/simulateurs/travaux/materiaux"
         },
         {
           "slug": "economies-isolation",
@@ -1290,7 +1940,10 @@
           "icon": "building",
           "category": "energie",
           "domain": "travaux",
-          "domainLabel": "Travaux & habitat"
+          "domainLabel": "Travaux & habitat",
+          "primaryCategory": "energie",
+          "primaryCategoryLabel": "Énergie & rénovation",
+          "categoryPath": "/simulateurs/travaux/energie"
         }
       ]
     },
@@ -1298,23 +1951,46 @@
       "domain": "sante",
       "label": "Santé",
       "anchor": "sante",
+      "path": "/simulateurs/sante",
       "count": 10,
       "featured": [
-        {
-          "slug": "calculateur-imc",
-          "title": "Calculateur d'IMC"
-        },
         {
           "slug": "calories-journalieres",
           "title": "Simulateur de calories journalières"
         },
         {
-          "slug": "date-accouchement",
-          "title": "Calculateur de date d'accouchement"
+          "slug": "hydratation-quotidienne",
+          "title": "Simulateur d'hydratation quotidienne"
         },
         {
-          "slug": "poids-ideal",
-          "title": "Simulateur de poids idéal"
+          "slug": "calculateur-imc",
+          "title": "Calculateur d'IMC"
+        },
+        {
+          "slug": "proteines-journalieres",
+          "title": "Simulateur de protéines journalières"
+        }
+      ],
+      "categories": [
+        {
+          "id": "sante",
+          "label": "Santé & bien-être",
+          "path": "/simulateurs/sante/sante",
+          "count": 10,
+          "featured": [
+            {
+              "slug": "calories-journalieres",
+              "title": "Simulateur de calories journalières"
+            },
+            {
+              "slug": "hydratation-quotidienne",
+              "title": "Simulateur d'hydratation quotidienne"
+            },
+            {
+              "slug": "calculateur-imc",
+              "title": "Calculateur d'IMC"
+            }
+          ]
         }
       ],
       "preview": [
@@ -1325,7 +2001,10 @@
           "icon": "scale",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         },
         {
           "slug": "poids-ideal",
@@ -1334,7 +2013,10 @@
           "icon": "scale",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         },
         {
           "slug": "calories-journalieres",
@@ -1343,7 +2025,10 @@
           "icon": "heart",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         },
         {
           "slug": "date-accouchement",
@@ -1352,7 +2037,10 @@
           "icon": "heart",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         },
         {
           "slug": "calculateur-ovulation",
@@ -1361,7 +2049,10 @@
           "icon": "heart",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         },
         {
           "slug": "hydratation-quotidienne",
@@ -1370,7 +2061,10 @@
           "icon": "heart",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         }
       ],
       "all": [
@@ -1381,7 +2075,10 @@
           "icon": "scale",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         },
         {
           "slug": "poids-ideal",
@@ -1390,7 +2087,10 @@
           "icon": "scale",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         },
         {
           "slug": "calories-journalieres",
@@ -1399,7 +2099,10 @@
           "icon": "heart",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         },
         {
           "slug": "date-accouchement",
@@ -1408,7 +2111,10 @@
           "icon": "heart",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         },
         {
           "slug": "calculateur-ovulation",
@@ -1417,7 +2123,10 @@
           "icon": "heart",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         },
         {
           "slug": "hydratation-quotidienne",
@@ -1426,7 +2135,10 @@
           "icon": "heart",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         },
         {
           "slug": "proteines-journalieres",
@@ -1435,7 +2147,10 @@
           "icon": "scale",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         },
         {
           "slug": "economies-arret-tabac",
@@ -1444,7 +2159,10 @@
           "icon": "heart",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         },
         {
           "slug": "unites-alcool",
@@ -1453,7 +2171,10 @@
           "icon": "scale",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         },
         {
           "slug": "cycles-sommeil",
@@ -1462,7 +2183,10 @@
           "icon": "heart",
           "category": "sante",
           "domain": "sante",
-          "domainLabel": "Santé"
+          "domainLabel": "Santé",
+          "primaryCategory": "sante",
+          "primaryCategoryLabel": "Santé & bien-être",
+          "categoryPath": "/simulateurs/sante/sante"
         }
       ]
     },
@@ -1470,6 +2194,7 @@
       "domain": "quotidien",
       "label": "Calculs du quotidien",
       "anchor": "quotidien",
+      "path": "/simulateurs/quotidien",
       "count": 10,
       "featured": [
         {
@@ -1477,16 +2202,58 @@
           "title": "Calculateur de TVA"
         },
         {
-          "slug": "calculateur-pourcentage",
-          "title": "Calculateur pourcentage"
-        },
-        {
           "slug": "regle-de-trois",
           "title": "Calculateur de règle de trois"
         },
         {
-          "slug": "calculateur-age",
-          "title": "Calculateur d'âge"
+          "slug": "calculateur-pourcentage",
+          "title": "Calculateur pourcentage"
+        },
+        {
+          "slug": "evolution-pourcentage",
+          "title": "Calculateur d'évolution en pourcentage"
+        }
+      ],
+      "categories": [
+        {
+          "id": "pratique",
+          "label": "Calculs pratiques",
+          "path": "/simulateurs/quotidien/pratique",
+          "count": 6,
+          "featured": [
+            {
+              "slug": "regle-de-trois",
+              "title": "Calculateur de règle de trois"
+            },
+            {
+              "slug": "calculateur-pourcentage",
+              "title": "Calculateur pourcentage"
+            },
+            {
+              "slug": "evolution-pourcentage",
+              "title": "Calculateur d'évolution en pourcentage"
+            }
+          ]
+        },
+        {
+          "id": "conversion",
+          "label": "Conversions",
+          "path": "/simulateurs/quotidien/conversion",
+          "count": 4,
+          "featured": [
+            {
+              "slug": "calculateur-tva",
+              "title": "Calculateur de TVA"
+            },
+            {
+              "slug": "convertisseur-heures-minutes",
+              "title": "Calculateur de convertisseur heures minutes"
+            },
+            {
+              "slug": "vitesse-distance-temps",
+              "title": "Calculateur de vitesse distance temps"
+            }
+          ]
         }
       ],
       "preview": [
@@ -1497,7 +2264,10 @@
           "icon": "calculator",
           "category": "conversion",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "conversion",
+          "primaryCategoryLabel": "Conversions",
+          "categoryPath": "/simulateurs/quotidien/conversion"
         },
         {
           "slug": "calculateur-pourcentage",
@@ -1506,7 +2276,10 @@
           "icon": "percent",
           "category": "pratique",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "pratique",
+          "primaryCategoryLabel": "Calculs pratiques",
+          "categoryPath": "/simulateurs/quotidien/pratique"
         },
         {
           "slug": "regle-de-trois",
@@ -1515,7 +2288,10 @@
           "icon": "calculator",
           "category": "pratique",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "pratique",
+          "primaryCategoryLabel": "Calculs pratiques",
+          "categoryPath": "/simulateurs/quotidien/pratique"
         },
         {
           "slug": "calculateur-age",
@@ -1524,7 +2300,10 @@
           "icon": "calculator",
           "category": "pratique",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "pratique",
+          "primaryCategoryLabel": "Calculs pratiques",
+          "categoryPath": "/simulateurs/quotidien/pratique"
         },
         {
           "slug": "calculateur-pourboire",
@@ -1533,7 +2312,10 @@
           "icon": "calculator",
           "category": "pratique",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "pratique",
+          "primaryCategoryLabel": "Calculs pratiques",
+          "categoryPath": "/simulateurs/quotidien/pratique"
         },
         {
           "slug": "partage-facture",
@@ -1542,7 +2324,10 @@
           "icon": "calculator",
           "category": "pratique",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "pratique",
+          "primaryCategoryLabel": "Calculs pratiques",
+          "categoryPath": "/simulateurs/quotidien/pratique"
         }
       ],
       "all": [
@@ -1553,7 +2338,10 @@
           "icon": "calculator",
           "category": "conversion",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "conversion",
+          "primaryCategoryLabel": "Conversions",
+          "categoryPath": "/simulateurs/quotidien/conversion"
         },
         {
           "slug": "calculateur-pourcentage",
@@ -1562,7 +2350,10 @@
           "icon": "percent",
           "category": "pratique",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "pratique",
+          "primaryCategoryLabel": "Calculs pratiques",
+          "categoryPath": "/simulateurs/quotidien/pratique"
         },
         {
           "slug": "regle-de-trois",
@@ -1571,7 +2362,10 @@
           "icon": "calculator",
           "category": "pratique",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "pratique",
+          "primaryCategoryLabel": "Calculs pratiques",
+          "categoryPath": "/simulateurs/quotidien/pratique"
         },
         {
           "slug": "calculateur-age",
@@ -1580,7 +2374,10 @@
           "icon": "calculator",
           "category": "pratique",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "pratique",
+          "primaryCategoryLabel": "Calculs pratiques",
+          "categoryPath": "/simulateurs/quotidien/pratique"
         },
         {
           "slug": "calculateur-pourboire",
@@ -1589,7 +2386,10 @@
           "icon": "calculator",
           "category": "pratique",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "pratique",
+          "primaryCategoryLabel": "Calculs pratiques",
+          "categoryPath": "/simulateurs/quotidien/pratique"
         },
         {
           "slug": "partage-facture",
@@ -1598,7 +2398,10 @@
           "icon": "calculator",
           "category": "pratique",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "pratique",
+          "primaryCategoryLabel": "Calculs pratiques",
+          "categoryPath": "/simulateurs/quotidien/pratique"
         },
         {
           "slug": "convertisseur-devises",
@@ -1607,7 +2410,10 @@
           "icon": "scale",
           "category": "conversion",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "conversion",
+          "primaryCategoryLabel": "Conversions",
+          "categoryPath": "/simulateurs/quotidien/conversion"
         },
         {
           "slug": "convertisseur-heures-minutes",
@@ -1616,7 +2422,10 @@
           "icon": "scale",
           "category": "conversion",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "conversion",
+          "primaryCategoryLabel": "Conversions",
+          "categoryPath": "/simulateurs/quotidien/conversion"
         },
         {
           "slug": "vitesse-distance-temps",
@@ -1625,7 +2434,10 @@
           "icon": "scale",
           "category": "conversion",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "conversion",
+          "primaryCategoryLabel": "Conversions",
+          "categoryPath": "/simulateurs/quotidien/conversion"
         },
         {
           "slug": "evolution-pourcentage",
@@ -1634,18 +2446,12 @@
           "icon": "percent",
           "category": "pratique",
           "domain": "quotidien",
-          "domainLabel": "Calculs du quotidien"
+          "domainLabel": "Calculs du quotidien",
+          "primaryCategory": "pratique",
+          "primaryCategoryLabel": "Calculs pratiques",
+          "categoryPath": "/simulateurs/quotidien/pratique"
         }
       ]
-    },
-    {
-      "domain": "aides-sociales",
-      "label": "Aides sociales",
-      "anchor": "aides-sociales",
-      "count": 0,
-      "featured": [],
-      "preview": [],
-      "all": []
     }
   ],
   "genericFormSlugs": [

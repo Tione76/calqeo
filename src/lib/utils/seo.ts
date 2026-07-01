@@ -5,6 +5,15 @@ import {
   clampMetaDescription,
   clampMetaTitle,
 } from "@/lib/simulators/_shared/seo";
+import type {
+  PortalCategoryNode,
+  PortalDomainNode,
+  PortalSimulatorRef,
+} from "@/lib/simulators/_shared/portal-tree";
+import {
+  buildCategoryHubIntro,
+  buildDomainHubIntro,
+} from "@/lib/simulators/_shared/portal-content";
 
 import { blocksToPlainText } from "@/lib/utils/content";
 
@@ -279,5 +288,88 @@ export function jsonLdBreadcrumb(items: { name: string; url: string }[]) {
       name: item.name,
       item: `${SITE.url}${item.url}`,
     })),
+  };
+}
+
+function createHubMetadata(
+  title: string,
+  description: string,
+  pathname: string
+): Metadata {
+  const safeTitle = clampMetaTitle(title);
+  const safeDescription = clampMetaDescription(description);
+
+  return {
+    title: safeTitle,
+    description: safeDescription,
+    alternates: { canonical: pathname },
+    openGraph: {
+      title: safeTitle,
+      description: safeDescription,
+      url: pathname,
+      siteName: SITE.name,
+      locale: SITE.locale,
+      type: "website",
+      images: defaultOpenGraphImages,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: safeTitle,
+      description: safeDescription,
+      images: ["/twitter-image"],
+    },
+  };
+}
+
+export function createDomainHubMetadata(domain: PortalDomainNode): Metadata {
+  const intro = buildDomainHubIntro(domain);
+  return createHubMetadata(
+    `Simulateurs ${domain.label.toLowerCase()} — ${domain.count} outils gratuits`,
+    intro,
+    domain.path
+  );
+}
+
+export function createCategoryHubMetadata(
+  domain: PortalDomainNode,
+  category: PortalCategoryNode
+): Metadata {
+  const intro = buildCategoryHubIntro(domain, category);
+  return createHubMetadata(
+    `${category.label} — simulateurs ${domain.label.toLowerCase()}`,
+    intro,
+    category.path
+  );
+}
+
+export function jsonLdPortalHub(options: {
+  name: string;
+  description: string;
+  path: string;
+  items: Pick<PortalSimulatorRef, "slug" | "title">[];
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: options.name,
+    description: options.description,
+    url: `${SITE.url}${options.path}`,
+    inLanguage: "fr-FR",
+    isPartOf: {
+      "@type": "WebSite",
+      name: SITE.name,
+      url: SITE.url,
+    },
+    mainEntity: {
+      "@type": "ItemList",
+      name: options.name,
+      numberOfItems: options.items.length,
+      itemListElement: options.items.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.title,
+        url: `${SITE.url}/simulateurs/${item.slug}`,
+      })),
+    },
   };
 }

@@ -44,13 +44,13 @@ export default function SimulateursPage() {
         aria-label="Catégories"
       >
         {groups.map((group) => (
-          <a
+          <Link
             key={group.domain}
-            href={`#${group.anchor}`}
+            href={group.path}
             className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
           >
             {group.label} ({group.count})
-          </a>
+          </Link>
         ))}
       </nav>
 
@@ -62,15 +62,44 @@ export default function SimulateursPage() {
             className="scroll-mt-24"
             aria-labelledby={`${group.anchor}-heading`}
           >
-            <h2
-              id={`${group.anchor}-heading`}
-              className="font-display text-2xl font-bold text-brand-900"
-            >
-              {group.label}
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              {group.count} outil{group.count > 1 ? "s" : ""}
-            </p>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2
+                  id={`${group.anchor}-heading`}
+                  className="font-display text-2xl font-bold text-brand-900"
+                >
+                  <Link href={group.path} className="hover:text-brand-700">
+                    {group.label}
+                  </Link>
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  {group.count} outil{group.count > 1 ? "s" : ""}
+                  {group.categories.length > 0 && (
+                    <>
+                      {" "}
+                      ·{" "}
+                      {group.categories.map((category, index) => (
+                        <span key={category.id}>
+                          {index > 0 && ", "}
+                          <Link
+                            href={category.path}
+                            className="text-brand-600 hover:text-brand-700"
+                          >
+                            {category.label}
+                          </Link>
+                        </span>
+                      ))}
+                    </>
+                  )}
+                </p>
+              </div>
+              <Link
+                href={group.path}
+                className="text-sm font-semibold text-brand-600 hover:text-brand-700"
+              >
+                Page {group.label.toLowerCase()} →
+              </Link>
+            </div>
 
             <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {group.all.map((sim) => (

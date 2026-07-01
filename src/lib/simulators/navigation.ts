@@ -18,8 +18,16 @@ export interface DomainNavGroup {
   domain: SiteDomain;
   label: string;
   anchor: string;
+  path: string;
   count: number;
   featured: SimulatorNavRef[];
+  categories: {
+    id: SimulatorCategory;
+    label: string;
+    path: string;
+    count: number;
+    featured: SimulatorNavRef[];
+  }[];
   preview: SimulatorCardRef[];
   all: SimulatorCardRef[];
 }

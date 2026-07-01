@@ -4,7 +4,8 @@ import {
   getRelatedSimulators,
   getSimulatorBySlug,
 } from "@/lib/simulators";
-import { DOMAIN_ANCHORS, DOMAIN_LABELS, getSimulatorDomain } from "@/lib/simulators/types";
+import { getSimulatorPortalEntry } from "@/lib/simulators/portal";
+import { DOMAIN_LABELS, getSimulatorDomain } from "@/lib/simulators/types";
 import { createSimulatorMetadata, jsonLdBreadcrumb, jsonLdFAQ } from "@/lib/utils/seo";
 import { jsonLdSoftwareApplication } from "@/lib/simulators/_shared/seo";
 import { getSimulatorForm } from "@/components/simulator/forms";
@@ -17,23 +18,17 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { ADSENSE_ENABLED } from "@/lib/ads";
 import { cn } from "@/lib/utils/cn";
 
-interface PageProps {
-  params: Promise<{ slug: string }>;
+interface SimulatorPageContentProps {
+  slug: string;
 }
 
-export async function generateStaticParams() {
-  return getAllSimulatorSlugs().map((slug) => ({ slug }));
-}
-
-export async function generateMetadata({ params }: PageProps) {
-  const { slug } = await params;
+export async function generateSimulatorMetadata(slug: string) {
   const simulator = getSimulatorBySlug(slug);
   if (!simulator) return {};
   return createSimulatorMetadata(simulator);
 }
 
-export default async function SimulatorPage({ params }: PageProps) {
-  const { slug } = await params;
+export function SimulatorPageContent({ slug }: SimulatorPageContentProps) {
   const simulator = getSimulatorBySlug(slug);
 
   if (!simulator) {
@@ -44,6 +39,15 @@ export default async function SimulatorPage({ params }: PageProps) {
   if (!FormComponent) {
     notFound();
   }
+
+  const portalEntry = getSimulatorPortalEntry(slug);
+  const domain = getSimulatorDomain(simulator);
+  const domainPath = portalEntry?.domainPath ?? `/simulateurs/${domain}`;
+  const categoryPath =
+    portalEntry?.categoryPath ?? `${domainPath}/${simulator.category}`;
+  const domainLabel = portalEntry?.domainLabel ?? DOMAIN_LABELS[domain];
+  const categoryLabel =
+    portalEntry?.primaryCategoryLabel ?? simulator.category;
 
   const related = getRelatedSimulators(slug).map((sim) => {
     const simDomain = getSimulatorDomain(sim);
@@ -58,11 +62,11 @@ export default async function SimulatorPage({ params }: PageProps) {
     };
   });
 
-  const domain = getSimulatorDomain(simulator);
   const breadcrumbJsonLd = jsonLdBreadcrumb([
     { name: "Accueil", url: "/" },
     { name: "Outils", url: "/simulateurs" },
-    { name: DOMAIN_LABELS[domain], url: `/simulateurs#${DOMAIN_ANCHORS[domain]}` },
+    { name: domainLabel, url: domainPath },
+    { name: categoryLabel, url: categoryPath },
     { name: simulator.title, url: `/simulateurs/${simulator.slug}` },
   ]);
 
@@ -88,8 +92,10 @@ export default async function SimulatorPage({ params }: PageProps) {
         <SimulatorHeader
           title={simulator.title}
           description={simulator.shortDescription}
-          domain={domain}
-          category={simulator.category}
+          domainLabel={domainLabel}
+          domainPath={domainPath}
+          categoryLabel={categoryLabel}
+          categoryPath={categoryPath}
           icon={simulator.icon}
         />
 
@@ -127,4 +133,8 @@ export default async function SimulatorPage({ params }: PageProps) {
       </div>
     </>
   );
+}
+
+export function getSimulatorStaticParams() {
+  return getAllSimulatorSlugs().map((slug) => ({ segment: slug }));
 }

@@ -1,13 +1,21 @@
 import Link from "next/link";
-import { CATEGORY_LABELS, DOMAIN_ANCHORS, DOMAIN_LABELS, type SimulatorCategory, type SiteDomain } from "@/lib/simulators/types";
 import { SimulatorIconComponent } from "@/components/ui/SimulatorIcon";
 
 interface SimulatorBreadcrumbProps {
   title: string;
-  domain: SiteDomain;
+  domainLabel: string;
+  domainPath: string;
+  categoryLabel: string;
+  categoryPath: string;
 }
 
-export function SimulatorBreadcrumb({ title, domain }: SimulatorBreadcrumbProps) {
+export function SimulatorBreadcrumb({
+  title,
+  domainLabel,
+  domainPath,
+  categoryLabel,
+  categoryPath,
+}: SimulatorBreadcrumbProps) {
   return (
     <nav aria-label="Fil d'Ariane" className="mb-6">
       <ol className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
@@ -24,11 +32,14 @@ export function SimulatorBreadcrumb({ title, domain }: SimulatorBreadcrumbProps)
         </li>
         <li aria-hidden="true">/</li>
         <li>
-          <Link
-            href={`/simulateurs#${DOMAIN_ANCHORS[domain]}`}
-            className="transition-colors hover:text-brand-700"
-          >
-            {DOMAIN_LABELS[domain]}
+          <Link href={domainPath} className="transition-colors hover:text-brand-700">
+            {domainLabel}
+          </Link>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li>
+          <Link href={categoryPath} className="transition-colors hover:text-brand-700">
+            {categoryLabel}
           </Link>
         </li>
         <li aria-hidden="true">/</li>
@@ -41,26 +52,36 @@ export function SimulatorBreadcrumb({ title, domain }: SimulatorBreadcrumbProps)
 interface SimulatorHeaderProps {
   title: string;
   description: string;
-  domain: SiteDomain;
-  category: SimulatorCategory;
+  domainLabel: string;
+  domainPath: string;
+  categoryLabel: string;
+  categoryPath: string;
   icon: Parameters<typeof SimulatorIconComponent>[0]["icon"];
 }
 
 export function SimulatorHeader({
   title,
   description,
-  domain,
-  category,
+  domainLabel,
+  domainPath,
+  categoryLabel,
+  categoryPath,
   icon,
 }: SimulatorHeaderProps) {
   return (
     <header className="mb-10">
-      <SimulatorBreadcrumb title={title} domain={domain} />
+      <SimulatorBreadcrumb
+        title={title}
+        domainLabel={domainLabel}
+        domainPath={domainPath}
+        categoryLabel={categoryLabel}
+        categoryPath={categoryPath}
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
         <SimulatorIconComponent icon={icon} className="h-14 w-14 shrink-0" />
         <div>
           <p className="text-sm font-medium uppercase tracking-wider text-brand-600">
-            {DOMAIN_LABELS[domain]} · {CATEGORY_LABELS[category]}
+            {domainLabel} · {categoryLabel}
           </p>
           <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
             {title}
