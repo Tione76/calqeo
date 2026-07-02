@@ -22,6 +22,7 @@ import {
   PortalLightFaq,
   SimulatorCardGrid,
 } from "@/components/portal/PortalHub";
+import { SimulatorCategoryIllustration } from "@/components/simulator/SimulatorCategoryIllustration";
 
 interface PageProps {
   params: Promise<{ segment: string; category: string }>;
@@ -54,8 +55,6 @@ function CategoryHubView({
   const tree = getPortalTree();
   const intro = buildCategoryHubIntro(domain, category);
   const faq = buildCategoryHubFaq(domain, category);
-  const featuredSlugs = new Set(category.featured.map((sim) => sim.slug));
-
   const breadcrumbJsonLd = jsonLdBreadcrumb([
     { name: "Accueil", url: "/" },
     { name: "Outils", url: "/simulateurs" },
@@ -98,14 +97,23 @@ function CategoryHubView({
         />
 
         <header className="mb-10">
-          <p className="text-sm font-medium uppercase tracking-wider text-brand-600">
-            {domain.label} · {category.label}
-          </p>
-          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
-            Simulateurs {category.label.toLowerCase()}
-          </h1>
-          <p className="mt-3 max-w-2xl text-lg leading-relaxed text-slate-600">{intro}</p>
-          <FeaturedSimulatorLinks featured={category.featured} />
+          <div className="flex items-start gap-4">
+            <SimulatorCategoryIllustration
+              domain={domain.id}
+              size="mobile-header"
+              className="md:hidden"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium uppercase tracking-wider text-brand-600">
+                {domain.label} · {category.label}
+              </p>
+              <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
+                Simulateurs {category.label.toLowerCase()}
+              </h1>
+              <p className="mt-3 max-w-2xl text-lg leading-relaxed text-slate-600">{intro}</p>
+              <FeaturedSimulatorLinks featured={category.featured} />
+            </div>
+          </div>
         </header>
 
         <section aria-labelledby="sibling-categories-heading">
@@ -132,7 +140,7 @@ function CategoryHubView({
             Tous les outils
           </h2>
           <div className="mt-6">
-            <SimulatorCardGrid simulators={category.simulators} featuredSlugs={featuredSlugs} />
+            <SimulatorCardGrid simulators={category.simulators} />
           </div>
         </section>
 

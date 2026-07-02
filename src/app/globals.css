@@ -24,4 +24,35 @@
   .section-subtitle {
     @apply mt-2 text-base text-slate-600 sm:text-lg;
   }
+
+  @media (min-width: 768px) {
+    @keyframes home-fade-up {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .home-fade-up {
+      animation: home-fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .home-category-cta {
+      transition: color 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .home-category-cta:hover {
+      color: var(--theme-accent-hover, var(--theme-accent)) !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-fade-up {
+      animation: none;
+    }
+  }
 }

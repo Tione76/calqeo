@@ -21,7 +21,7 @@ export function SimulatorFAQ({ items }: SimulatorFAQProps) {
         simulateur.
       </p>
 
-      <div className="mt-8 divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">
+      <div className="mt-8 divide-y divide-slate-200/80 overflow-hidden rounded-[1.4rem] border border-slate-200/50 bg-white shadow-[0_12px_40px_-24px_rgba(15,23,42,0.1)]">
         {items.map((item, index) => {
           const isOpen = openIndex === index;
           return (
@@ -29,7 +29,7 @@ export function SimulatorFAQ({ items }: SimulatorFAQProps) {
               <button
                 type="button"
                 onClick={() => setOpenIndex(isOpen ? null : index)}
-                className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition-colors hover:bg-slate-50"
+                className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition-colors hover:bg-slate-50/80"
                 aria-expanded={isOpen}
               >
                 <span className="font-medium text-slate-900">
@@ -43,6 +43,7 @@ export function SimulatorFAQ({ items }: SimulatorFAQProps) {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                   strokeWidth={2}
+                  aria-hidden
                 >
                   <path
                     strokeLinecap="round"

@@ -9,11 +9,8 @@ import { ResultInterpretationBlock } from "./results/ResultInterpretationBlock";
 
 
 interface SimulatorResultsProps {
-
   result: SimulatorResult | null;
-
   emptyMessage?: string;
-
 }
 
 
@@ -33,17 +30,11 @@ const calloutStyles = {
 
 
 export function SimulatorResults({
-
   result,
-
   emptyMessage = "Remplissez le formulaire pour voir les résultats.",
-
 }: SimulatorResultsProps) {
-
   if (!result) {
-
     return (
-
       <Card className="flex min-h-[320px] items-center justify-center">
 
         <p className="text-center text-slate-500">{emptyMessage}</p>
@@ -63,16 +54,11 @@ export function SimulatorResults({
 
 
   return (
-
     <Card className="overflow-hidden p-0">
-
       {/* 1. Résultat principal */}
-
       {primary && (
-
-        <div className="border-b border-brand-100 bg-gradient-to-br from-brand-50 to-white px-5 py-6 sm:px-6">
-
-          <p className="text-sm font-medium text-brand-700">{primary.label}</p>
+        <div className="border-b border-[#B8D4C0]/60 bg-gradient-to-br from-[#F6FAF7] to-white px-5 py-6 sm:px-6">
+          <p className="text-sm font-medium text-[#3F6B52]">{primary.label}</p>
 
           <p className="mt-1 font-display text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">
 

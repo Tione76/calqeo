@@ -4,8 +4,7 @@ import {
   getSimulatorsGroupedByDomain,
   SIMULATOR_COUNT,
 } from "@/lib/simulators/navigation";
-import { Card } from "@/components/ui/Card";
-import { SimulatorIconComponent } from "@/components/ui/SimulatorIcon";
+import { SimulatorToolCard } from "@/components/simulator/SimulatorToolCard";
 
 export const metadata: Metadata = {
   title: "Simulateurs et calculateurs gratuits en ligne",
@@ -103,40 +102,15 @@ export default function SimulateursPage() {
 
             <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {group.all.map((sim) => (
-                <Link
+                <SimulatorToolCard
                   key={sim.slug}
-                  href={`/simulateurs/${sim.slug}`}
-                  className="group block"
-                >
-                  <Card hover className="flex h-full flex-col">
-                    <SimulatorIconComponent icon={sim.icon} />
-                    <p className="mt-3 text-xs font-medium uppercase tracking-wider text-brand-600">
-                      {sim.domainLabel}
-                    </p>
-                    <h3 className="mt-2 font-display text-xl font-semibold text-brand-900 group-hover:text-brand-700">
-                      {sim.title}
-                    </h3>
-                    <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">
-                      {sim.shortDescription}
-                    </p>
-                    <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-brand-600">
-                      Utiliser l&apos;outil
-                      <svg
-                        className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                        />
-                      </svg>
-                    </span>
-                  </Card>
-                </Link>
+                  slug={sim.slug}
+                  title={sim.title}
+                  shortDescription={sim.shortDescription}
+                  domain={sim.domain}
+                  categoryLabel={sim.domainLabel}
+                  cta="Utiliser l'outil"
+                />
               ))}
             </div>
           </section>

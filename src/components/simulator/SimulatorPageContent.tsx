@@ -88,7 +88,7 @@ export function SimulatorPageContent({ slug }: SimulatorPageContentProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(appJsonLd) }}
       />
 
-      <div className="container-app py-10 sm:py-14">
+      <div className="container-app py-10 sm:py-16">
         <SimulatorHeader
           title={simulator.title}
           description={simulator.shortDescription}
@@ -96,7 +96,7 @@ export function SimulatorPageContent({ slug }: SimulatorPageContentProps) {
           domainPath={domainPath}
           categoryLabel={categoryLabel}
           categoryPath={categoryPath}
-          icon={simulator.icon}
+          illustrationDomain={domain}
         />
 
         <div

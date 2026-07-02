@@ -29,6 +29,7 @@ export interface PortalSimulatorRef {
   title: string;
   shortDescription: string;
   icon: SimulatorIcon;
+  domain: SiteDomain;
   metadataCategory: SimulatorCategory;
   primaryCategory: SimulatorCategory;
   secondaryCategory: SimulatorCategory | null;
@@ -402,6 +403,7 @@ function toPortalSimulatorRef(
     title: sim.title,
     shortDescription: sim.shortDescription,
     icon: sim.icon,
+    domain: getSimulatorDomain(sim),
     metadataCategory: sim.category,
     primaryCategory: classification.primaryCategory,
     secondaryCategory: classification.secondaryCategory,

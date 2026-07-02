@@ -1,8 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import type { PortalNavRef } from "@/lib/simulators/_shared/portal-tree";
 import type { PortalSimulatorRef } from "@/lib/simulators/_shared/portal-tree";
-import { Card } from "@/components/ui/Card";
-import { SimulatorIconComponent } from "@/components/ui/SimulatorIcon";
+import { SimulatorToolCard } from "@/components/simulator/SimulatorToolCard";
 
 interface PortalBreadcrumbItem {
   label: string;
@@ -36,50 +38,23 @@ export function PortalBreadcrumb({ items }: PortalBreadcrumbProps) {
 
 interface SimulatorCardGridProps {
   simulators: PortalSimulatorRef[];
-  featuredSlugs?: Set<string>;
 }
 
-export function SimulatorCardGrid({ simulators, featuredSlugs }: SimulatorCardGridProps) {
+export function SimulatorCardGrid({ simulators }: SimulatorCardGridProps) {
   if (simulators.length === 0) return null;
 
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {simulators.map((sim) => (
-        <Link key={sim.slug} href={`/simulateurs/${sim.slug}`} className="group block">
-          <Card hover className="flex h-full flex-col">
-            <SimulatorIconComponent icon={sim.icon} />
-            {featuredSlugs?.has(sim.slug) && (
-              <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-accent-600">
-                Mis en avant
-              </p>
-            )}
-            <p className="mt-3 text-xs font-medium uppercase tracking-wider text-brand-600">
-              {sim.primaryCategoryLabel}
-            </p>
-            <h3 className="mt-2 font-display text-xl font-semibold text-brand-900 group-hover:text-brand-700">
-              {sim.title}
-            </h3>
-            <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">
-              {sim.shortDescription}
-            </p>
-            <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-brand-600">
-              Utiliser l&apos;outil
-              <svg
-                className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                />
-              </svg>
-            </span>
-          </Card>
-        </Link>
+        <SimulatorToolCard
+          key={sim.slug}
+          slug={sim.slug}
+          title={sim.title}
+          shortDescription={sim.shortDescription}
+          domain={sim.domain}
+          categoryLabel={sim.primaryCategoryLabel}
+          cta="Utiliser l'outil"
+        />
       ))}
     </div>
   );
@@ -171,19 +146,52 @@ interface PortalLightFaqProps {
 }
 
 export function PortalLightFaq({ items }: PortalLightFaqProps) {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
   return (
     <section aria-labelledby="portal-faq-heading" className="mt-16">
-      <h2 id="portal-faq-heading" className="font-display text-2xl font-bold text-brand-900">
+      <h2 id="portal-faq-heading" className="section-title">
         Questions fréquentes
       </h2>
-      <dl className="mt-6 space-y-6">
-        {items.map((item) => (
-          <div key={item.question}>
-            <dt className="font-semibold text-brand-900">{item.question}</dt>
-            <dd className="mt-2 text-sm leading-relaxed text-slate-600">{item.answer}</dd>
-          </div>
-        ))}
-      </dl>
+
+      <div className="mt-8 divide-y divide-slate-200/80 overflow-hidden rounded-[1.4rem] border border-slate-200/50 bg-white shadow-[0_12px_40px_-24px_rgba(15,23,42,0.1)]">
+        {items.map((item, index) => {
+          const isOpen = openIndex === index;
+          return (
+            <div key={item.question}>
+              <button
+                type="button"
+                onClick={() => setOpenIndex(isOpen ? null : index)}
+                className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition-colors hover:bg-slate-50/80"
+                aria-expanded={isOpen}
+              >
+                <span className="font-medium text-slate-900">{item.question}</span>
+                <svg
+                  className={`h-5 w-5 shrink-0 text-slate-400 transition-transform ${
+                    isOpen ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                  />
+                </svg>
+              </button>
+              {isOpen && (
+                <div className="px-6 pb-5 text-sm leading-relaxed text-slate-600">
+                  {item.answer}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 }

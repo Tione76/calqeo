@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { SimulatorIconComponent } from "@/components/ui/SimulatorIcon";
+import type { SiteDomain } from "@/lib/simulators/types";
+import { CALQEO_SIMULATOR_ACCENT } from "@/lib/design/calqeo-theme";
+import { SimulatorCategoryIllustration } from "@/components/simulator/SimulatorCategoryIllustration";
 
 interface SimulatorBreadcrumbProps {
   title: string;
@@ -56,7 +58,7 @@ interface SimulatorHeaderProps {
   domainPath: string;
   categoryLabel: string;
   categoryPath: string;
-  icon: Parameters<typeof SimulatorIconComponent>[0]["icon"];
+  illustrationDomain: SiteDomain;
 }
 
 export function SimulatorHeader({
@@ -66,7 +68,7 @@ export function SimulatorHeader({
   domainPath,
   categoryLabel,
   categoryPath,
-  icon,
+  illustrationDomain,
 }: SimulatorHeaderProps) {
   return (
     <header className="mb-10">
@@ -78,9 +80,12 @@ export function SimulatorHeader({
         categoryPath={categoryPath}
       />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-        <SimulatorIconComponent icon={icon} className="h-14 w-14 shrink-0" />
+        <SimulatorCategoryIllustration domain={illustrationDomain} size="header" />
         <div>
-          <p className="text-sm font-medium uppercase tracking-wider text-brand-600">
+          <p
+            className="text-sm font-medium uppercase tracking-wider"
+            style={{ color: CALQEO_SIMULATOR_ACCENT }}
+          >
             {domainLabel} · {categoryLabel}
           </p>
           <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-brand-900 sm:text-4xl">

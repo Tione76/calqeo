@@ -34,7 +34,7 @@ export function SimulatorContent({ content }: SimulatorContentProps) {
                     key={subsection.id}
                     className={
                       index === 0 && section.id.includes("exemple")
-                        ? "border-brand-100 bg-brand-50/50"
+                        ? "border-[#B8D4C0]/50 bg-[#F6FAF7]/80"
                         : ""
                     }
                   >
